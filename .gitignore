@@ -1,0 +1,6 @@
+node_modules
+dist
+.DS_store
+variables.env
+public/uploads
+public/avatars
