@@ -12,7 +12,7 @@ require("./handlers/passport.js");
 const app = express();
 
 //serves up static files from distribution and images folder.
-app.use(express.static(path.join(__dirname, "dist")));
+// app.use(express.static(path.join(__dirname, "dist")));
 app.use("/public/uploads", express.static(__dirname + "/public/uploads"));
 app.use("/public/avatars", express.static(__dirname + "/public/avatars"));
 
