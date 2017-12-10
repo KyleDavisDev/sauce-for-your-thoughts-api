@@ -57,7 +57,7 @@ exports.isLoggedIn = (req, res, next) => {
           msg:
             "You are not logged in or your token is invalid. Please try again."
         };
-        res.status(401).send(data);
+        return res.status(401).send(data);
       }
 
       //attach _id to body
@@ -91,7 +91,9 @@ exports.forgot = async (req, res) => {
     await user.save();
 
     //create URL and email to user email
-    const resetURL = `http://localhost:8080/account/reset/${user.resetPasswordToken}`;
+    const resetURL = `http://localhost:8080/account/reset/${
+      user.resetPasswordToken
+    }`;
     await mail.send({
       user,
       subject: "Password reset",
