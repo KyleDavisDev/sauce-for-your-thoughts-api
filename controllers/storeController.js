@@ -177,7 +177,7 @@ exports.getStores = async (req, res) => {
       return res.send(data);
     }
 
-    const data = { isGood: true, stores, msg: "Successfully found sotres" };
+    const data = { isGood: true, stores, msg: "Successfully found stores" };
     return res.send(data);
   } catch (err) {
     const data = { isGood: false, msg: "Unable to find any stores" };
