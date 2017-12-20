@@ -60,7 +60,7 @@ exports.getUser = (req, res, next) => {
     //only pass back relevant information
     const data = {
       isGood: true,
-      user: { name: user.name, email: user.email, _id: user._id },
+      user: { name: user.name, email: user.email },
       msg: "Successfully found user."
     };
     return res.status(200).send(data);
@@ -94,5 +94,37 @@ exports.updateUser = async (req, res) => {
     };
 
     return res.status(401).send(data);
+  }
+};
+
+exports.getStoreUser = async (req, res, next) => {
+  try {
+    //array of promises
+    const stores = await Promise.all(
+      req.body.stores.map(async store => {
+        //search through user for matching id and grab only email
+        const email = await User.findOne({ _id: store.author }, "-_id email");
+        //mongoose return are not objects so we need to convert to object first
+        store = store.toObject();
+        //set author to email
+        store.author = email.email;
+        return store;
+      })
+    );
+
+    const data = await {
+      isGood: true,
+      stores,
+      msg: "Successfully found stores"
+    };
+    res.status(200).send(data);
+  } catch (errors) {
+    console.log(errors);
+    console.log("inside catch");
+    const data = {
+      isGood: false,
+      msg: "Unable to find stores or appropriate user association."
+    };
+    res.status(401).send(data);
   }
 };

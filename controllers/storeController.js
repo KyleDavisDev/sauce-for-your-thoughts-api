@@ -1,9 +1,11 @@
 const mongoose = require("mongoose");
 const Store = mongoose.model("Store");
+const User = mongoose.model("User");
 const slug = require("slugs"); //Hi there! How are you! --> hi-there-how-are-you
 const multer = require("multer"); //helps uploading images/files
 const jimp = require("jimp"); //helps with resizing photos
 const uuid = require("uuid"); //generated unique identifiers
+const userController = require("./userController.js");
 
 const multerOptions = {
   storage: multer.memoryStorage(),
@@ -168,8 +170,9 @@ exports.editStore = async (req, res) => {
   }
 };
 
-exports.getStores = async (req, res) => {
+exports.getStores = async (req, res, next) => {
   try {
+    //get all stores
     const stores = await Store.find();
 
     if (!stores) {
@@ -177,8 +180,9 @@ exports.getStores = async (req, res) => {
       return res.send(data);
     }
 
-    const data = { isGood: true, stores, msg: "Successfully found stores" };
-    return res.send(data);
+    //add store to body
+    req.body.stores = stores;
+    next(); //go to userController.getStoreUser
   } catch (err) {
     const data = { isGood: false, msg: "Unable to find any stores" };
     res.send(data);

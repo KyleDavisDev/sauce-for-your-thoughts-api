@@ -54,7 +54,11 @@ router.post(
 
 //1. Return array of store objects
 //(Note: will likely change from method get to method post soon)
-router.get("/api/stores/get", storeController.getStores);
+router.get(
+  "/api/stores/get",
+  storeController.getStores,
+  userController.getStoreUser
+);
 
 router.get("/api/stores/search/:q", storeController.searchStores);
 
@@ -119,7 +123,8 @@ router.post(
 
 //let react handle rest
 router.get("*", (req, res) => {
-  res.sendFile(`${process.cwd()}/dist/index.html`);
+  // Temp removed since this is just API
+  // res.sendFile(`${process.cwd()}/dist/index.html`);
 });
 
 module.exports = router;
