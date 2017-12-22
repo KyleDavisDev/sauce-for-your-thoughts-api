@@ -83,7 +83,7 @@ router.post("/login", authController.login);
 //1. Validate user
 //2. Return modifable user info
 router.post(
-  "/account/getInfo",
+  "/api/user/getInfo",
   authController.isLoggedIn,
   userController.getUser
 );
