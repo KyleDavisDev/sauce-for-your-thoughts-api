@@ -71,14 +71,14 @@ router.get("/api/tags/:tag/get", storeController.getStoreByTag);
 //2. register the user
 //3. Log user in via JWT
 router.post(
-  "/register",
+  "/api/user/register",
   userController.validateRegister,
   userController.register,
   authController.login
 );
 
 //1. Generate JWT
-router.post("/login", authController.login);
+router.post("/api/user/login", authController.login);
 
 //1. Validate user
 //2. Return modifable user info
@@ -91,7 +91,7 @@ router.post(
 //1. Validate user
 //2. Update user info
 router.post(
-  "/account/update",
+  "/api/user/update",
   authController.isLoggedIn,
   userController.updateUser
 );
@@ -114,7 +114,7 @@ router.post(
 
 //1. Check if token relates to a user
 router.post(
-  "/user/isloggedin",
+  "/api/user/isloggedin",
   authController.isLoggedIn,
   authController.validateToken
 );
