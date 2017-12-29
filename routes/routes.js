@@ -33,7 +33,7 @@ router.get("/api/store/:slug", storeController.getStoreBySlug);
 //1. Verify if user is valid
 //2. Find and return ID-specific store.
 router.post(
-  "/api/store/id/get",
+  "/api/store/get",
   authController.isLoggedIn,
   storeController.getStoreById
 );
@@ -81,7 +81,7 @@ router.post(
 router.post("/api/user/login", authController.login);
 
 //1. Validate user
-//2. Return modifable user info
+//2. Return modifiable user info
 router.post(
   "/api/user/getInfo",
   authController.isLoggedIn,
@@ -94,6 +94,13 @@ router.post(
   "/api/user/update",
   authController.isLoggedIn,
   userController.updateUser
+);
+
+//1. Check if token relates to a user
+router.post(
+  "/api/user/isloggedin",
+  authController.isLoggedIn,
+  authController.validateToken
 );
 
 //1. Find user by email, send email if email is legit or not otherwise, set key and timer for person in DB
@@ -112,12 +119,6 @@ router.post(
   authController.login
 );
 
-//1. Check if token relates to a user
-router.post(
-  "/api/user/isloggedin",
-  authController.isLoggedIn,
-  authController.validateToken
-);
 
 //END API ---
 
