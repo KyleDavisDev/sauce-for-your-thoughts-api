@@ -162,10 +162,20 @@ exports.editStore = async (req, res) => {
       }
     ).exec();
 
-    //send store to grab name and slug and create flash message
-    res.send(store);
+    const data = {
+      isGood: true,
+      msg: "Successfully updated your store.",
+      store
+    };
+    //send store back for user to edit
+    return res.status(200).send(data);
   } catch (err) {
     //go into here if user didn't input name or some other model requirement wasn't met
+    const data = {
+      isGood: false,
+      msg: "Could not update your store.",
+      msg: err.message
+    };
     res.send(err);
   }
 };
