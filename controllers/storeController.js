@@ -180,19 +180,25 @@ exports.editStore = async (req, res) => {
   }
 };
 
-exports.getStores = async (req, res, next) => {
+exports.getStores = async (req, res) => {
   try {
     //get all stores
-    const stores = await Store.find();
+    let stores = await Store.find().populate("author");
 
     if (!stores) {
       const data = { isGood: false, msg: "Unable to find any stores" };
-      return res.send(data);
+      return res.status(400).send(data);
     }
 
-    //add store to body
-    req.body.stores = stores;
-    next(); //go to userController.getStoreUser
+    //replace stores.author with stores.author.email
+    stores = stores.map(store => {
+      store = store.toObject();
+      store.author = store.author.email;
+      return store;
+    });
+    const data = { isGood: true, stores, msg: "Found stores" };
+
+    return res.status(200).send(data);
   } catch (err) {
     const data = { isGood: false, msg: "Unable to find any stores" };
     res.send(data);

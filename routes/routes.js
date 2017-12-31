@@ -54,11 +54,7 @@ router.post(
 
 //1. Return array of store objects
 //(Note: will likely change from method get to method post soon)
-router.get(
-  "/api/stores/get",
-  storeController.getStores,
-  userController.getStoreUser
-);
+router.get("/api/stores/get", storeController.getStores);
 
 router.get("/api/stores/search/:q", storeController.searchStores);
 
