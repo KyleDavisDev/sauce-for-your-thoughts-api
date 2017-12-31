@@ -28,12 +28,12 @@ router.post(
 
 //1. Use :slug param to find and return store
 //(Note: will likely change from method get to method post soon)
-router.get("/api/store/:slug", storeController.getStoreBySlug);
+router.get("/api/store/get/:slug", storeController.getStoreBySlug);
 
 //1. Verify if user is valid
 //2. Find and return ID-specific store.
 router.post(
-  "/api/store/get",
+  "/api/store/get/id",
   authController.isLoggedIn,
   storeController.getStoreById
 );
