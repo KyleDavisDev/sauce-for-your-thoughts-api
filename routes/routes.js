@@ -56,11 +56,13 @@ router.post(
 //(Note: will likely change from method get to method post soon)
 router.get("/api/stores/get", storeController.getStores);
 
+//1. Use :tag param to return array of store objects
+router.get("/api/stores/get/tag/:tag", storeController.getStoreByTag);
+
+//TODO: Add comment
 router.get("/api/stores/search/:q", storeController.searchStores);
 
-//Tag(s)
-//1. Use :tag param to return array of store objects
-router.get("/api/tags/:tag/get", storeController.getStoreByTag);
+router.get("/api/tags/get", storeController.getTagList);
 
 //User(s)
 //1. Validate the data
