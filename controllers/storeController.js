@@ -248,34 +248,37 @@ exports.getStoreByTag = async (req, res) => {
     //query to get all tags or regex for case insensitive specific ones
     const tagQuery = tag === "all" ? { $exists: true } : new RegExp(tag, "i");
 
-    //dont do anything until both promises are returned
-    const result = await Promise.all([
-      Store.getTagsList(),
-      Store.find({ tags: tagQuery })
-    ]);
+    //find stores that match tags query and grab author object
+    let stores = await Store.find({ tags: tagQuery }).populate("author");
 
-    //send fail message if either promises fail
-    if (!result[0] || !result[1]) {
+    //sanity check
+    if (!stores) {
       const data = {
         isGood: false,
-        msg: "Unable to find tag count or tag-specific stores."
+        msg: "Unable to find tag-specific stores."
       };
-      return res.send(data);
+      return res.status(400).send(data);
     }
+
+    //replace store.author with store.author.email
+    stores = stores.map(store => {
+      store = store.toObject();
+      store.author = store.author.email;
+      return store;
+    });
 
     const data = {
       isGood: true,
-      tags: result[0],
-      stores: result[1],
-      msg: "Successfuly found tag count and tag-specific stores."
+      stores,
+      msg: "Successfuly found tag-specific stores."
     };
-    return res.send(data);
+    return res.status(200).send(data);
   } catch (err) {
     const data = {
       isGood: false,
       msg: "You goof'd it. Try again."
     };
-    return res.send(data);
+    return res.status(400).send(data);
   }
 };
 
