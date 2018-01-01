@@ -62,7 +62,7 @@ router.get("/api/stores/get/tag/:tag", storeController.getStoreByTag);
 //TODO: Add comment
 router.get("/api/stores/search/:q", storeController.searchStores);
 
-router.get("/api/tags/get", storeController.getTagList);
+router.get("/api/tags/get", storeController.getTagsList);
 
 //User(s)
 //1. Validate the data
