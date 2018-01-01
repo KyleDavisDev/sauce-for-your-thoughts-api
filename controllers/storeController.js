@@ -278,3 +278,26 @@ exports.getStoreByTag = async (req, res) => {
     return res.send(data);
   }
 };
+
+exports.getTagsList = async (req, res) => {
+  try {
+    //get tags from Store aggregate
+    const tags = await Store.getTagsList();
+
+    //sanity check
+    if (!tags) {
+      const data = { isGood: false, msg: "Could not find any tags!" };
+      return res.status(300).send(data);
+    }
+
+    //send response
+    const data = { isGood: true, tags, msg: "Found the list of tags!" };
+    res.status(200).send(data);
+  } catch (err) {
+    const data = {
+      isGood: false,
+      msg: "Something went horribly, horribly wrong. Please try again! :)"
+    };
+    return res.status(400).send(data);
+  }
+};
