@@ -304,3 +304,43 @@ exports.getTagsList = async (req, res) => {
     return res.status(400).send(data);
   }
 };
+
+exports.mapStores = async (req, res) => {
+  try {
+    const coordinates = [req.params.lng, req.params.lat].map(parseFloat);
+
+    const q = {
+      location: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates
+          },
+          $maxDistance: 10000 //10 kilometers
+        }
+      }
+    };
+
+    const stores = await Store.find(q)
+      .select("name location description slug -_id")
+      .limit(10);
+    console.log(stores);
+
+    if (!stores) {
+      const data = {
+        isGood: false,
+        msg: "Could not find any stores near that location"
+      };
+      res.status(200).send(data);
+    }
+
+    const data = {
+      isGood: true,
+      stores,
+      msg: `Found ${stores.length} store(s).`
+    };
+    res.status(200).send(data);
+  } catch (err) {
+    console.log(err);
+  }
+};
