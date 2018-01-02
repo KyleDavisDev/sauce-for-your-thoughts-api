@@ -48,6 +48,9 @@ storeSchema.index({
   description: "text"
 });
 
+//index location for easier geosearching
+storeSchema.index({ location: "2dsphere" });
+
 storeSchema.pre("save", async function(next) {
   if (!this.isModified("name")) {
     next(); //skip generating new slug
