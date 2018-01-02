@@ -62,6 +62,9 @@ router.get("/api/stores/get/tag/:tag", storeController.getStoreByTag);
 //TODO: Add comment
 router.get("/api/stores/search/:q", storeController.searchStores);
 
+//
+router.get("/api/stores/map/lng=:lng&lat=:lat", storeController.mapStores);
+
 router.get("/api/tags/get", storeController.getTagsList);
 
 //User(s)
