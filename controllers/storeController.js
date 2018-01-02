@@ -324,7 +324,6 @@ exports.mapStores = async (req, res) => {
     const stores = await Store.find(q)
       .select("name location description slug -_id")
       .limit(10);
-    console.log(stores);
 
     if (!stores) {
       const data = {
