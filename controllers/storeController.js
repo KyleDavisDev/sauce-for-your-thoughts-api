@@ -308,6 +308,13 @@ exports.getTagsList = async (req, res) => {
 exports.mapStores = async (req, res) => {
   try {
     const coordinates = [req.params.lng, req.params.lat].map(parseFloat);
+    if (coordinates[0] === undefined || coordinates[1] === undefined) {
+      const data = {
+        isGood: false,
+        msg: "You did not supply sufficient api arguements"
+      };
+      return res.status(200).send(data);
+    }
 
     const q = {
       location: {
@@ -340,6 +347,10 @@ exports.mapStores = async (req, res) => {
     };
     res.status(200).send(data);
   } catch (err) {
-    console.log(err);
+    const data = {
+      isGood: false,
+      msg: "You did not supply sufficient api arguements"
+    };
+    return res.status(400).send(data);
   }
 };
