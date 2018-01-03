@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const Store = mongoose.model("Store");
+const Sauce = mongoose.model("Sauce");
 const User = mongoose.model("User");
 const slug = require("slugs"); //Hi there! How are you! --> hi-there-how-are-you
 const multer = require("multer"); //helps uploading images/files
@@ -68,17 +68,17 @@ exports.stringToProperType = (req, res, next) => {
   next(); //next middleware
 };
 
-exports.addStore = async (req, res) => {
+exports.addSauce = async (req, res) => {
   try {
     req.body.author = req.body._id;
     req.body._id = undefined;
-    const store = await new Store(req.body).save();
+    const sauce = await new Sauce(req.body).save();
 
     //send back slug so we can link to it for user to rate
     const data = {
       isGood: true,
-      msg: "Store successfully added!",
-      slug: store.slug
+      msg: "Sauce successfully added!",
+      slug: sauce.slug
     };
     res.send(data);
   } catch (err) {
@@ -86,60 +86,60 @@ exports.addStore = async (req, res) => {
 
     const data = {
       isGood: false,
-      msg: "There was an issue saving your store. Try again"
+      msg: "There was an issue saving your sauce. Try again"
     };
     res.send(data);
   }
 };
 
-exports.getStoreBySlug = async (req, res) => {
+exports.getSauceBySlug = async (req, res) => {
   try {
-    const store = await Store.findOne({ slug: req.params.slug }).populate(
+    const sauce = await Sauce.findOne({ slug: req.params.slug }).populate(
       "author"
     );
 
-    //split author off from store
-    const { author } = store;
-    store.author = undefined;
+    //split author off from sauce
+    const { author } = sauce;
+    sauce.author = undefined;
 
-    //send store and only author name
-    const data = { isGood: true, store, author: { name: author.name } };
+    //send sauce and only author name
+    const data = { isGood: true, sauce, author: { name: author.name } };
     res.send(data);
   } catch (err) {
     res.send(err);
   }
 };
 
-exports.getStoreById = async (req, res) => {
+exports.getSauceById = async (req, res) => {
   try {
-    const store = await Store.findOne({ _id: req.body.storeID });
+    const sauce = await Sauce.findOne({ _id: req.body.sauceID });
 
-    //make sure user is actual "owner" of store
-    if (!store.author.equals(req.body._id)) {
+    //make sure user is actual "owner" of sauce
+    if (!sauce.author.equals(req.body._id)) {
       const data = {
         isGood: false,
-        msg: "You must be the owner to edit the store."
+        msg: "You must be the owner to edit the sauce."
       };
       return res.send(data);
     }
 
     const data = {
       isGood: true,
-      msg: "Successfully found your store.",
-      store
+      msg: "Successfully found your sauce.",
+      sauce
     };
-    //send store back for user to edit
+    //send sauce back for user to edit
     return res.send(data);
   } catch (err) {
     const data = {
       isGood: false,
-      msg: "Something broke or your store was unable to be found, Try again."
+      msg: "Something broke or your sauce was unable to be found, Try again."
     };
     return res.send(data);
   }
 };
 
-exports.editStore = async (req, res) => {
+exports.editSauce = async (req, res) => {
   try {
     //generate new slug
     req.body.slug = slug(req.body.name);
@@ -147,69 +147,69 @@ exports.editStore = async (req, res) => {
     //set location data to be point
     req.body.location.type = "Point";
 
-    //set _id to be store's ID instead of person's ID
+    //set _id to be sauce's ID instead of person's ID
     //remove person's ID from req.body
-    req.body._id = req.body.storeID;
-    req.body.storeID = undefined;
+    req.body._id = req.body.sauceID;
+    req.body.sauceID = undefined;
 
-    //find store by _id and update
-    const store = await Store.findOneAndUpdate(
+    //find sauce by _id and update
+    const sauce = await Sauce.findOneAndUpdate(
       { _id: req.body._id },
       req.body,
       {
-        new: true, //return new store instead of old one -- we want updated data returned
+        new: true, //return new sauce instead of old one -- we want updated data returned
         runValidators: true //force model to be sure required fields are still there
       }
     ).exec();
 
     const data = {
       isGood: true,
-      msg: "Successfully updated your store.",
-      store
+      msg: "Successfully updated your sauce.",
+      sauce
     };
-    //send store back for user to edit
+    //send sauce back for user to edit
     return res.status(200).send(data);
   } catch (err) {
     //go into here if user didn't input name or some other model requirement wasn't met
     const data = {
       isGood: false,
-      msg: "Could not update your store.",
+      msg: "Could not update your sauce.",
       msg: err.message
     };
     res.send(err);
   }
 };
 
-exports.getStores = async (req, res) => {
+exports.getSauces = async (req, res) => {
   try {
-    //get all stores
-    let stores = await Store.find().populate("author");
+    //get all sauces
+    let sauces = await Sauce.find().populate("author");
 
-    if (!stores) {
-      const data = { isGood: false, msg: "Unable to find any stores" };
+    if (!sauces) {
+      const data = { isGood: false, msg: "Unable to find any sauces" };
       return res.status(400).send(data);
     }
 
-    //replace stores.author with stores.author.email
-    stores = stores.map(store => {
-      store = store.toObject();
-      store.author = store.author.email;
-      return store;
+    //replace sauces.author with sauces.author.email
+    sauces = sauces.map(sauce => {
+      sauce = sauce.toObject();
+      sauce.author = sauce.author.email;
+      return sauce;
     });
-    const data = { isGood: true, stores, msg: "Found stores" };
+    const data = { isGood: true, sauces, msg: "Found sauces" };
 
     return res.status(200).send(data);
   } catch (err) {
-    const data = { isGood: false, msg: "Unable to find any stores" };
+    const data = { isGood: false, msg: "Unable to find any sauces" };
     res.send(data);
   }
 };
 
 //TODO: Filter/sanitize user input
-exports.searchStores = async (req, res) => {
+exports.searchSauces = async (req, res) => {
   try {
     //search index by query param and score by relevancy
-    const stores = await Store.find(
+    const sauces = await Sauce.find(
       {
         $text: {
           $search: req.params.q
@@ -222,18 +222,18 @@ exports.searchStores = async (req, res) => {
       .sort({ score: { $meta: "textScore" } })
       .limit(5);
 
-    if (!stores || stores.length === 0) {
+    if (!sauces || sauces.length === 0) {
       const data = {
         isGood: false,
-        msg: `Unable to find any stores!`
+        msg: `Unable to find any sauces!`
       };
       res.send(data);
     }
 
     const data = {
       isGood: true,
-      msg: `Successfully found ${stores.length} stores!`,
-      stores
+      msg: `Successfully found ${sauces.length} sauces!`,
+      sauces
     };
     return res.send(data);
   } catch (err) {
@@ -241,36 +241,36 @@ exports.searchStores = async (req, res) => {
   }
 };
 
-exports.getStoreByTag = async (req, res) => {
+exports.getSauceByTag = async (req, res) => {
   try {
     //get tag from param
     const tag = req.params.tag.toLowerCase();
     //query to get all tags or regex for case insensitive specific ones
     const tagQuery = tag === "all" ? { $exists: true } : new RegExp(tag, "i");
 
-    //find stores that match tags query and grab author object
-    let stores = await Store.find({ tags: tagQuery }).populate("author");
+    //find sauces that match tags query and grab author object
+    let sauces = await Sauce.find({ tags: tagQuery }).populate("author");
 
     //sanity check
-    if (!stores) {
+    if (!sauces) {
       const data = {
         isGood: false,
-        msg: "Unable to find tag-specific stores."
+        msg: "Unable to find tag-specific sauces."
       };
       return res.status(400).send(data);
     }
 
-    //replace store.author with store.author.email
-    stores = stores.map(store => {
-      store = store.toObject();
-      store.author = store.author.email;
-      return store;
+    //replace sauce.author with sauce.author.email
+    sauces = sauces.map(sauce => {
+      sauce = sauce.toObject();
+      sauce.author = sauce.author.email;
+      return sauce;
     });
 
     const data = {
       isGood: true,
-      stores,
-      msg: "Successfuly found tag-specific stores."
+      sauces,
+      msg: "Successfuly found tag-specific sauces."
     };
     return res.status(200).send(data);
   } catch (err) {
@@ -284,8 +284,8 @@ exports.getStoreByTag = async (req, res) => {
 
 exports.getTagsList = async (req, res) => {
   try {
-    //get tags from Store aggregate
-    const tags = await Store.getTagsList();
+    //get tags from Sauce aggregate
+    const tags = await Sauce.getTagsList();
 
     //sanity check
     if (!tags) {
@@ -305,7 +305,7 @@ exports.getTagsList = async (req, res) => {
   }
 };
 
-exports.mapStores = async (req, res) => {
+exports.mapSauces = async (req, res) => {
   try {
     const coordinates = [req.params.lng, req.params.lat].map(parseFloat);
     if (coordinates[0] === undefined || coordinates[1] === undefined) {
@@ -328,22 +328,22 @@ exports.mapStores = async (req, res) => {
       }
     };
 
-    const stores = await Store.find(q)
+    const sauces = await Sauce.find(q)
       .select("name location description slug -_id")
       .limit(10);
 
-    if (!stores) {
+    if (!sauces) {
       const data = {
         isGood: false,
-        msg: "Could not find any stores near that location"
+        msg: "Could not find any sauces near that location"
       };
       res.status(200).send(data);
     }
 
     const data = {
       isGood: true,
-      stores,
-      msg: `Found ${stores.length} store(s).`
+      sauces,
+      msg: `Found ${sauces.length} sauce(s).`
     };
     res.status(200).send(data);
   } catch (err) {

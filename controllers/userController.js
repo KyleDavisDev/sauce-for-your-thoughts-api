@@ -97,25 +97,25 @@ exports.updateUser = async (req, res) => {
   }
 };
 
-exports.getStoreUser = async (req, res, next) => {
+exports.getSauceUser = async (req, res, next) => {
   try {
     //array of promises
-    const stores = await Promise.all(
-      req.body.stores.map(async store => {
+    const sauces = await Promise.all(
+      req.body.sauces.map(async sauce => {
         //search through user for matching id and grab only email
-        const email = await User.findOne({ _id: store.author }, "-_id email");
+        const email = await User.findOne({ _id: sauce.author }, "-_id email");
         //mongoose return are not objects so we need to convert to object first
-        store = store.toObject();
+        sauce = sauce.toObject();
         //set author to email
-        store.author = email.email;
-        return store;
+        sauce.author = email.email;
+        return sauce;
       })
     );
 
     const data = await {
       isGood: true,
-      stores,
-      msg: "Successfully found stores"
+      sauces,
+      msg: "Successfully found sauces"
     };
     res.status(200).send(data);
   } catch (errors) {
@@ -123,7 +123,7 @@ exports.getStoreUser = async (req, res, next) => {
     console.log("inside catch");
     const data = {
       isGood: false,
-      msg: "Unable to find stores or appropriate user association."
+      msg: "Unable to find sauces or appropriate user association."
     };
     res.status(401).send(data);
   }

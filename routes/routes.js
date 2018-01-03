@@ -2,13 +2,13 @@ const express = require("express");
 const router = express.Router();
 
 //grab controllers
-const storeController = require("../controllers/storeController.js");
+const sauceController = require("../controllers/sauceController.js");
 const userController = require("../controllers/userController.js");
 const authController = require("../controllers/authController.js");
 
 //APIs here -----
 
-//Store(s)
+//Sauce(s)
 //upload must be called first for post that are "multipart/form-data"
 //multer will put data object onto req.body like normal
 
@@ -18,24 +18,24 @@ const authController = require("../controllers/authController.js");
 //4. Convert req.body data to be proper format for DB
 //5. Write to DB
 router.post(
-  "/api/store/add",
-  storeController.upload,
+  "/api/sauce/add",
+  sauceController.upload,
   authController.isLoggedIn,
-  storeController.resize,
-  storeController.stringToProperType,
-  storeController.addStore
+  sauceController.resize,
+  sauceController.stringToProperType,
+  sauceController.addSauce
 );
 
-//1. Use :slug param to find and return store
+//1. Use :slug param to find and return sauce
 //(Note: will likely change from method get to method post soon)
-router.get("/api/store/get/:slug", storeController.getStoreBySlug);
+router.get("/api/sauce/get/:slug", sauceController.getSauceBySlug);
 
 //1. Verify if user is valid
-//2. Find and return ID-specific store.
+//2. Find and return ID-specific sauce.
 router.post(
-  "/api/store/get/id",
+  "/api/sauce/get/id",
   authController.isLoggedIn,
-  storeController.getStoreById
+  sauceController.getSauceById
 );
 
 //1. Check mimetype of image and set req.body
@@ -44,28 +44,28 @@ router.post(
 //4. Conver req.body data to be proper format for DB
 //5. Write to DB
 router.post(
-  "/api/store/update",
-  storeController.upload,
+  "/api/sauce/update",
+  sauceController.upload,
   authController.isLoggedIn,
-  storeController.resize,
-  storeController.stringToProperType,
-  storeController.editStore
+  sauceController.resize,
+  sauceController.stringToProperType,
+  sauceController.editSauce
 );
 
-//1. Return array of store objects
+//1. Return array of sauce objects
 //(Note: will likely change from method get to method post soon)
-router.get("/api/stores/get", storeController.getStores);
+router.get("/api/sauces/get", sauceController.getSauces);
 
-//1. Use :tag param to return array of store objects
-router.get("/api/stores/get/tag/:tag", storeController.getStoreByTag);
+//1. Use :tag param to return array of sauce objects
+router.get("/api/sauces/get/tag/:tag", sauceController.getSauceByTag);
 
 //TODO: Add comment
-router.get("/api/stores/search/:q", storeController.searchStores);
+router.get("/api/sauces/search/:q", sauceController.searchSauces);
 
 //
-router.get("/api/stores/map/lng=:lng&lat=:lat", storeController.mapStores);
+router.get("/api/sauces/map/lng=:lng&lat=:lat", sauceController.mapSauces);
 
-router.get("/api/tags/get", storeController.getTagsList);
+router.get("/api/tags/get", sauceController.getTagsList);
 
 //User(s)
 //1. Validate the data

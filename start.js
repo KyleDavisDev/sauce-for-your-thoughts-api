@@ -11,7 +11,7 @@ mongoose.connection.on("error", error => {
 });
 
 //import models --only need to do once per model
-require("./models/Store.js");
+require("./models/Sauce.js");
 require("./models/User.js");
 
 //Start the app

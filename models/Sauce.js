@@ -2,11 +2,11 @@ const mongoose = require("mongoose");
 mongoose.Promise = global.Promise; //ES6 promise
 const slug = require("slugs"); //Hi there! How are you! --> hi-there-how-are-you
 
-const storeSchema = new mongoose.Schema({
+const sauceSchema = new mongoose.Schema({
   name: {
     type: String,
     trim: true,
-    required: "Please enter a store name!"
+    required: "Please enter a sauce name!"
   },
   slug: String,
   description: {
@@ -43,15 +43,15 @@ const storeSchema = new mongoose.Schema({
 });
 
 //index name and desc for faster lookups
-storeSchema.index({
+sauceSchema.index({
   name: "text",
   description: "text"
 });
 
 //index location for easier geosearching
-storeSchema.index({ location: "2dsphere" });
+sauceSchema.index({ location: "2dsphere" });
 
-storeSchema.pre("save", async function(next) {
+sauceSchema.pre("save", async function(next) {
   if (!this.isModified("name")) {
     next(); //skip generating new slug
     return; //stop function
@@ -59,12 +59,12 @@ storeSchema.pre("save", async function(next) {
 
   this.slug = slug(this.name); //take name and run slug function
 
-  //find if any other stores have the same slug and incriment number if there are any
+  //find if any other sauces have the same slug and incriment number if there are any
   const slugRegEx = new RegExp(`^(${this.slug})((-[0-9]*$)?)$`, "i");
   try {
-    const storesWithSlug = await this.constructor.find({ slug: slugRegEx });
-    if (storesWithSlug.length) {
-      this.slug = `${this.slug}-${storesWithSlug.length + 1}`;
+    const saucesWithSlug = await this.constructor.find({ slug: slugRegEx });
+    if (saucesWithSlug.length) {
+      this.slug = `${this.slug}-${saucesWithSlug.length + 1}`;
     }
     next();
   } catch (err) {
@@ -74,9 +74,9 @@ storeSchema.pre("save", async function(next) {
   next();
 });
 
-storeSchema.statics.getTagsList = function() {
-  //split each store into an instance with a single tag as it's "tag" property
-  //group stores by the tag id, create new key called "count" and +1 to the $sum property
+sauceSchema.statics.getTagsList = function() {
+  //split each sauce into an instance with a single tag as it's "tag" property
+  //group sauces by the tag id, create new key called "count" and +1 to the $sum property
   //sort by most popular descending
   return this.aggregate([
     { $unwind: "$tags" },
@@ -85,4 +85,4 @@ storeSchema.statics.getTagsList = function() {
   ]);
 };
 
-module.exports = mongoose.model("Store", storeSchema);
+module.exports = mongoose.model("Sauce", sauceSchema);
