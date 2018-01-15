@@ -62,9 +62,6 @@ router.get("/api/sauces/get/tag/:tag", sauceController.getSauceByTag);
 //TODO: Add comment
 router.get("/api/sauces/search/:q", sauceController.searchSauces);
 
-//
-router.get("/api/sauces/map/lng=:lng&lat=:lat", sauceController.mapSauces);
-
 router.get("/api/tags/get", sauceController.getTagsList);
 
 //User(s)

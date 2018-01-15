@@ -18,22 +18,6 @@ const sauceSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  location: {
-    type: {
-      type: String,
-      default: "Point"
-    },
-    coordinates: [
-      {
-        type: Number,
-        required: "You must supply longitude and latitude"
-      }
-    ],
-    address: {
-      type: String,
-      required: "You must supply an address!"
-    }
-  },
   photo: String,
   author: {
     type: mongoose.Schema.ObjectId,
@@ -51,7 +35,7 @@ sauceSchema.index({
 //index location for easier geosearching
 sauceSchema.index({ location: "2dsphere" });
 
-sauceSchema.pre("save", async function(next) {
+sauceSchema.pre("save", async function (next) {
   if (!this.isModified("name")) {
     next(); //skip generating new slug
     return; //stop function
@@ -74,7 +58,7 @@ sauceSchema.pre("save", async function(next) {
   next();
 });
 
-sauceSchema.statics.getTagsList = function() {
+sauceSchema.statics.getTagsList = function () {
   //split each sauce into an instance with a single tag as it's "tag" property
   //group sauces by the tag id, create new key called "count" and +1 to the $sum property
   //sort by most popular descending
