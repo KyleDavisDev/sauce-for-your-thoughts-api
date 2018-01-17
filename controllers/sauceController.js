@@ -212,7 +212,7 @@ exports.searchSauces = async (req, res) => {
         isGood: false,
         msg: `Unable to find any sauces!`
       };
-      res.send(data);
+      return res.status(300).send(data);
     }
 
     const data = {
@@ -220,9 +220,9 @@ exports.searchSauces = async (req, res) => {
       msg: `Successfully found ${sauces.length} sauces!`,
       sauces
     };
-    return res.send(data);
+    return res.status(200).send(data);
   } catch (err) {
-    return res.send(err);
+    return res.status(400).send(err);
   }
 };
 
