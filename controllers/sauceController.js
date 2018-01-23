@@ -47,7 +47,6 @@ exports.resize = async (req, res, next) => {
 //when using FormData, which is needed to upload image, all data gets turned into
 //string so we need to reformat to match model
 exports.stringToProperType = (req, res, next) => {
-
   if (typeof req.body.tags === "string") {
     req.body.tags = req.body.tags.split(",");
   }
@@ -178,15 +177,17 @@ exports.getSauces = async (req, res) => {
     sauces = sauces.map(sauce => {
       //sauce are not objects so must convert first to be able to write to it
       sauce = sauce.toObject();
+      sauce.heart = sauce.author.hearts.includes(sauce._id);
       sauce.author = sauce.author.email;
       return sauce;
     });
+
     const data = { isGood: true, sauces, msg: "Found sauces" };
 
     return res.status(200).send(data);
   } catch (err) {
     const data = { isGood: false, msg: "Unable to find any sauces" };
-    res.send(data);
+    res.status(400).send(data);
   }
 };
 
