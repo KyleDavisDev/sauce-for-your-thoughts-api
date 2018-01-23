@@ -24,6 +24,10 @@ const userSchema = new mongoose.Schema({
     required: "Please supply a name",
     trim: true
   },
+  hearts: [{
+    type: mongoose.Schema.ObjectId,
+    ref: "Sauce"
+  }],
   resetPasswordToken: String,
   resetPasswordExpires: Date
 });
