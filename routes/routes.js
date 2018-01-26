@@ -54,7 +54,11 @@ router.post(
 
 //1. Return array of sauce objects
 //(Note: will likely change from method get to method post soon)
-router.get("/api/sauces/get", sauceController.getSauces);
+router.post(
+  "/api/sauces/get",
+  authController.isLoggedIn,
+  sauceController.getSauces
+);
 
 //1. Use :tag param to return array of sauce objects
 router.get("/api/sauces/get/tag/:tag", sauceController.getSauceByTag);
@@ -99,6 +103,22 @@ router.post(
   "/api/user/isloggedin",
   authController.isLoggedIn,
   authController.validateToken
+);
+
+//1. Check is token is legit
+//2. Add sauce.ID to user.hearts
+router.post(
+  "/api/user/heartSauce",
+  authController.isLoggedIn,
+  userController.heartSauce
+);
+
+//1. Check is token is legit
+//2. remove sauce.ID to user.hearts
+router.post(
+  "/api/user/heartSauce",
+  authController.isLoggedIn,
+  userController.unHeartSauce
 );
 
 //1. Find user by email, send email if email is legit or not otherwise, set key and timer for person in DB

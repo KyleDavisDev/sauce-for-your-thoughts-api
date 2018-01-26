@@ -6,7 +6,7 @@ const mail = require("../handlers/mail.js");
 
 exports.login = (req, res) => {
   // generate the authenticate method and pass the req/res
-  passport.authenticate("local", function (err, user, info) {
+  passport.authenticate("local", function(err, user, info) {
     if (err) {
       return res.status(401).send(err);
     }
@@ -93,7 +93,7 @@ exports.forgot = async (req, res) => {
     //create URL and email to user email
     const resetURL = `http://localhost:8080/account/reset/${
       user.resetPasswordToken
-      }`;
+    }`;
     await mail.send({
       user,
       subject: "Password reset",

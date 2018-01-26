@@ -128,3 +128,66 @@ exports.getSauceUser = async (req, res, next) => {
     res.status(401).send(data);
   }
 };
+
+exports.heartSauce = async (req, res) => {
+  try {
+    const user = await User.findOneAndUpdate(
+      {
+        _id: req.body._id,
+        hearts: { $nin: [req.body.sauce.ID] }
+      },
+      { $push: { hearts: req.body.sauce.ID } },
+      { new: true, runValidators: true, context: "query" }
+    );
+
+    if (user === null) {
+      const data = {
+        isGood: false,
+        msg:
+          "This sauce is already hearted. Try hearting another sauce instead!"
+      };
+      return res.status(300).send(data);
+    }
+
+    return res.status(200).send({
+      isGood: true,
+      msg: `Sauce ${req.body.sauce.ID} has been hearted.`,
+      data: { sauce: { ID: req.body.sauce.ID } }
+    });
+  } catch (err) {
+    //TODO: Better error handling
+    return res.status(400).send(err);
+  }
+};
+
+exports.unHeartSauce = async (req, res) => {
+  try {
+    const user = await User.findOneAndUpdate(
+      {
+        id: req.body._id,
+        hearts: { $in: [req.body.sauce.ID] }
+      },
+      { $pull: { hearts: { $in: [req.body.sauce.ID] } } },
+      { new: true, runValidators: true, context: "query" }
+    );
+
+    if (user === null) {
+      const data = {
+        isGood: false,
+        msg:
+          "Unable to unheart the sauce or the sauce is not associated with this person"
+      };
+      return res.status(300).send(data);
+    }
+
+    const data = {
+      isGood: true,
+      msg: "Removed sauce from person.",
+      sauce: { ID: req.body.sauce.ID }
+    };
+    return res.status(200).send(data);
+  } catch (err) {
+    //TODO: Better error handling
+    return res.status(400).send(err);
+  }
+};
