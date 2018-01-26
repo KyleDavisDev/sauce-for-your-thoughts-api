@@ -168,6 +168,11 @@ exports.getSauces = async (req, res) => {
     //get all sauces
     let sauces = await Sauce.find().populate("author");
 
+    //get user hearts
+    let user = await User.findOne({ _id: req.body._id }, { _id: 0, hearts: 1 });
+    console.log(user);
+    console.log(req.body._id);
+
     if (!sauces) {
       const data = { isGood: false, msg: "Unable to find any sauces" };
       return res.status(400).send(data);
