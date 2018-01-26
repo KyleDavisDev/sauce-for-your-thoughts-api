@@ -52,7 +52,8 @@ router.post(
   sauceController.editSauce
 );
 
-//1. Return array of sauce objects
+//1. Make sure user is legit
+//2. Return array of sauce objects
 //(Note: will likely change from method get to method post soon)
 router.post(
   "/api/sauces/get",
@@ -116,7 +117,7 @@ router.post(
 //1. Check is token is legit
 //2. remove sauce.ID to user.hearts
 router.post(
-  "/api/user/heartSauce",
+  "/api/user/unHeartSauce",
   authController.isLoggedIn,
   userController.unHeartSauce
 );

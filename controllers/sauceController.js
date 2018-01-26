@@ -170,8 +170,6 @@ exports.getSauces = async (req, res) => {
 
     //get user hearts
     let user = await User.findOne({ _id: req.body._id }, { _id: 0, hearts: 1 });
-    console.log(user);
-    console.log(req.body._id);
 
     if (!sauces) {
       const data = { isGood: false, msg: "Unable to find any sauces" };
@@ -179,10 +177,11 @@ exports.getSauces = async (req, res) => {
     }
 
     //replace sauces.author with sauces.author.email
+    //add bool heart if the sauce _id is inside user.hearts array
     sauces = sauces.map(sauce => {
       //sauce are not objects so must convert first to be able to write to it
       sauce = sauce.toObject();
-      sauce.heart = sauce.author.hearts.includes(sauce._id);
+      sauce.heart = user.hearts.indexOf(sauce._id) !== -1;
       sauce.author = sauce.author.email;
       return sauce;
     });

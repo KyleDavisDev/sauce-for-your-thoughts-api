@@ -133,10 +133,9 @@ exports.heartSauce = async (req, res) => {
   try {
     const user = await User.findOneAndUpdate(
       {
-        _id: req.body._id,
-        hearts: { $nin: [req.body.sauce.ID] }
+        _id: req.body._id
       },
-      { $push: { hearts: req.body.sauce.ID } },
+      { $addToSet: { hearts: req.body.sauce._id } },
       { new: true, runValidators: true, context: "query" }
     );
 
@@ -151,8 +150,8 @@ exports.heartSauce = async (req, res) => {
 
     return res.status(200).send({
       isGood: true,
-      msg: `Sauce ${req.body.sauce.ID} has been hearted.`,
-      data: { sauce: { ID: req.body.sauce.ID } }
+      msg: `Sauce ${req.body.sauce._id} has been hearted.`,
+      data: { sauce: { _id: req.body.sauce._id } }
     });
   } catch (err) {
     //TODO: Better error handling
@@ -162,13 +161,15 @@ exports.heartSauce = async (req, res) => {
 
 exports.unHeartSauce = async (req, res) => {
   try {
+    //remove sauce._id from user.hearts array
     const user = await User.findOneAndUpdate(
       {
-        id: req.body._id,
-        hearts: { $in: [req.body.sauce.ID] }
+        _id: req.body._id
       },
-      { $pull: { hearts: { $in: [req.body.sauce.ID] } } },
-      { new: true, runValidators: true, context: "query" }
+      {
+        $pull: { hearts: req.body.sauce._id }
+      },
+      { new: true }
     );
 
     if (user === null) {
@@ -183,11 +184,12 @@ exports.unHeartSauce = async (req, res) => {
     const data = {
       isGood: true,
       msg: "Removed sauce from person.",
-      sauce: { ID: req.body.sauce.ID }
+      data: { sauce: { _id: req.body.sauce._id } }
     };
     return res.status(200).send(data);
   } catch (err) {
     //TODO: Better error handling
+    console.log(err);
     return res.status(400).send(err);
   }
 };
