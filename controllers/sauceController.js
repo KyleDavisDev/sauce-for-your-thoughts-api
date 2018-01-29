@@ -233,13 +233,21 @@ exports.searchSauces = async (req, res) => {
 
 exports.getSauceByTag = async (req, res) => {
   try {
-    //get tag from param
-    const tag = req.params.tag.toLowerCase();
+    //get tag from param or passed through body
+    const tag = req.body.tag.toLowerCase();
     //query to get all tags or regex for case insensitive specific ones
     const tagQuery = tag === "all" ? { $exists: true } : new RegExp(tag, "i");
 
     //find sauces that match tags query and grab author object
     let sauces = await Sauce.find({ tags: tagQuery }).populate("author");
+
+    //check to see if request is from logged in user and find the appropriate user
+    if (req.body._id) {
+      var user = await User.findOne(
+        { _id: req.body._id },
+        { _id: 0, hearts: 1 }
+      );
+    }
 
     //sanity check
     if (!sauces) {
@@ -251,9 +259,11 @@ exports.getSauceByTag = async (req, res) => {
     }
 
     //replace sauce.author with sauce.author.email
+    //add bool heart value if sauce is liked by user
     sauces = sauces.map(sauce => {
       sauce = sauce.toObject();
       sauce.author = sauce.author.email;
+      sauce.heart = user !== undefined && user.hearts.indexOf(sauce._id) !== -1;
       return sauce;
     });
 
@@ -268,6 +278,7 @@ exports.getSauceByTag = async (req, res) => {
       isGood: false,
       msg: "You goof'd it. Try again."
     };
+    console.log(err);
     return res.status(400).send(data);
   }
 };

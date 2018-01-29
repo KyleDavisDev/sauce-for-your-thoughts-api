@@ -61,12 +61,18 @@ router.post(
   sauceController.getSauces
 );
 
-//1. Use :tag param to return array of sauce objects
-router.get("/api/sauces/get/tag/:tag", sauceController.getSauceByTag);
+//1. Check if user is legit
+//2. return sauces by specific tag
+router.post(
+  "/api/sauces/get/by/tag/",
+  authController.isLoggedIn,
+  sauceController.getSauceByTag
+);
 
 //TODO: Add comment
 router.get("/api/sauces/search/:q", sauceController.searchSauces);
 
+// 1. Return array of tags
 router.get("/api/tags/get", sauceController.getTagsList);
 
 //User(s)
