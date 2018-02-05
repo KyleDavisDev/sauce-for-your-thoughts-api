@@ -13,6 +13,7 @@ mongoose.connection.on("error", error => {
 //import models --only need to do once per model
 require("./models/Sauce.js");
 require("./models/User.js");
+require("./models/Review.js");
 
 //Start the app
 const app = require("./app.js");
