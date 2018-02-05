@@ -113,19 +113,11 @@ router.post(
 );
 
 //1. Check is token is legit
-//2. Add sauce.ID to user.hearts
+//2. Toggle sauce.ID in user.hearts
 router.post(
-  "/api/user/heartSauce",
+  "/api/user/toggleSauce",
   authController.isLoggedIn,
-  userController.heartSauce
-);
-
-//1. Check is token is legit
-//2. remove sauce.ID to user.hearts
-router.post(
-  "/api/user/unHeartSauce",
-  authController.isLoggedIn,
-  userController.unHeartSauce
+  userController.toggleHeart
 );
 
 //1. Find user by email, send email if email is legit or not otherwise, set key and timer for person in DB

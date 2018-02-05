@@ -129,64 +129,34 @@ exports.getSauceUser = async (req, res, next) => {
   }
 };
 
-exports.heartSauce = async (req, res) => {
+exports.toggleHeart = async (req, res) => {
   try {
-    const user = await User.findOneAndUpdate(
-      {
-        _id: req.body._id
-      },
-      { $addToSet: { hearts: req.body.sauce._id } },
-      { new: true, runValidators: true, context: "query" }
-    );
-
-    if (user === null) {
-      const data = {
-        isGood: false,
-        msg:
-          "This sauce is already hearted. Try hearting another sauce instead!"
-      };
-      return res.status(300).send(data);
-    }
-
-    return res.status(200).send({
-      isGood: true,
-      msg: `Sauce ${req.body.sauce._id} has been hearted.`,
-      data: { sauce: { _id: req.body.sauce._id } }
+    //grab all user hearts
+    //turn mongodb results to workable objects
+    const user = await User.findById(req.body._id, {
+      _id: 0,
+      hearts: 1
     });
-  } catch (err) {
-    //TODO: Better error handling
-    return res.status(400).send(err);
-  }
-};
 
-exports.unHeartSauce = async (req, res) => {
-  try {
-    //remove sauce._id from user.hearts array
-    const user = await User.findOneAndUpdate(
-      {
-        _id: req.body._id
-      },
-      {
-        $pull: { hearts: req.body.sauce._id }
-      },
+    //figure out if we need to remove sauce id from hearts array or add to it
+    const operator = user.hearts
+      .map(x => x.toString())
+      .includes(req.body.sauce._id)
+      ? "$pull"
+      : "$addToSet";
+
+    // update user's hearts
+    await User.findByIdAndUpdate(
+      req.body._id,
+      { [operator]: { hearts: req.body.sauce._id } },
       { new: true }
     );
 
-    if (user === null) {
-      const data = {
-        isGood: false,
-        msg:
-          "Unable to unheart the sauce or the sauce is not associated with this person"
-      };
-      return res.status(300).send(data);
-    }
-
-    const data = {
+    return res.status(200).send({
       isGood: true,
-      msg: "Removed sauce from person.",
+      msg: `Sauce ${req.body.sauce._id} has been toggled.`,
       data: { sauce: { _id: req.body.sauce._id } }
-    };
-    return res.status(200).send(data);
+    });
   } catch (err) {
     //TODO: Better error handling
     console.log(err);
