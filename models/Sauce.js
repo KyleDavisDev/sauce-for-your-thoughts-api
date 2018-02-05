@@ -32,10 +32,7 @@ sauceSchema.index({
   description: "text"
 });
 
-//index location for easier geosearching
-sauceSchema.index({ location: "2dsphere" });
-
-sauceSchema.pre("save", async function (next) {
+sauceSchema.pre("save", async function(next) {
   if (!this.isModified("name")) {
     next(); //skip generating new slug
     return; //stop function
@@ -58,7 +55,7 @@ sauceSchema.pre("save", async function (next) {
   next();
 });
 
-sauceSchema.statics.getTagsList = function () {
+sauceSchema.statics.getTagsList = function() {
   //split each sauce into an instance with a single tag as it's "tag" property
   //group sauces by the tag id, create new key called "count" and +1 to the $sum property
   //sort by most popular descending
