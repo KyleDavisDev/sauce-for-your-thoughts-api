@@ -104,6 +104,12 @@ router.post(
   authController.validateToken
 );
 
+router.post(
+  "/api/user/getHearts",
+  authController.isLoggedIn,
+  userController.getHearts
+);
+
 //1. Check is token is legit
 //2. Toggle sauce.ID in user.hearts
 router.post(
