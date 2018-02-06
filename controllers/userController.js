@@ -129,6 +129,31 @@ exports.getSauceUser = async (req, res, next) => {
   }
 };
 
+exports.getHearts = async (req, res) => {
+  try {
+    const user = await User.findById(req.body._id, { _id: 0, hearts: 1 });
+
+    if (!user) {
+      const data = {
+        isGood: false,
+        msg: "Could not find user. Please try again."
+      };
+      return res.status(400).send(data);
+    }
+
+    const data = {
+      isGood: true,
+      msg: "Found user hearts.",
+      hearts: user.hearts
+    };
+
+    console.log(data);
+    return res.status(200).send(data);
+  } catch (err) {
+    return res.status(400).send(err);
+  }
+};
+
 exports.toggleHeart = async (req, res) => {
   try {
     //grab all user hearts
