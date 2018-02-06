@@ -55,19 +55,11 @@ router.post(
 //1. Make sure user is legit
 //2. Return array of sauce objects
 //(Note: will likely change from method get to method post soon)
-router.post(
-  "/api/sauces/get",
-  authController.isLoggedIn,
-  sauceController.getSauces
-);
+router.post("/api/sauces/get", sauceController.getSauces);
 
 //1. Check if user is legit
 //2. return sauces by specific tag
-router.post(
-  "/api/sauces/get/by/tag/",
-  authController.isLoggedIn,
-  sauceController.getSauceByTag
-);
+router.post("/api/sauces/get/by/tag/", sauceController.getSauceByTag);
 
 //TODO: Add comment
 router.get("/api/sauces/search/:q", sauceController.searchSauces);

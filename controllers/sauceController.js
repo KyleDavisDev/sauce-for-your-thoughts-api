@@ -168,25 +168,20 @@ exports.getSauces = async (req, res) => {
     //get all sauces
     let sauces = await Sauce.find().populate("author");
 
-    //get user hearts
-    let user = await User.findOne({ _id: req.body._id }, { _id: 0, hearts: 1 });
-
     if (!sauces) {
       const data = { isGood: false, msg: "Unable to find any sauces" };
       return res.status(400).send(data);
     }
 
     //replace sauces.author with sauces.author.email
-    //add bool heart if the sauce _id is inside user.hearts array
     sauces = sauces.map(sauce => {
       //sauce are not objects so must convert first to be able to write to it
       sauce = sauce.toObject();
-      sauce.heart = user.hearts.indexOf(sauce._id) !== -1;
       sauce.author = sauce.author.email;
       return sauce;
     });
 
-    const data = { isGood: true, sauces, msg: "Found sauces" };
+    const data = { isGood: true, sauces, msg: "Found sauces." };
 
     return res.status(200).send(data);
   } catch (err) {
@@ -241,14 +236,6 @@ exports.getSauceByTag = async (req, res) => {
     //find sauces that match tags query and grab author object
     let sauces = await Sauce.find({ tags: tagQuery }).populate("author");
 
-    //check to see if request is from logged in user and find the appropriate user
-    if (req.body._id) {
-      var user = await User.findOne(
-        { _id: req.body._id },
-        { _id: 0, hearts: 1 }
-      );
-    }
-
     //sanity check
     if (!sauces) {
       const data = {
@@ -259,11 +246,9 @@ exports.getSauceByTag = async (req, res) => {
     }
 
     //replace sauce.author with sauce.author.email
-    //add bool heart value if sauce is liked by user
     sauces = sauces.map(sauce => {
       sauce = sauce.toObject();
       sauce.author = sauce.author.email;
-      sauce.heart = user !== undefined && user.hearts.indexOf(sauce._id) !== -1;
       return sauce;
     });
 
