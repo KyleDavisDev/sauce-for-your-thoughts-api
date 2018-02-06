@@ -144,10 +144,9 @@ exports.getHearts = async (req, res) => {
     const data = {
       isGood: true,
       msg: "Found user hearts.",
-      hearts: user.hearts
+      data: { hearts: user.hearts }
     };
 
-    console.log(data);
     return res.status(200).send(data);
   } catch (err) {
     return res.status(400).send(err);
