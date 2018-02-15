@@ -51,22 +51,32 @@ exports.stringToProperType = (req, res, next) => {
     req.body.tags = req.body.tags.split(",");
   }
 
+  if (Object.prototype.toString.call(req.body.rating) === "[Object String]") {
+    req.body.rating = parseInt(req.body.rating);
+  }
+
   next(); //next middleware
 };
 
-exports.addSauce = async (req, res) => {
+exports.addSauce = async (req, res, next) => {
   try {
     req.body.author = req.body._id;
-    req.body._id = undefined;
+    //TODO: Pass only relevant object to Sauce model
     const sauce = await new Sauce(req.body).save();
 
-    //send back slug so we can link to it for user to rate
-    const data = {
-      isGood: true,
-      msg: "Sauce successfully added!",
-      slug: sauce.slug
-    };
-    res.send(data);
+    if (!sauce) {
+      const data = {
+        isGood: false,
+        msg: "Could not add sauce"
+      };
+      return res.status(400).send(data);
+    }
+
+    //TODO: Create 'return' object on body(?) or maybe res object(?)
+    //attach slug to body
+    req.body.slug = sauce.slug;
+
+    next();
   } catch (err) {
     //TODO log error somewhere so can be referenced later
 
