@@ -5,6 +5,7 @@ const router = express.Router();
 const sauceController = require("../controllers/sauceController.js");
 const userController = require("../controllers/userController.js");
 const authController = require("../controllers/authController.js");
+const reviewController = require("../controllers/reviewController.js");
 
 //APIs here -----
 
@@ -23,7 +24,8 @@ router.post(
   authController.isLoggedIn,
   sauceController.resize,
   sauceController.stringToProperType,
-  sauceController.addSauce
+  sauceController.addSauce,
+  reviewController.addReview
 );
 
 //1. Use :slug param to find and return sauce
