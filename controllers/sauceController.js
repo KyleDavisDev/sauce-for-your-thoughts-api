@@ -61,9 +61,15 @@ exports.stringToProperType = (req, res, next) => {
 exports.addSauce = async (req, res, next) => {
   try {
     req.body.author = req.body._id;
-    //TODO: Pass only relevant object to Sauce model
-    const sauce = await new Sauce(req.body).save();
 
+    const record = {
+      author: req.body._id,
+      name: req.body.name,
+      description: req.body.description,
+      tags: req.body.tags,
+      photo: req.body.photo
+    };
+    const sauce = await new Sauce(record).save();
     if (!sauce) {
       const data = {
         isGood: false,
@@ -75,16 +81,18 @@ exports.addSauce = async (req, res, next) => {
     //TODO: Create 'return' object on body(?) or maybe res object(?)
     //attach slug to body
     req.body.slug = sauce.slug;
+    //attach sauce _id to body
+    req.body.sauceID = sauce._id;
 
     next();
   } catch (err) {
     //TODO log error somewhere so can be referenced later
-
     const data = {
       isGood: false,
-      msg: "There was an issue saving your sauce. Try again"
+      msg: "There was an issue saving your sauce. Try again",
+      err
     };
-    res.send(data);
+    res.status(400).send(data);
   }
 };
 
