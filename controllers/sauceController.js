@@ -38,6 +38,7 @@ exports.resize = async (req, res, next) => {
     const photo = await jimp.read(req.file.buffer);
     await photo.resize(800, jimp.AUTO);
     await photo.write(`./public/uploads/${req.body.photo}`);
+    req.body.sauce.photo = photo;
     next();
   } catch (err) {
     next({ message: "Image was unable to be saved" }, false);
@@ -47,27 +48,35 @@ exports.resize = async (req, res, next) => {
 //when using FormData, which is needed to upload image, all data gets turned into
 //string so we need to reformat to match model
 exports.stringToProperType = (req, res, next) => {
-  if (typeof req.body.tags === "string") {
-    req.body.tags = req.body.tags.split(",");
-  }
+  try {
+    if (
+      Object.prototype.toString.call(req.body.sauce.tags) === "[object String]"
+    ) {
+      req.body.sauce.tags = req.body.sauce.tags.split(",");
+    }
 
-  if (Object.prototype.toString.call(req.body.rating) === "[Object String]") {
-    req.body.rating = parseInt(req.body.rating);
-  }
+    if (
+      Object.prototype.toString.call(req.body.review.rating) ===
+      "[object String]"
+    ) {
+      req.body.review.rating = parseInt(req.body.review.rating);
+    }
 
-  next(); //next middleware
+    next(); //next middleware
+  } catch (err) {
+    //TODO:proper error handling
+    return res.status(400).send(err);
+  }
 };
 
 exports.addSauce = async (req, res, next) => {
   try {
-    req.body.author = req.body._id;
-
     const record = {
-      author: req.body._id,
-      name: req.body.name,
-      description: req.body.description,
-      tags: req.body.tags,
-      photo: req.body.photo
+      author: req.body.user._id,
+      name: req.body.sauce.name,
+      description: req.body.sauce.description,
+      tags: req.body.sauce.tags,
+      photo: req.body.sauce.photo
     };
     const sauce = await new Sauce(record).save();
     if (!sauce) {
@@ -79,27 +88,29 @@ exports.addSauce = async (req, res, next) => {
     }
 
     //create return object if not already created
-    if (!req.return) {
-      req.return = {};
+    if (!req.body.return) {
+      req.body.return = {};
     }
 
-    //create return sauce if not already created
-    if (!req.return.sauce) {
-      req.return.sauce = {};
+    //create return object if not already created
+    if (!req.body.return.sauce) {
+      req.body.return.sauce = {};
     }
 
     //add slug to return object
-    req.return.sauce.slug = sauce.slug;
+    req.body.return.sauce.slug = sauce.slug;
 
-    //attach sauce _id to body
+    //create sauce object if not already exists
     if (!req.body.sauce) {
       req.body.sauce = {};
     }
 
+    //attach sauce id to object
     req.body.sauce._id = sauce._id;
 
     next();
   } catch (err) {
+    console.log(err);
     //TODO log error somewhere so can be referenced later
     const data = {
       isGood: false,
