@@ -78,11 +78,25 @@ exports.addSauce = async (req, res, next) => {
       return res.status(400).send(data);
     }
 
-    //TODO: Create 'return' object on body(?) or maybe res object(?)
-    //attach slug to body
-    req.body.slug = sauce.slug;
+    //create return object if not already created
+    if (!req.return) {
+      req.return = {};
+    }
+
+    //create return sauce if not already created
+    if (!req.return.sauce) {
+      req.return.sauce = {};
+    }
+
+    //add slug to return object
+    req.return.sauce.slug = sauce.slug;
+
     //attach sauce _id to body
-    req.body.sauceID = sauce._id;
+    if (!req.body.sauce) {
+      req.body.sauce = {};
+    }
+
+    req.body.sauce._id = sauce._id;
 
     next();
   } catch (err) {
