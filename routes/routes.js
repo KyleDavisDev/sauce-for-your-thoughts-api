@@ -54,10 +54,9 @@ router.post(
   sauceController.editSauce
 );
 
-//1. Make sure user is legit
-//2. Return array of sauce objects
+//1. Return array of sauce objects
 //(Note: will likely change from method get to method post soon)
-router.post("/api/sauces/get", sauceController.getSauces);
+router.get("/api/sauces/get", sauceController.getSauces);
 
 //1. Check if user is legit
 //2. return sauces by specific tag
