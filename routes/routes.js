@@ -120,6 +120,12 @@ router.post(
   userController.toggleHeart
 );
 
+router.post(
+  "/api/review/add",
+  authController.isLoggedIn,
+  reviewController.addReview
+);
+
 //1. Find user by email, send email if email is legit or not otherwise, set key and timer for person in DB
 router.post("/account/forgot", authController.forgot);
 
