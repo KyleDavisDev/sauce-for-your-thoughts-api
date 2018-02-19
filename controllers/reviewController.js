@@ -4,12 +4,13 @@ const Review = mongoose.model("Review");
 exports.addReview = async (req, res) => {
   try {
     const record = {
-      author: req.body._id,
+      author: req.body.user._id,
       sauce: req.body.sauce._id,
-      text: req.body.review || "",
-      rating: req.body.rating
+      text: req.body.review.text || "",
+      rating: req.body.review.rating
     };
-    const review = new Review(record).save();
+
+    const review = await new Review(record).save();
 
     if (!review) {
       const data = {
@@ -22,7 +23,7 @@ exports.addReview = async (req, res) => {
     const data = {
       isGood: true,
       msg: "Successfully added sauce.",
-      sauce: { slug: req.body.slug }
+      data: req.body.return
     };
     return res.status(200).send(data);
   } catch (err) {
