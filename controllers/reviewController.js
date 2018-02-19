@@ -5,7 +5,7 @@ exports.addReview = async (req, res) => {
   try {
     const record = {
       author: req.body._id,
-      sauce: req.body.sauceID,
+      sauce: req.body.sauce._id,
       text: req.body.review || "",
       rating: req.body.rating
     };
