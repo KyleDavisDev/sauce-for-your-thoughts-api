@@ -5,6 +5,12 @@ const promisify = require("es6-promisify");
 const mail = require("../handlers/mail.js");
 
 exports.login = (req, res) => {
+  // local strategy expects login information to be attached to req.body so
+  // we need to trick it to by moving our req.body.user object to a tempory object
+  // and passing that instead.
+  const fakeReqObj = {};
+  fakeReqObj.body = req.body.user;
+
   // generate the authenticate method and pass the req/res
   passport.authenticate("local", function(err, user, info) {
     if (err) {
@@ -25,7 +31,7 @@ exports.login = (req, res) => {
       user: { token }
     };
     return res.status(200).send(data);
-  })(req.body, res);
+  })(fakeReqObj, res);
 };
 
 exports.isLoggedIn = (req, res, next) => {

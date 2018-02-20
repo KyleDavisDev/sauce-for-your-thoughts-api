@@ -37,7 +37,8 @@ exports.register = async (req, res, next) => {
       email: req.body.user.email,
       name: req.body.user.name
     };
-    const user = await new User(record).save();
+
+    const user = new User(record);
 
     if (!user) {
       const data = {
@@ -47,8 +48,18 @@ exports.register = async (req, res, next) => {
       return res.status(300).send(data);
     }
 
+    //switch User.register() to be promised-based instead of callback
+    //now register method can be awaited
+    //need to pass method to promisify and the object in which the method lives so it can rebind
+    const register = promisify(User.register, User);
+
+    //actually register user
+    //stores hashed pw
+    await register(user, req.body.user.password);
+
     next(); //go to authController.login
   } catch (errors) {
+    console.log(errors);
     const data = {
       isGood: false,
       msg: errors.message
