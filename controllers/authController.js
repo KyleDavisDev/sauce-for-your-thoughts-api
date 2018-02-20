@@ -15,7 +15,9 @@ exports.login = (req, res) => {
 
   // local strategy expects login information to be attached to req.body so
   // we need to trick it to by moving our req.body.user object to a tempory object
-  // and passing that instead.
+  // and passing that instead. This will also help with passing passport only information
+  // it needs and not passing stuff it doesn't/wont use.
+  // More information here: https://github.com/jaredhanson/passport-local/pull/151
   const fakeReqObj = {};
   fakeReqObj.body = req.body.user;
 
