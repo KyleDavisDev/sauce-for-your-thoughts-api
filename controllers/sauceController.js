@@ -38,7 +38,7 @@ exports.resize = async (req, res, next) => {
     const photo = await jimp.read(req.file.buffer);
     await photo.resize(800, jimp.AUTO);
     await photo.write(`./public/uploads/${req.body.photo}`);
-    req.body.sauce.photo = photo;
+    req.body.sauce.photo = req.body.photo;
     next();
   } catch (err) {
     next({ message: "Image was unable to be saved" }, false);
@@ -71,6 +71,7 @@ exports.stringToProperType = (req, res, next) => {
 
 exports.addSauce = async (req, res, next) => {
   try {
+    console.log(req.body.sauce);
     const record = {
       author: req.body.user._id,
       name: req.body.sauce.name,
@@ -141,10 +142,10 @@ exports.getSauceBySlug = async (req, res) => {
 
 exports.getSauceById = async (req, res) => {
   try {
-    const sauce = await Sauce.findOne({ _id: req.body.sauceID });
+    const sauce = await Sauce.findOne({ _id: req.body.sauce._id });
 
     //make sure user is actual "owner" of sauce
-    if (!sauce.author.equals(req.body._id)) {
+    if (!sauce.author.equals(req.body.user._id)) {
       const data = {
         isGood: false,
         msg: "You must be the owner to edit the sauce."
@@ -172,11 +173,6 @@ exports.editSauce = async (req, res) => {
   try {
     //generate new slug
     req.body.slug = slug(req.body.name);
-
-    //set _id to be sauce's ID instead of person's ID
-    //remove person's ID from req.body
-    req.body._id = req.body.sauceID;
-    req.body.sauceID = undefined;
 
     //find sauce by _id and update
     const sauce = await Sauce.findOneAndUpdate(
