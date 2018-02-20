@@ -90,12 +90,11 @@ exports.getUser = (req, res) => {
 };
 
 exports.updateUser = async (req, res) => {
-  const updates = {
-    name: req.body.name,
-    email: req.body.email
-  };
-
   try {
+    const updates = {
+      name: req.body.update.name,
+      email: req.body.update.email
+    };
     const user = await User.findOneAndUpdate(
       { _id: req.body.user._id },
       { $set: updates },
