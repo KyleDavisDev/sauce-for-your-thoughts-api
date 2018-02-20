@@ -5,6 +5,14 @@ const promisify = require("es6-promisify");
 const mail = require("../handlers/mail.js");
 
 exports.login = (req, res) => {
+  if (req.body.user === undefined || Object.keys(req.body.user) === 0) {
+    const data = {
+      isGood: false,
+      msg: "You did not pass the necessary fields. Please Try again."
+    };
+    return res.status(400).send(data);
+  }
+
   // local strategy expects login information to be attached to req.body so
   // we need to trick it to by moving our req.body.user object to a tempory object
   // and passing that instead.
