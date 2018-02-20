@@ -70,8 +70,15 @@ exports.stringToProperType = (req, res, next) => {
 };
 
 exports.addSauce = async (req, res, next) => {
+  if (!req.body.sauce || Object.keys(req.body.sauce) === 0) {
+    const data = {
+      isGood: false,
+      msg: "Requires sauce object. Please try again."
+    };
+    return res.status(300).send(data);
+  }
+
   try {
-    console.log(req.body.sauce);
     const record = {
       author: req.body.user._id,
       name: req.body.sauce.name,
@@ -100,11 +107,6 @@ exports.addSauce = async (req, res, next) => {
 
     //add slug to return object
     req.body.return.sauce.slug = sauce.slug;
-
-    //create sauce object if not already exists
-    if (!req.body.sauce) {
-      req.body.sauce = {};
-    }
 
     //attach sauce id to object
     req.body.sauce._id = sauce._id;
@@ -140,9 +142,27 @@ exports.getSauceBySlug = async (req, res) => {
   }
 };
 
-exports.getSauceById = async (req, res) => {
+exports.getSauceById = async (req, res, next) => {
+  if (!req.body.sauce || Object.keys(req.body.sauce) === 0) {
+    const data = {
+      isGood: false,
+      msg: "Requires sauce object. Please try again."
+    };
+    return res.status(300).send(data);
+  }
+
   try {
-    const sauce = await Sauce.findOne({ _id: req.body.sauce._id });
+    const sauce = await Sauce.findOne(
+      { _id: req.body.sauce._id },
+      {
+        _id: 1,
+        name: 1,
+        description: 1,
+        photo: 1,
+        tags: 1,
+        author: 1
+      }
+    );
 
     //make sure user is actual "owner" of sauce
     if (!sauce.author.equals(req.body.user._id)) {
@@ -153,14 +173,26 @@ exports.getSauceById = async (req, res) => {
       return res.send(data);
     }
 
-    const data = {
-      isGood: true,
-      msg: "Successfully found your sauce.",
-      sauce
-    };
-    //send sauce back for user to edit
-    return res.send(data);
+    //create return object if not already created
+    if (!req.body.return) {
+      req.body.return = {};
+    }
+
+    //create return object if not already created
+    if (!req.body.return.sauce) {
+      req.body.return.sauce = {};
+    }
+
+    //add slug to return object
+    res.locals.sauce = sauce;
+
+    //attach sauce id to object
+    req.body.sauce._id = sauce._id;
+
+    //go to reviewController.findReviewByUserID
+    next();
   } catch (err) {
+    console.log(err);
     const data = {
       isGood: false,
       msg: "Something broke or your sauce was unable to be found, Try again."
