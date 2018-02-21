@@ -4,21 +4,21 @@ const promisify = require("es6-promisify");
 const jwt = require("jsonwebtoken");
 
 exports.validateRegister = (req, res, next) => {
-  req.sanitizeBody("name");
-  req.checkBody("name", "You must supply a name.").notEmpty();
-  req.checkBody("email", "That email is not valid.").isEmail();
-  req.sanitizeBody("email").normalizeEmail({
+  req.sanitizeBody("user.name");
+  req.checkBody("user.name", "You must supply a name.").notEmpty();
+  req.checkBody("user.email", "That email is not valid.").isEmail();
+  req.sanitizeBody("user.email").normalizeEmail({
     remove_dots: false,
     remove_extension: false,
     gmail_remove_subaddress: false
   });
-  req.checkBody("password", "Password cannot be empty.").notEmpty();
+  req.checkBody("user.password", "Password cannot be empty.").notEmpty();
   req
-    .checkBody("confirmPassword", "Confirmed password cannot be empty.")
+    .checkBody("user.confirmPassword", "Confirmed password cannot be empty.")
     .notEmpty();
   req
-    .checkBody("confirmPassword", "Oops! Your passwords do not match.")
-    .equals(req.body.password);
+    .checkBody("user.confirmPassword", "Oops! Your passwords do not match.")
+    .equals(req.body.user.password);
 
   const errors = req.validationErrors();
   if (errors) {
@@ -32,23 +32,45 @@ exports.validateRegister = (req, res, next) => {
 };
 
 exports.register = async (req, res, next) => {
-  const user = new User({ email: req.body.email, name: req.body.name });
-  const registerWithPromise = promisify(User.register, User); //now register method can be awaited
   try {
-    await registerWithPromise(user, req.body.password);
+    const record = {
+      email: req.body.user.email,
+      name: req.body.user.name
+    };
+
+    const user = new User(record);
+
+    if (!user) {
+      const data = {
+        isGood: false,
+        msg: "Unable to register this user. Please try again."
+      };
+      return res.status(300).send(data);
+    }
+
+    //switch User.register() to be promised-based instead of callback
+    //now register method can be awaited
+    //need to pass method to promisify and the object in which the method lives so it can rebind
+    const register = promisify(User.register, User);
+
+    //actually register user
+    //stores hashed pw
+    await register(user, req.body.user.password);
+
+    next(); //go to authController.login
   } catch (errors) {
+    console.log(errors);
     const data = {
       isGood: false,
       msg: errors.message
     };
     return res.status(401).send(data);
   }
-  next(); //go to authController.login
 };
 
-exports.getUser = (req, res, next) => {
+exports.getUser = (req, res) => {
   // check if a user exists
-  return User.findById(req.body._id, (userErr, user) => {
+  return User.findById(req.body.user._id, (userErr, user) => {
     if (userErr || !user) {
       const data = {
         isGood: false,
@@ -68,14 +90,13 @@ exports.getUser = (req, res, next) => {
 };
 
 exports.updateUser = async (req, res) => {
-  const updates = {
-    name: req.body.name,
-    email: req.body.email
-  };
-
   try {
+    const updates = {
+      name: req.body.update.name,
+      email: req.body.update.email
+    };
     const user = await User.findOneAndUpdate(
-      { _id: req.body._id },
+      { _id: req.body.user._id },
       { $set: updates },
       { new: true, runValidators: true, context: "query" }
     );
@@ -131,7 +152,7 @@ exports.getSauceUser = async (req, res, next) => {
 
 exports.getHearts = async (req, res) => {
   try {
-    const user = await User.findById(req.body._id, { _id: 0, hearts: 1 });
+    const user = await User.findById(req.body.user._id, { _id: 0, hearts: 1 });
 
     if (!user) {
       const data = {
@@ -157,7 +178,7 @@ exports.toggleHeart = async (req, res) => {
   try {
     //grab all user hearts
     //turn mongodb results to workable objects
-    const user = await User.findById(req.body._id, {
+    const user = await User.findById(req.body.user._id, {
       _id: 0,
       hearts: 1
     });
@@ -171,7 +192,7 @@ exports.toggleHeart = async (req, res) => {
 
     // update user's hearts
     await User.findByIdAndUpdate(
-      req.body._id,
+      req.body.user._id,
       { [operator]: { hearts: req.body.sauce._id } },
       { new: true }
     );

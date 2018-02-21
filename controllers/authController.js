@@ -5,6 +5,22 @@ const promisify = require("es6-promisify");
 const mail = require("../handlers/mail.js");
 
 exports.login = (req, res) => {
+  if (req.body.user === undefined || Object.keys(req.body.user) === 0) {
+    const data = {
+      isGood: false,
+      msg: "You did not pass the necessary fields. Please Try again."
+    };
+    return res.status(400).send(data);
+  }
+
+  // local strategy expects login information to be attached to req.body so
+  // we need to trick it to by moving our req.body.user object to a tempory object
+  // and passing that instead. This will also help with passing passport only information
+  // it needs and not passing stuff it doesn't/wont use.
+  // More information here: https://github.com/jaredhanson/passport-local/pull/151
+  const fakeReqObj = {};
+  fakeReqObj.body = req.body.user;
+
   // generate the authenticate method and pass the req/res
   passport.authenticate("local", function(err, user, info) {
     if (err) {
@@ -19,22 +35,41 @@ exports.login = (req, res) => {
     //create a token and send back
     const payload = { sub: user._id };
     const token = jwt.sign(payload, process.env.SECRET);
-    const data = { isGood: true, msg: "Successfully logged in.", token };
+    const data = {
+      isGood: true,
+      msg: "Successfully logged in.",
+      user: { token }
+    };
     return res.status(200).send(data);
-  })(req, res);
+  })(fakeReqObj, res);
 };
 
 exports.isLoggedIn = (req, res, next) => {
-  if (!req.body.token) {
-    const data = {
-      isGood: false,
-      msg: "You are not logged in or your token is invalid. Please try again."
-    };
-    return res.status(401).send(data);
+  if (!req.body.user || !req.body.user.token) {
+    //One last check: maybe we were passed a stringified object
+    if (
+      req.body.data !== undefined &&
+      Object.prototype.toString.call(req.body.data) === "[object String]"
+    ) {
+      //convert string to object
+      const obj = JSON.parse(req.body.data);
+
+      //concat onto req.body
+      Object.keys(obj).forEach(function(x) {
+        req.body[x] = obj[x];
+      });
+    } else {
+      const data = {
+        isGood: false,
+        msg:
+          "You are not logged in or your token is invalid. Please try again. If you stringified an object, make sure the string is stored in 'data'."
+      };
+      return res.status(401).send(data);
+    }
   }
 
   // get token from post
-  const token = req.body.token;
+  const token = req.body.user.token;
 
   // decode the token using a secret key-phrase
   return jwt.verify(token, process.env.SECRET, (err, decoded) => {
@@ -59,9 +94,11 @@ exports.isLoggedIn = (req, res, next) => {
         };
         return res.status(401).send(data);
       }
+      //remove token from user
+      delete req.body.user.token;
 
       //attach person _id to body
-      req.body._id = user._id;
+      req.body.user._id = user._id;
 
       //user is legit
       return next();
@@ -71,7 +108,7 @@ exports.isLoggedIn = (req, res, next) => {
 
 exports.forgot = async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.body.email });
+    const user = await User.findOne({ email: req.body.user.email });
     //if user not found we will send false positive object but actually send no email
     //doing this check early will also prevent server from having to use resouces to create new token
     if (!user) {
