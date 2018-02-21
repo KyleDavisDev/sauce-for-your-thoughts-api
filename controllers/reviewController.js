@@ -37,7 +37,7 @@ exports.addReview = async (req, res) => {
   }
 };
 
-exports.findReviewByUserID = async (req, res) => {
+exports.findReviewByUserAndSauce = async (req, res) => {
   try {
     const query = {
       author: req.body.user._id,
