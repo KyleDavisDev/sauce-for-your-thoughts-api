@@ -52,22 +52,45 @@ exports.findReviewByUserAndSauce = async (req, res) => {
       return res.status(400).send(data);
     }
 
-    //TODO: figure out how to attach value to local
-    res.locals.sauce.rating = review.rating;
+    //TODO FIGURE OUT HOW TO TRANSFER DATA BETWEEN MIDDLEWARE
+    const temp = Object.assign({}, res.locals.sauce);
+    console.log(temp);
+
+    delete res.local.sauce;
+    res.locals.sauce = Object.assign({}, temp, {
+      rating: review.rating
+    });
+    console.log("_____________________");
+    console.log(res.locals.sauce);
 
     const data = {
       isGood: true,
       msg: "Successfully found sauce.",
-      data: res.locals
+      data: { sauce: req.data.sauce }
     };
     return res.status(200).send(data);
   } catch (err) {
     //TODO: Better error handling/loggin
+    console.log(err);
 
     const data = {
       isGood: false,
       msg: "Could not add sauce. Make sure all fields are filled and try again."
     };
     return res.status(400).send(data);
+  }
+};
+
+exports.findReviewsBySauce = async (req, res) => {
+  try {
+    const query = {
+      sauce: req.body.sauce._id
+    };
+    const reviews = await Review.find(query, { _id: 0 }).populate(
+      "author",
+      "name"
+    );
+  } catch (err) {
+    res.status(400).send(err);
   }
 };
