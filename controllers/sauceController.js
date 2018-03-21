@@ -143,7 +143,12 @@ exports.getSauceBySlug = async (req, res) => {
 };
 
 exports.getSauceById = async (req, res, next) => {
-  if (!req.body.sauce || Object.keys(req.body.sauce) === 0) {
+  //make sure we have a sauce _id in req.body.sauce
+  if (
+    !req.body.sauce ||
+    Object.keys(req.body.sauce) === 0 ||
+    !req.body.sauce._id
+  ) {
     const data = {
       isGood: false,
       msg: "Requires sauce object. Please try again."
@@ -170,17 +175,11 @@ exports.getSauceById = async (req, res, next) => {
         isGood: false,
         msg: "You must be the owner to edit the sauce."
       };
-      return res.send(data);
+      return res.status(300).send(data);
     }
 
-    //create return object if not already created
-    if (!req.body.return) {
-      req.body.return = {};
-    }
-
-    //create return object if not already created
-    if (!req.body.return.sauce) {
-      req.body.return.sauce = {};
+    if (!req.data) {
+      req.data = {};
     }
 
     //add slug to return object
