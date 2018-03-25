@@ -93,11 +93,14 @@ exports.findReviewsBySauceID = async (req, res) => {
     };
 
     // find reviews by sauce._id
-    // do not populate author or sauce since we already have that information from previous middleware (sauceControll.getSauceById)
-    const reviews = await Review.find(query, { author: 0, sauce: 0 });
+    // do not populate sauce since we already have that information from previous middleware (sauceControll.getSauceById)
+    const reviews = await Review.find(query, {
+      sauce: 0,
+      created: 0
+    }).populate("author", "name _id");
 
     //attach reviews array to our response object
-    req.response.reviews = reviews;
+    req.response.reviews = reviews.map(x => x.toObject());
 
     //construct our final return object
     const data = {
@@ -108,6 +111,7 @@ exports.findReviewsBySauceID = async (req, res) => {
     //send response back
     res.status(200).send(data);
   } catch (err) {
+    console.log(err);
     res.status(400).send(err);
   }
 };
