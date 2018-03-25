@@ -66,4 +66,14 @@ sauceSchema.statics.getTagsList = function() {
   ]);
 };
 
+//Tells .toObject() to also not include __v
+// which is a mongoose housekeeping thing
+sauceSchema.set("toObject", {
+  versionKey: false,
+  transform: (doc, ret) => {
+    delete ret.__v;
+    return ret;
+  }
+});
+
 module.exports = mongoose.model("Sauce", sauceSchema);
