@@ -51,22 +51,12 @@ exports.findReviewByUserAndSauce = async (req, res) => {
       };
       return res.status(400).send(data);
     }
-
-    //TODO FIGURE OUT HOW TO TRANSFER DATA BETWEEN MIDDLEWARE
-    const temp = Object.assign({}, res.locals.sauce);
-    console.log(temp);
-
-    delete res.local.sauce;
-    res.locals.sauce = Object.assign({}, temp, {
-      rating: review.rating
-    });
-    console.log("_____________________");
-    console.log(res.locals.sauce);
+    console.log(review);
 
     const data = {
       isGood: true,
-      msg: "Successfully found sauce.",
-      data: { sauce: req.data.sauce }
+      msg: "Successfully found sauce."
+      // data: { sauce: req.data.sauce }
     };
     return res.status(200).send(data);
   } catch (err) {
@@ -81,15 +71,42 @@ exports.findReviewByUserAndSauce = async (req, res) => {
   }
 };
 
-exports.findReviewsBySauce = async (req, res) => {
+/** @description Get all reviews related to specific sauce _id
+ *  @param Integer Expects sauce._id on req.body
+ *  @return array of reviews
+ */
+
+exports.findReviewsBySauceID = async (req, res) => {
+  //make sure sauce._id was actually passed
+  if (!req.body.sauce || !req.body.sauce._id) {
+    const data = {
+      isGood: false,
+      msg: "Requires sauce object. Please try again."
+    };
+    return res.status(300).send(data);
+  }
+
   try {
+    //construct query
     const query = {
       sauce: req.body.sauce._id
     };
-    const reviews = await Review.find(query, { _id: 0 }).populate(
-      "author",
-      "name"
-    );
+
+    // find reviews by sauce._id
+    // do not populate author or sauce since we already have that information from previous middleware (sauceControll.getSauceById)
+    const reviews = await Review.find(query, { author: 0, sauce: 0 });
+
+    //attach reviews array to our response object
+    req.response.reviews = reviews;
+
+    //construct our final return object
+    const data = {
+      isGood: true,
+      data: req.response
+    };
+
+    //send response back
+    res.status(200).send(data);
   } catch (err) {
     res.status(400).send(err);
   }
