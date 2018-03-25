@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const User = require("mongoose").model("User");
 const promisify = require("es6-promisify");
 const mail = require("../handlers/mail.js");
-const hashid = require("hashid");
+const hashid = require("hashids");
 
 exports.login = (req, res) => {
   if (req.body.user === undefined || Object.keys(req.body.user) === 0) {
