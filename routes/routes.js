@@ -38,7 +38,7 @@ router.post(
   "/api/sauce/get/id",
   authController.isLoggedIn,
   sauceController.getSauceById,
-  reviewController.findReviewByUserAndSauce
+  reviewController.findReviewsBySauceID
 );
 
 //1. Check mimetype of image and set req.body
