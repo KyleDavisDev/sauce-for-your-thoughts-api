@@ -1,8 +1,7 @@
 {
   "name": "dang-thats-delicious-api",
   "version": "1.0.0",
-  "description":
-    "Following Wes Bos's NodeJS course but using react/redux instead of pug.",
+  "description": "Following Wes Bos's NodeJS course but using react/redux instead of pug.",
   "main": "app.js",
   "scripts": {
     "watch": "nodemon ./start.js",
@@ -19,6 +18,7 @@
     "es6-promisify": "^5.0.0",
     "express": "^4.15.3",
     "express-validator": "^3.2.0",
+    "hashids": "^1.1.4",
     "jimp": "^0.2.28",
     "jsonwebtoken": "^7.4.1",
     "md5": "^2.2.1",
