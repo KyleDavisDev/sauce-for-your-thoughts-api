@@ -79,6 +79,7 @@ exports.addSauce = async (req, res, next) => {
   }
 
   try {
+    //create save query
     const record = {
       author: req.body.user._id,
       name: req.body.sauce.name,
@@ -86,7 +87,12 @@ exports.addSauce = async (req, res, next) => {
       tags: req.body.sauce.tags,
       photo: req.body.sauce.photo
     };
+
+    //add sauce to DB
+    //TODO limit returned object's information
     const sauce = await new Sauce(record).save();
+
+    //make sure something didn't break
     if (!sauce) {
       const data = {
         isGood: false,
@@ -95,21 +101,11 @@ exports.addSauce = async (req, res, next) => {
       return res.status(400).send(data);
     }
 
-    //create return object if not already created
-    if (!req.body.return) {
-      req.body.return = {};
-    }
-
-    //create return object if not already created
-    if (!req.body.return.sauce) {
-      req.body.return.sauce = {};
-    }
+    //create response object if not already created
+    if (!req.response) req.response = {};
 
     //add slug to return object
-    req.body.return.sauce.slug = sauce.slug;
-
-    //attach sauce id to object
-    req.body.sauce._id = sauce._id;
+    req.response.sauce = sauce.toObject();
 
     next();
   } catch (err) {
