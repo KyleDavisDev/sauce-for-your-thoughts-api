@@ -142,6 +142,7 @@ exports.getSauceBySlug = async (req, res) => {
   }
 };
 
+//TODO Sanitize sauce _id before search DB for it.
 exports.getSauceById = async (req, res, next) => {
   //make sure we have a sauce _id in req.body.sauce
   if (
@@ -157,36 +158,27 @@ exports.getSauceById = async (req, res, next) => {
   }
 
   try {
-    const sauce = await Sauce.findOne(
-      { _id: req.body.sauce._id },
-      {
-        _id: 1,
-        name: 1,
-        description: 1,
-        photo: 1,
-        tags: 1,
-        author: 1
-      }
-    );
+    //search for sauce by id
+    const sauce = await Sauce.findById(req.body.sauce._id, {
+      _id: 1,
+      name: 1,
+      description: 1,
+      photo: 1,
+      tags: 1
+    }).populate("author", "_id name");
 
-    //make sure user is actual "owner" of sauce
-    if (!sauce.author.equals(req.body.user._id)) {
+    //return if sauce isn't found
+    if (!sauce) {
       const data = {
         isGood: false,
-        msg: "You must be the owner to edit the sauce."
+        msg: "This sauce was not found. Please try again."
       };
       return res.status(300).send(data);
     }
 
-    if (!req.data) {
-      req.data = {};
-    }
-
-    //add slug to return object
-    res.locals.sauce = sauce;
-
-    //attach sauce id to object
-    req.body.sauce._id = sauce._id;
+    //attach sauce object to our response object
+    //call .toObject() to get rid of a bunch of mongoose stuff
+    req.response = sauce.toObject();
 
     //go to reviewController.findReviewByUserID
     next();
