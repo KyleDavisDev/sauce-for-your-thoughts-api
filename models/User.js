@@ -34,6 +34,16 @@ const userSchema = new mongoose.Schema({
   resetPasswordExpires: Date
 });
 
+//Tells .toObject() to also not include __v
+// which is a mongoose housekeeping thing
+userSchema.set("toObject", {
+  versionKey: false,
+  transform: (doc, ret) => {
+    delete ret.__v;
+    return ret;
+  }
+});
+
 userSchema.plugin(passportLocalMongoose, { usernameField: "email" });
 userSchema.plugin(mongodbErrorHandler); //change ugly errors to nice
 
