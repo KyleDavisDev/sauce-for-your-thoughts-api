@@ -161,7 +161,7 @@ exports.getSauceById = async (req, res, next) => {
       description: 1,
       photo: 1,
       tags: 1
-    }).populate("author", "_id name");
+    }).populate("author");
 
     //return if sauce isn't found
     if (!sauce) {
@@ -172,9 +172,13 @@ exports.getSauceById = async (req, res, next) => {
       return res.status(300).send(data);
     }
 
+    //init req.response object
+    if (req.response === undefined) req.response = {};
+
     //attach sauce object to our response object
     //call .toObject() to get rid of a bunch of mongoose stuff
-    req.response = sauce.toObject();
+    //array since next middleware expects array
+    req.response.sauces = [sauce.toObject()];
 
     //go to reviewController.findReviewByUserID
     next();
@@ -221,27 +225,28 @@ exports.editSauce = async (req, res) => {
   }
 };
 
-exports.getSauces = async (req, res) => {
+//Grabs all available sauces and attaches to req.response.sauces
+exports.getSauces = async (req, res, next) => {
   try {
     //get all sauces
-    let sauces = await Sauce.find().populate("author");
+    let sauces = await Sauce.find({}, { created: 0 }).populate(
+      "author",
+      "_id name"
+    );
 
     if (!sauces) {
       const data = { isGood: false, msg: "Unable to find any sauces" };
       return res.status(400).send(data);
     }
 
-    //replace sauces.author with sauces.author.email
-    sauces = sauces.map(sauce => {
-      //sauce are not objects so must convert first to be able to write to it
-      sauce = sauce.toObject();
-      sauce.author = sauce.author.email;
-      return sauce;
-    });
+    //init req.response if not already exists
+    if (req.response === undefined) req.response = {};
 
-    const data = { isGood: true, sauces, msg: "Found sauces." };
+    //attach sauces to req.response
+    req.response.sauces = sauces;
 
-    return res.status(200).send(data);
+    //go to reviewController.findReviewsBySauceID
+    next();
   } catch (err) {
     const data = { isGood: false, msg: "Unable to find any sauces" };
     res.status(400).send(data);
