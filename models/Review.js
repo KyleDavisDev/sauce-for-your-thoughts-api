@@ -25,7 +25,7 @@ const reviewSchema = new mongoose.Schema({
   }
 });
 
-//Tells .toObject() to also not include __v
+// Tells .toObject() to also not include __v
 // which is a mongoose housekeeping thing
 reviewSchema.set("toObject", {
   versionKey: false,
