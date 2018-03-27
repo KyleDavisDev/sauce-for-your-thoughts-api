@@ -90,12 +90,17 @@ exports.findReviewByUserAndSauce = async (req, res) => {
 };
 
 /** @description Get all reviews related to specific sauce _id
- *  @param Integer Expects sauce._id on req.body
- *  @return array of reviews
+ *  @param {Integer[]} _id sauce id in req.response.sauces
+ *  @return array of reviews attached to each req.response.sauces[] object
  */
 exports.findReviewsBySauceID = async (req, res) => {
-  //make sure sauce._id was actually passed
-  if (!req.body.sauce || !req.body.sauce._id) {
+  //make sure req.response.sauces[]._id was actually passed
+  if (
+    req.response === undefined ||
+    req.response.sauces === undefined ||
+    req.response.sauces.length === 0 ||
+    !req.response.sauces[0]._id
+  ) {
     const data = {
       isGood: false,
       msg: "Requires sauce object. Please try again."
@@ -104,20 +109,32 @@ exports.findReviewsBySauceID = async (req, res) => {
   }
 
   try {
-    //construct query
-    const query = {
-      sauce: req.body.sauce._id
-    };
+    //chain of promises all at once.
+    //assign reviews[] to each sauces[] object
+    req.response.sauces = await Promise.all(
+      req.response.sauces.map(async (sauce, ind, arr) => {
+        // find reviews by sauce._id
+        // do not populate sauce since we already have that information from previous middleware (sauceControll.getSauceById/getSauces)
+        const reviews = await Review.find(
+          {
+            sauce: sauce._id
+          },
+          {
+            sauce: 0,
+            created: 0
+          }
+        ).populate("author", "name _id");
 
-    // find reviews by sauce._id
-    // do not populate sauce since we already have that information from previous middleware (sauceControll.getSauceById)
-    const reviews = await Review.find(query, {
-      sauce: 0,
-      created: 0
-    }).populate("author", "name _id");
+        //turn sauce from mongoose object to object
+        sauce = sauce.toObject();
 
-    //attach reviews array to our response object
-    req.response.reviews = reviews.map(x => x.toObject());
+        //assign reviews to sauce
+        sauce.reviews = reviews.map(x => x.toObject());
+
+        //return sauce
+        return sauce;
+      })
+    );
 
     //construct our final return object
     const data = {
