@@ -1,8 +1,7 @@
 {
   "name": "dang-thats-delicious-api",
   "version": "1.0.0",
-  "description":
-    "Following Wes Bos's NodeJS course but using react/redux instead of pug.",
+  "description": "Following Wes Bos's NodeJS course but using react/redux instead of pug.",
   "main": "app.js",
   "scripts": {
     "watch": "nodemon ./start.js",
@@ -19,6 +18,7 @@
     "es6-promisify": "^5.0.0",
     "express": "^4.15.3",
     "express-validator": "^3.2.0",
+    "hashids": "^1.1.4",
     "jimp": "^0.2.28",
     "jsonwebtoken": "^7.4.1",
     "md5": "^2.2.1",
@@ -33,6 +33,15 @@
     "validator": "^7.2.0"
   },
   "devDependencies": {
-    "nodemon": "^1.11.0"
+    "babel-eslint": "^8.2.2",
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-plugin-import": "^2.9.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-prettier": "^2.6.0",
+    "eslint-plugin-react": "^7.7.0",
+    "nodemon": "^1.11.0",
+    "prettier-eslint": "^8.8.1"
   }
 }

@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 const Sauce = mongoose.model("Sauce");
 const User = mongoose.model("User");
-const slug = require("slugs"); //Hi there! How are you! --> hi-there-how-are-you
-const multer = require("multer"); //helps uploading images/files
-const jimp = require("jimp"); //helps with resizing photos
-const uuid = require("uuid"); //generated unique identifiers
+const slug = require("slugs"); // Hi there! How are you! --> hi-there-how-are-you
+const multer = require("multer"); // helps uploading images/files
+const jimp = require("jimp"); // helps with resizing photos
+const uuid = require("uuid"); // generated unique identifiers
 const userController = require("./userController.js");
 
 const multerOptions = {
@@ -23,17 +23,17 @@ const multerOptions = {
 exports.upload = multer(multerOptions).single("image");
 
 exports.resize = async (req, res, next) => {
-  //check if new file to resize
+  // check if new file to resize
   if (!req.file) {
-    next(); //go to next middleware
+    next(); // go to next middleware
     return;
   }
 
-  //get file extension and generate unique name
+  // get file extension and generate unique name
   const extension = req.file.mimetype.split("/")[1];
   req.body.photo = `${uuid.v4()}.${extension}`;
 
-  //resize photo
+  // resize photo
   try {
     const photo = await jimp.read(req.file.buffer);
     await photo.resize(800, jimp.AUTO);
@@ -45,8 +45,8 @@ exports.resize = async (req, res, next) => {
   }
 };
 
-//when using FormData, which is needed to upload image, all data gets turned into
-//string so we need to reformat to match model
+// when using FormData, which is needed to upload image, all data gets turned into
+// string so we need to reformat to match model
 exports.stringToProperType = (req, res, next) => {
   try {
     if (
@@ -62,9 +62,9 @@ exports.stringToProperType = (req, res, next) => {
       req.body.review.rating = parseInt(req.body.review.rating);
     }
 
-    next(); //next middleware
+    next(); // next middleware
   } catch (err) {
-    //TODO:proper error handling
+    // TODO:proper error handling
     return res.status(400).send(err);
   }
 };
@@ -79,6 +79,7 @@ exports.addSauce = async (req, res, next) => {
   }
 
   try {
+    // create save query
     const record = {
       author: req.body.user._id,
       name: req.body.sauce.name,
@@ -86,7 +87,12 @@ exports.addSauce = async (req, res, next) => {
       tags: req.body.sauce.tags,
       photo: req.body.sauce.photo
     };
+
+    // add sauce to DB
+    // TODO limit returned object's information
     const sauce = await new Sauce(record).save();
+
+    // make sure something didn't break
     if (!sauce) {
       const data = {
         isGood: false,
@@ -95,26 +101,16 @@ exports.addSauce = async (req, res, next) => {
       return res.status(400).send(data);
     }
 
-    //create return object if not already created
-    if (!req.body.return) {
-      req.body.return = {};
-    }
+    // create response object if not already created
+    if (!req.response) req.response = {};
 
-    //create return object if not already created
-    if (!req.body.return.sauce) {
-      req.body.return.sauce = {};
-    }
-
-    //add slug to return object
-    req.body.return.sauce.slug = sauce.slug;
-
-    //attach sauce id to object
-    req.body.sauce._id = sauce._id;
+    // add slug to return object
+    req.response.sauce = sauce.toObject();
 
     next();
   } catch (err) {
     console.log(err);
-    //TODO log error somewhere so can be referenced later
+    // TODO log error somewhere so can be referenced later
     const data = {
       isGood: false,
       msg: "There was an issue saving your sauce. Try again",
@@ -130,11 +126,11 @@ exports.getSauceBySlug = async (req, res) => {
       "author"
     );
 
-    //split author off from sauce
+    // split author off from sauce
     const { author } = sauce;
     sauce.author = undefined;
 
-    //send sauce and only author name
+    // send sauce and only author name
     const data = { isGood: true, sauce, author: { name: author.name } };
     res.send(data);
   } catch (err) {
@@ -142,8 +138,14 @@ exports.getSauceBySlug = async (req, res) => {
   }
 };
 
+// TODO Sanitize sauce _id before search DB for it.
 exports.getSauceById = async (req, res, next) => {
-  if (!req.body.sauce || Object.keys(req.body.sauce) === 0) {
+  // make sure we have a sauce _id in req.body.sauce
+  if (
+    !req.body.sauce ||
+    Object.keys(req.body.sauce) === 0 ||
+    !req.body.sauce._id
+  ) {
     const data = {
       isGood: false,
       msg: "Requires sauce object. Please try again."
@@ -152,44 +154,33 @@ exports.getSauceById = async (req, res, next) => {
   }
 
   try {
-    const sauce = await Sauce.findOne(
-      { _id: req.body.sauce._id },
-      {
-        _id: 1,
-        name: 1,
-        description: 1,
-        photo: 1,
-        tags: 1,
-        author: 1
-      }
-    );
+    // search for sauce by id
+    const sauce = await Sauce.findById(req.body.sauce._id, {
+      _id: 1,
+      name: 1,
+      description: 1,
+      photo: 1,
+      tags: 1
+    }).populate("author");
 
-    //make sure user is actual "owner" of sauce
-    if (!sauce.author.equals(req.body.user._id)) {
+    // return if sauce isn't found
+    if (!sauce) {
       const data = {
         isGood: false,
-        msg: "You must be the owner to edit the sauce."
+        msg: "This sauce was not found. Please try again."
       };
-      return res.send(data);
+      return res.status(300).send(data);
     }
 
-    //create return object if not already created
-    if (!req.body.return) {
-      req.body.return = {};
-    }
+    // init req.response object
+    if (req.response === undefined) req.response = {};
 
-    //create return object if not already created
-    if (!req.body.return.sauce) {
-      req.body.return.sauce = {};
-    }
+    // attach sauce object to our response object
+    // call .toObject() to get rid of a bunch of mongoose stuff
+    // array since next middleware expects array
+    req.response.sauces = [sauce.toObject()];
 
-    //add slug to return object
-    res.locals.sauce = sauce;
-
-    //attach sauce id to object
-    req.body.sauce._id = sauce._id;
-
-    //go to reviewController.findReviewByUserID
+    // go to reviewController.findReviewByUserID
     next();
   } catch (err) {
     console.log(err);
@@ -203,16 +194,16 @@ exports.getSauceById = async (req, res, next) => {
 
 exports.editSauce = async (req, res) => {
   try {
-    //generate new slug
+    // generate new slug
     req.body.slug = slug(req.body.name);
 
-    //find sauce by _id and update
+    // find sauce by _id and update
     const sauce = await Sauce.findOneAndUpdate(
       { _id: req.body._id },
       req.body,
       {
-        new: true, //return new sauce instead of old one -- we want updated data returned
-        runValidators: true //force model to be sure required fields are still there
+        new: true, // return new sauce instead of old one -- we want updated data returned
+        runValidators: true // force model to be sure required fields are still there
       }
     ).exec();
 
@@ -221,10 +212,10 @@ exports.editSauce = async (req, res) => {
       msg: "Successfully updated your sauce.",
       sauce
     };
-    //send sauce back for user to edit
+    // send sauce back for user to edit
     return res.status(200).send(data);
   } catch (err) {
-    //go into here if user didn't input name or some other model requirement wasn't met
+    // go into here if user didn't input name or some other model requirement wasn't met
     const data = {
       isGood: false,
       msg: "Could not update your sauce.",
@@ -234,37 +225,38 @@ exports.editSauce = async (req, res) => {
   }
 };
 
-exports.getSauces = async (req, res) => {
+// Grabs all available sauces and attaches to req.response.sauces
+exports.getSauces = async (req, res, next) => {
   try {
-    //get all sauces
-    let sauces = await Sauce.find().populate("author");
+    // get all sauces
+    const sauces = await Sauce.find({}, { created: 0 }).populate(
+      "author",
+      "_id name"
+    );
 
     if (!sauces) {
       const data = { isGood: false, msg: "Unable to find any sauces" };
       return res.status(400).send(data);
     }
 
-    //replace sauces.author with sauces.author.email
-    sauces = sauces.map(sauce => {
-      //sauce are not objects so must convert first to be able to write to it
-      sauce = sauce.toObject();
-      sauce.author = sauce.author.email;
-      return sauce;
-    });
+    // init req.response if not already exists
+    if (req.response === undefined) req.response = {};
 
-    const data = { isGood: true, sauces, msg: "Found sauces." };
+    // attach sauces to req.response
+    req.response.sauces = sauces;
 
-    return res.status(200).send(data);
+    // go to reviewController.findReviewsBySauceID
+    next();
   } catch (err) {
     const data = { isGood: false, msg: "Unable to find any sauces" };
     res.status(400).send(data);
   }
 };
 
-//TODO: Filter/sanitize user input
+// TODO: Filter/sanitize user input
 exports.searchSauces = async (req, res) => {
   try {
-    //search index by query param and score by relevancy
+    // search index by query param and score by relevancy
     const sauces = await Sauce.find(
       {
         $text: {
@@ -299,15 +291,15 @@ exports.searchSauces = async (req, res) => {
 
 exports.getSauceByTag = async (req, res) => {
   try {
-    //get tag from param or passed through body
+    // get tag from param or passed through body
     const tag = req.body.tag.toLowerCase();
-    //query to get all tags or regex for case insensitive specific ones
+    // query to get all tags or regex for case insensitive specific ones
     const tagQuery = tag === "all" ? { $exists: true } : new RegExp(tag, "i");
 
-    //find sauces that match tags query and grab author object
+    // find sauces that match tags query and grab author object
     let sauces = await Sauce.find({ tags: tagQuery }).populate("author");
 
-    //sanity check
+    // sanity check
     if (!sauces) {
       const data = {
         isGood: false,
@@ -316,7 +308,7 @@ exports.getSauceByTag = async (req, res) => {
       return res.status(400).send(data);
     }
 
-    //replace sauce.author with sauce.author.email
+    // replace sauce.author with sauce.author.email
     sauces = sauces.map(sauce => {
       sauce = sauce.toObject();
       sauce.author = sauce.author.email;
@@ -341,16 +333,16 @@ exports.getSauceByTag = async (req, res) => {
 
 exports.getTagsList = async (req, res) => {
   try {
-    //get tags from Sauce aggregate
+    // get tags from Sauce aggregate
     const tags = await Sauce.getTagsList();
 
-    //sanity check
+    // sanity check
     if (!tags) {
       const data = { isGood: false, msg: "Could not find any tags!" };
       return res.status(300).send(data);
     }
 
-    //send response
+    // send response
     const data = { isGood: true, tags, msg: "Found the list of tags!" };
     res.status(200).send(data);
   } catch (err) {

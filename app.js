@@ -2,7 +2,6 @@ const express = require("express");
 const expressValidator = require("express-validator");
 // const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
 const path = require("path");
 const routes = require("./routes/routes.js");
 const passport = require("passport");
@@ -22,9 +21,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 //Provides methods for validating data. Used mostly in userController.validateRegister
 app.use(expressValidator());
-
-//populates req.cookies w/ any cookies that are w/ the req
-app.use(cookieParser());
 
 // Passport JS is what we use to handle our logins
 app.use(passport.initialize());

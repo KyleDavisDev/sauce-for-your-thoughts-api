@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const User = require("mongoose").model("User");
 const promisify = require("es6-promisify");
 const mail = require("../handlers/mail.js");
+const hashid = require("hashids");
 
 exports.login = (req, res) => {
   if (req.body.user === undefined || Object.keys(req.body.user) === 0) {
@@ -45,6 +46,7 @@ exports.login = (req, res) => {
 };
 
 exports.isLoggedIn = (req, res, next) => {
+  //confirm that we are passed a user.token to parse
   if (!req.body.user || !req.body.user.token) {
     //One last check: maybe we were passed a stringified object
     if (
@@ -229,3 +231,9 @@ exports.validateToken = (req, res) => {
   const data = { isGood: true, msg: "Found user." };
   return res.status(200).send(data);
 };
+
+/** @description Search through return data object for any mongoose _id's and encodes them.
+ *  @param Object return data object with mongoose _id in it
+ *  @return Null
+ */
+exports.EncodeObjectID = (req, res) => {};
