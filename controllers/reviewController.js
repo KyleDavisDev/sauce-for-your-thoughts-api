@@ -7,7 +7,7 @@ const Review = mongoose.model("Review");
  */
 exports.addReview = async (req, res) => {
   try {
-    //construct review to save
+    // construct review to save
     const record = {
       author: req.body.user._id,
       sauce: req.body.sauce._id,
@@ -15,11 +15,11 @@ exports.addReview = async (req, res) => {
       rating: req.body.review.rating
     };
 
-    //save into DB
-    //TODO limit returned object information
+    // save into DB
+    // TODO limit returned object information
     const review = await new Review(record).save("text");
 
-    //make sure record is good
+    // make sure record is good
     if (!review) {
       const data = {
         isGood: false,
@@ -28,15 +28,15 @@ exports.addReview = async (req, res) => {
       return res.status(400).send(data);
     }
 
-    //check to see if req.response is a thing or not
+    // check to see if req.response is a thing or not
     if (!("response" in req) || req.response === undefined) req.response = {};
 
-    //attach review id to sauce if exists
+    // attach review id to sauce if exists
     if (!("sauce" in req.response) || req.response.sauce === undefined) {
       req.response.sauce.review = review.toObject();
     }
 
-    //attach review to response object
+    // attach review to response object
     req.response.review = review.toObject();
     const data = {
       isGood: true,
@@ -45,7 +45,7 @@ exports.addReview = async (req, res) => {
     };
     return res.status(200).send(data);
   } catch (err) {
-    //TODO: Better error handling/loggin
+    // TODO: Better error handling/loggin
 
     const data = {
       isGood: false,
@@ -78,7 +78,7 @@ exports.findReviewByUserAndSauce = async (req, res) => {
     };
     return res.status(200).send(data);
   } catch (err) {
-    //TODO: Better error handling/loggin
+    // TODO: Better error handling/loggin
     console.log(err);
 
     const data = {
@@ -94,7 +94,7 @@ exports.findReviewByUserAndSauce = async (req, res) => {
  *  @return array of reviews attached to each req.response.sauces[] object
  */
 exports.findReviewsBySauceID = async (req, res) => {
-  //make sure req.response.sauces[]._id was actually passed
+  // make sure req.response.sauces[]._id was actually passed
   if (
     req.response === undefined ||
     req.response.sauces === undefined ||
@@ -109,10 +109,10 @@ exports.findReviewsBySauceID = async (req, res) => {
   }
 
   try {
-    //chain of promises all at once.
-    //assign reviews[] to each sauces[] object
+    // chain of promises all at once.
+    // assign reviews[] to each sauces[] object
     req.response.sauces = await Promise.all(
-      req.response.sauces.map(async (sauce, ind, arr) => {
+      req.response.sauces.map(async sauce => {
         // find reviews by sauce._id
         // do not populate sauce since we already have that information from previous middleware (sauceControll.getSauceById/getSauces)
         const reviews = await Review.find(
@@ -123,26 +123,26 @@ exports.findReviewsBySauceID = async (req, res) => {
             sauce: 0,
             created: 0
           }
-        ).populate("author", "name _id");
+        ).populate("author", { _id: 1, name: 1 });
 
-        //turn sauce from mongoose object to object
-        sauce = sauce.toObject();
+        // turn sauce from mongoose object to object
+        const sauceObj = sauce.toObject();
 
-        //assign reviews to sauce
-        sauce.reviews = reviews.map(x => x.toObject());
+        // assign reviews to sauce
+        sauceObj.reviews = reviews.map(x => x.toObject());
 
-        //return sauce
-        return sauce;
+        // return sauce
+        return sauceObj;
       })
     );
 
-    //construct our final return object
+    // construct our final return object
     const data = {
       isGood: true,
       data: req.response
     };
 
-    //send response back
+    // send response back
     res.status(200).send(data);
   } catch (err) {
     console.log(err);
