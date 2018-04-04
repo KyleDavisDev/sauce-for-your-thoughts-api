@@ -123,15 +123,12 @@ exports.addSauce = async (req, res, next) => {
 exports.getSauceBySlug = async (req, res) => {
   try {
     const sauce = await Sauce.findOne({ slug: req.params.slug }).populate(
-      "author"
+      "author",
+      { _id: 1, name: 1 }
     );
 
-    // split author off from sauce
-    const { author } = sauce;
-    sauce.author = undefined;
-
     // send sauce and only author name
-    const data = { isGood: true, sauce, author: { name: author.name } };
+    const data = { isGood: true, sauce };
     res.send(data);
   } catch (err) {
     res.send(err);
