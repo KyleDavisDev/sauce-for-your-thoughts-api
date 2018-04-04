@@ -107,7 +107,7 @@ exports.addSauce = async (req, res, next) => {
     // add slug to return object
     req.response.sauce = sauce.toObject();
 
-    next();
+    next(); // go to reviewController.addReview
   } catch (err) {
     console.log(err);
     // TODO log error somewhere so can be referenced later
@@ -128,8 +128,8 @@ exports.getSauceBySlug = async (req, res) => {
     );
 
     // send sauce and only author name
-    const data = { isGood: true, sauce };
-    res.send(data);
+    const data = { isGood: true, data: { sauce } };
+    res.status(200).send(data);
   } catch (err) {
     res.send(err);
   }
@@ -215,8 +215,7 @@ exports.editSauce = async (req, res) => {
     // go into here if user didn't input name or some other model requirement wasn't met
     const data = {
       isGood: false,
-      msg: "Could not update your sauce.",
-      msg: err.message
+      msg: "Could not update your sauce."
     };
     res.send(err);
   }
