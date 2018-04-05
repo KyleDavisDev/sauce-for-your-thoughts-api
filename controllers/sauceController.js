@@ -120,16 +120,22 @@ exports.addSauce = async (req, res, next) => {
   }
 };
 
-exports.getSauceBySlug = async (req, res) => {
+exports.getSauceBySlug = async (req, res, next) => {
   try {
     const sauce = await Sauce.findOne({ slug: req.params.slug }).populate(
       "author",
       { _id: 1, name: 1 }
     );
 
-    // send sauce and only author name
-    const data = { isGood: true, data: { sauce } };
-    res.status(200).send(data);
+    // init req.response if not already exists
+    if (req.response === undefined) req.response = {};
+
+    // attach sauce to req.response object so we can access it in next middleware
+    // turn sauce in array since that is format reviewController.findReviewsBySauceID expects
+    req.response.sauces = [sauce];
+
+    // go to reviewController.findReviewsBySauceID
+    next();
   } catch (err) {
     res.send(err);
   }

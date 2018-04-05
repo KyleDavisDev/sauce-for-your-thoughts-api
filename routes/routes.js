@@ -1,23 +1,23 @@
 const express = require("express");
 const router = express.Router();
 
-//grab controllers
+// grab controllers
 const sauceController = require("../controllers/sauceController.js");
 const userController = require("../controllers/userController.js");
 const authController = require("../controllers/authController.js");
 const reviewController = require("../controllers/reviewController.js");
 
-//APIs here -----
+// APIs here -----
 
-//Sauce(s)
-//upload must be called first for post that are "multipart/form-data"
-//multer will put data object onto req.body like normal
+// Sauce(s)
+// upload must be called first for post that are "multipart/form-data"
+// multer will put data object onto req.body like normal
 
-//1. Check mimetype of image and set req.body
-//2. Verify if user is valid
-//3. Resize image and write to server
-//4. Convert req.body data to be proper format for DB
-//5. Write to DB
+// 1. Check mimetype of image and set req.body
+// 2. Verify if user is valid
+// 3. Resize image and write to server
+// 4. Convert req.body data to be proper format for DB
+// 5. Write to DB
 router.post(
   "/api/sauce/add",
   sauceController.upload,
@@ -28,12 +28,16 @@ router.post(
   reviewController.addReview
 );
 
-//1. Use :slug param to find and return sauce
-//(Note: will likely change from method get to method post soon)
-router.get("/api/sauce/get/:slug", sauceController.getSauceBySlug);
+// 1. Use :slug param to find and return sauce
+// 2. Add reviews to sauce that was found
+router.get(
+  "/api/sauce/get/:slug",
+  sauceController.getSauceBySlug,
+  reviewController.findReviewsBySauceID
+);
 
-//1. Verify if user is valid
-//2. Find and return ID-specific sauce.
+// 1. Verify if user is valid
+// 2. Find and return ID-specific sauce.
 router.post(
   "/api/sauce/get/id",
   authController.isLoggedIn,
@@ -41,11 +45,11 @@ router.post(
   reviewController.findReviewsBySauceID
 );
 
-//1. Check mimetype of image and set req.body
-//2. Verify if user is valid
-//3. Resize image and write to server
-//4. Conver req.body data to be proper format for DB
-//5. Write to DB
+// 1. Check mimetype of image and set req.body
+// 2. Verify if user is valid
+// 3. Resize image and write to server
+// 4. Conver req.body data to be proper format for DB
+// 5. Write to DB
 router.post(
   "/api/sauce/update",
   sauceController.upload,
@@ -55,28 +59,28 @@ router.post(
   sauceController.editSauce
 );
 
-//1. Return array of sauce objects
-//(Note: will likely change from method get to method post soon)
+// 1. Return array of sauce objects
+// (Note: will likely change from method get to method post soon)
 router.get(
   "/api/sauces/get",
   sauceController.getSauces,
   reviewController.findReviewsBySauceID
 );
 
-//1. Check if user is legit
-//2. return sauces by specific tag
+// 1. Check if user is legit
+// 2. return sauces by specific tag
 router.post("/api/sauces/get/by/tag/", sauceController.getSauceByTag);
 
-//TODO: Add comment
+// TODO: Add comment
 router.get("/api/sauces/search/:q", sauceController.searchSauces);
 
 // 1. Return array of tags
 router.get("/api/tags/get", sauceController.getTagsList);
 
-//User(s)
-//1. Validate the data
-//2. register the user
-//3. Log user in via JWT
+// User(s)
+// 1. Validate the data
+// 2. register the user
+// 3. Log user in via JWT
 router.post(
   "/api/user/register",
   userController.validateRegister,
@@ -84,26 +88,26 @@ router.post(
   authController.login
 );
 
-//1. Generate JWT
+// 1. Generate JWT
 router.post("/api/user/login", authController.login);
 
-//1. Validate user
-//2. Return modifiable user info
+// 1. Validate user
+// 2. Return modifiable user info
 router.post(
   "/api/user/getInfo",
   authController.isLoggedIn,
   userController.getUser
 );
 
-//1. Validate user
-//2. Update user info
+// 1. Validate user
+// 2. Update user info
 router.post(
   "/api/user/update",
   authController.isLoggedIn,
   userController.updateUser
 );
 
-//1. Check if token relates to a user
+// 1. Check if token relates to a user
 router.post(
   "/api/user/isloggedin",
   authController.isLoggedIn,
@@ -116,8 +120,8 @@ router.post(
   userController.getHearts
 );
 
-//1. Check is token is legit
-//2. Toggle sauce.ID in user.hearts
+// 1. Check is token is legit
+// 2. Toggle sauce.ID in user.hearts
 router.post(
   "/api/user/toggleSauce",
   authController.isLoggedIn,
@@ -130,15 +134,15 @@ router.post(
   reviewController.addReview
 );
 
-//1. Find user by email, send email if email is legit or not otherwise, set key and timer for person in DB
+// 1. Find user by email, send email if email is legit or not otherwise, set key and timer for person in DB
 router.post("/account/forgot", authController.forgot);
 
-//1. Determines if reset token is legit or not
+// 1. Determines if reset token is legit or not
 router.post("/account/validateResetToken", authController.validateResetToken);
 
-//1. Check passwords for equality
-//2. Hash and update password
-//3. Log user in via JWT
+// 1. Check passwords for equality
+// 2. Hash and update password
+// 3. Log user in via JWT
 router.post(
   "/account/reset",
   authController.confirmPasswords,
@@ -146,9 +150,9 @@ router.post(
   authController.login
 );
 
-//END API ---
+// END API ---
 
-//let react handle rest
+// let react handle rest
 router.get("*", (req, res) => {
   // Temp removed since this is just API
   // res.sendFile(`${process.cwd()}/dist/index.html`);
