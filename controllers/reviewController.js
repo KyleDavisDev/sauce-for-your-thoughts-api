@@ -3,7 +3,7 @@ const Review = mongoose.model("Review");
 
 /** @description Add review to DB
  *  @param {Object} review - review to be saved
- *  @return {Object} attaches review to req.response
+ *  @return {Object} attaches review to req.response.sauce
  */
 exports.addReview = async (req, res) => {
   try {
@@ -31,13 +31,11 @@ exports.addReview = async (req, res) => {
     // check to see if req.response is a thing or not
     if (!("response" in req) || req.response === undefined) req.response = {};
 
-    // attach review id to sauce if exists
-    if (!("sauce" in req.response) || req.response.sauce === undefined) {
+    // attach review to sauce
+    if ("sauce" in req.response && req.response.sauce !== undefined) {
       req.response.sauce.review = review.toObject();
     }
 
-    // attach review to response object
-    req.response.review = review.toObject();
     const data = {
       isGood: true,
       msg: "Successfully added sauce.",
