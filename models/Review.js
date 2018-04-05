@@ -31,6 +31,7 @@ reviewSchema.set("toObject", {
   versionKey: false,
   transform: (doc, ret) => {
     delete ret.__v;
+    delete ret.created;
     return ret;
   }
 });
