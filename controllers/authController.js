@@ -23,7 +23,7 @@ exports.login = (req, res) => {
   fakeReqObj.body = req.body.user;
 
   // generate the authenticate method and pass the req/res
-  passport.authenticate("local", function(err, user, info) {
+  passport.authenticate("local", (err, user, info) => {
     if (err) {
       return res.status(401).send(err);
     }
@@ -46,18 +46,18 @@ exports.login = (req, res) => {
 };
 
 exports.isLoggedIn = (req, res, next) => {
-  //confirm that we are passed a user.token to parse
+  // confirm that we are passed a user.token to parse
   if (!req.body.user || !req.body.user.token) {
-    //One last check: maybe we were passed a stringified object
+    // One last check: maybe we were passed a stringified object
     if (
       req.body.data !== undefined &&
       Object.prototype.toString.call(req.body.data) === "[object String]"
     ) {
-      //convert string to object
+      // convert string to object
       const obj = JSON.parse(req.body.data);
 
-      //concat onto req.body
-      Object.keys(obj).forEach(function(x) {
+      // concat onto req.body
+      Object.keys(obj).forEach((x) => {
         req.body[x] = obj[x];
       });
     } else {
@@ -87,7 +87,7 @@ exports.isLoggedIn = (req, res, next) => {
 
     // check if a user exists
     return User.findById(userId, (userErr, user) => {
-      //error or not user
+      // error or not user
       if (userErr || !user) {
         const data = {
           isGood: false,
@@ -96,13 +96,13 @@ exports.isLoggedIn = (req, res, next) => {
         };
         return res.status(401).send(data);
       }
-      //remove token from user
+      // remove token from user
       delete req.body.user.token;
 
-      //attach person _id to body
+      // attach person _id to body
       req.body.user._id = user._id;
 
-      //user is legit
+      // user is legit
       return next();
     });
   });
@@ -111,25 +111,25 @@ exports.isLoggedIn = (req, res, next) => {
 exports.forgot = async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.user.email });
-    //if user not found we will send false positive object but actually send no email
-    //doing this check early will also prevent server from having to use resouces to create new token
+    // if user not found we will send false positive object but actually send no email
+    // doing this check early will also prevent server from having to use resouces to create new token
     if (!user) {
       const data = { isGood: true, msg: "An email has been sent to you." };
       return res.send(data);
     }
 
-    //create a token string
+    // create a token string
     const payload = {
       sub: user._id
     };
     const token = jwt.sign(payload, process.env.SECRET);
 
-    //assign token and current date in DB to check against later
+    // assign token and current date in DB to check against later
     user.resetPasswordToken = token;
     user.resetPasswordExpires = Date.now() + 3600000;
     await user.save();
 
-    //create URL and email to user email
+    // create URL and email to user email
     const resetURL = `http://localhost:8080/account/reset/${
       user.resetPasswordToken
     }`;
@@ -140,7 +140,7 @@ exports.forgot = async (req, res) => {
       filename: "password-reset"
     });
 
-    //send legitmate data
+    // send legitmate data
     const data = { isGood: true, msg: "An email has been sent to you." };
     return res.send(data);
   } catch (err) {
@@ -148,10 +148,10 @@ exports.forgot = async (req, res) => {
   }
 };
 
-//called to verify if token is legit or not when user first lands on reset page
+// called to verify if token is legit or not when user first lands on reset page
 exports.validateResetToken = async (req, res) => {
   try {
-    //find if user exists w/ matching token and within time limit of 1hr
+    // find if user exists w/ matching token and within time limit of 1hr
     const user = await User.findOne({
       resetPasswordToken: req.body.token,
       resetPasswordExpires: { $gt: Date.now() }
@@ -173,14 +173,14 @@ exports.validateResetToken = async (req, res) => {
   }
 };
 
-//checks if two submitted passwords are equal
+// checks if two submitted passwords are equal
 exports.confirmPasswords = (req, res, next) => {
   if (req.body.password === req.body.confirmPassword) {
-    next(); //keep going
+    next(); // keep going
     return;
   }
 
-  //passwords didn't match
+  // passwords didn't match
   const data = {
     isGood: false,
     msg: "Passwords did not match. Please try again."
@@ -188,7 +188,7 @@ exports.confirmPasswords = (req, res, next) => {
   return res.status(401).send(data);
 };
 
-//reset password
+// reset password
 exports.updatePassword = async (req, res, next) => {
   try {
     const user = await User.findOne({
@@ -223,7 +223,7 @@ exports.updatePassword = async (req, res, next) => {
     return;
   } catch (err) {
     res.send(err);
-    return;
+    
   }
 };
 
