@@ -89,7 +89,7 @@ exports.addSauce = async (req, res, next) => {
     };
 
     // add sauce to DB
-    // TODO limit returned object's information
+    // TODO: Figure out how to populate on save()
     const sauce = await new Sauce(record).save();
 
     // make sure something didn't break
@@ -101,11 +101,17 @@ exports.addSauce = async (req, res, next) => {
       return res.status(400).send(data);
     }
 
+    // look up author
+    const user = await User.findById(sauce.author, { _id: 1, name: 1 });
+
     // create response object if not already created
     if (!req.response) req.response = {};
 
-    // add slug to return object
+    // add sauce to req.response for next middleware
     req.response.sauce = sauce.toObject();
+
+    // update .author to the 'standard' return author object
+    req.response.sauce.author = user.toObject();
 
     next(); // go to reviewController.addReview
   } catch (err) {
