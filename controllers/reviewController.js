@@ -3,15 +3,10 @@ const Review = mongoose.model("Review");
 
 /** @description Add review to DB
  *  @param {Object} review - review to be saved
- *  @return {Object} attaches review to req.response.sauce
+ *  @return {Object} attaches review to req.response.sauce OR req.response if sauce doesn't exist
  */
 exports.addReview = async (req, res) => {
   try {
-    // check to see if req.response is a thing or not
-    // if its not, then something went super wrong and we should abort
-    if (!("response" in req) || req.response === undefined)
-      throw new Error("Something borked. Sorry, please try again");
-
     // construct review to save
     const record = {
       author: req.body.user._id,
@@ -33,9 +28,14 @@ exports.addReview = async (req, res) => {
       return res.status(400).send(data);
     }
 
-    // attach review to sauce
+    // check to see if req.response is a thing or not
+    if (!("response" in req) || req.response === undefined) req.response = {};
+
+    // attach review to sauce OR directly onto response
     if ("sauce" in req.response && req.response.sauce !== undefined) {
       req.response.sauce.review = [review.toObject()];
+    } else {
+      req.response.review = review;
     }
 
     // construct final payload
