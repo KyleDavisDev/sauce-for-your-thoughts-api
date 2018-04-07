@@ -16,8 +16,7 @@ exports.addReview = async (req, res) => {
     };
 
     // save into DB
-    // TODO limit returned object information
-    const review = await new Review(record).save("text");
+    const review = await new Review(record).save();
 
     // make sure record is good
     if (!review) {
@@ -35,7 +34,8 @@ exports.addReview = async (req, res) => {
     if ("sauce" in req.response && req.response.sauce !== undefined) {
       req.response.sauce.review = [review.toObject()];
     } else {
-      req.response.review = review;
+      // We will land here if user is submitting only a review and not a sauce along with it.
+      req.response.review = review.toObject();
     }
 
     // construct final payload
@@ -69,7 +69,6 @@ exports.findReviewByUserAndSauce = async (req, res) => {
       };
       return res.status(400).send(data);
     }
-    console.log(review);
 
     const data = {
       isGood: true,
