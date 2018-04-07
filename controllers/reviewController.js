@@ -7,6 +7,11 @@ const Review = mongoose.model("Review");
  */
 exports.addReview = async (req, res) => {
   try {
+    // check to see if req.response is a thing or not
+    // if its not, then something went super wrong and we should abort
+    if (!("response" in req) || req.response === undefined)
+      throw new Error("Something borked. Sorry, please try again");
+
     // construct review to save
     const record = {
       author: req.body.user._id,
@@ -28,14 +33,12 @@ exports.addReview = async (req, res) => {
       return res.status(400).send(data);
     }
 
-    // check to see if req.response is a thing or not
-    if (!("response" in req) || req.response === undefined) req.response = {};
-
     // attach review to sauce
     if ("sauce" in req.response && req.response.sauce !== undefined) {
-      req.response.sauce.review = review.toObject();
+      req.response.sauce.review = [review.toObject()];
     }
 
+    // construct final payload
     const data = {
       isGood: true,
       msg: "Successfully added sauce.",
@@ -43,8 +46,7 @@ exports.addReview = async (req, res) => {
     };
     return res.status(200).send(data);
   } catch (err) {
-    // TODO: Better error handling/loggin
-
+    // TODO: Better error handling/logging
     const data = {
       isGood: false,
       msg: "Could not add sauce. Make sure all fields are filled and try again."
