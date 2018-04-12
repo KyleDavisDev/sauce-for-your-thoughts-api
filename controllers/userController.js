@@ -48,16 +48,16 @@ exports.register = async (req, res, next) => {
       return res.status(300).send(data);
     }
 
-    //switch User.register() to be promised-based instead of callback
-    //now register method can be awaited
-    //need to pass method to promisify and the object in which the method lives so it can rebind
+    // switch User.register() to be promised-based instead of callback
+    // now register method can be awaited
+    // need to pass method to promisify and the object in which the method lives so it can rebind
     const register = promisify(User.register, User);
 
-    //actually register user
-    //stores hashed pw
+    // actually register user
+    // stores hashed pw
     await register(user, req.body.user.password);
 
-    next(); //go to authController.login
+    next(); // go to authController.login
   } catch (errors) {
     console.log(errors);
     const data = {
@@ -68,9 +68,9 @@ exports.register = async (req, res, next) => {
   }
 };
 
-exports.getUser = (req, res) => {
+exports.getUser = (req, res) =>
   // check if a user exists
-  return User.findById(req.body.user._id, (userErr, user) => {
+  User.findById(req.body.user._id, (userErr, user) => {
     if (userErr || !user) {
       const data = {
         isGood: false,
@@ -79,7 +79,7 @@ exports.getUser = (req, res) => {
       return res.status(401).send(data);
     }
 
-    //only pass back relevant information
+    // only pass back relevant information
     const data = {
       isGood: true,
       user: { email: user.email, name: user.name },
@@ -87,7 +87,6 @@ exports.getUser = (req, res) => {
     };
     return res.status(200).send(data);
   });
-};
 
 exports.updateUser = async (req, res) => {
   try {
@@ -120,16 +119,16 @@ exports.updateUser = async (req, res) => {
 
 exports.getSauceUser = async (req, res, next) => {
   try {
-    //array of promises
+    // array of promises
     const sauces = await Promise.all(
       req.body.sauces.map(async sauce => {
-        //search through user for matching id and grab only email
+        // search through user for matching id and grab only email
         const email = await User.findOne({ _id: sauce.author }, "-_id email");
-        //mongoose return are not objects so we need to convert to object first
-        sauce = sauce.toObject();
-        //set author to email
-        sauce.author = email.email;
-        return sauce;
+        // mongoose return are not objects so we need to convert to object first
+        const sauceObj = sauce.toObject();
+        // set author to email
+        sauceObj.author = email.email;
+        return sauceObj;
       })
     );
 
@@ -176,14 +175,14 @@ exports.getHearts = async (req, res) => {
 
 exports.toggleHeart = async (req, res) => {
   try {
-    //grab all user hearts
-    //turn mongodb results to workable objects
+    // grab all user hearts
+    // turn mongodb results to workable objects
     const user = await User.findById(req.body.user._id, {
       _id: 0,
       hearts: 1
     });
 
-    //figure out if we need to remove sauce id from hearts array or add to it
+    // figure out if we need to remove sauce id from hearts array or add to it
     const operator = user.hearts
       .map(x => x.toString())
       .includes(req.body.sauce._id)
@@ -203,8 +202,28 @@ exports.toggleHeart = async (req, res) => {
       data: { sauce: { _id: req.body.sauce._id } }
     });
   } catch (err) {
-    //TODO: Better error handling
+    // TODO: Better error handling
     console.log(err);
     return res.status(400).send(err);
   }
 };
+
+exports.getUserById = (req, res, next) =>
+  // check if a user exists
+  User.findById(req.body.user._id, (userErr, user) => {
+    if (userErr || !user) {
+      const data = {
+        isGood: false,
+        msg: "Unable to find user. Please try again."
+      };
+      return res.status(401).send(data);
+    }
+
+    // only pass back relevant information
+    const data = {
+      isGood: true,
+      user: { email: user.email, name: user.name },
+      msg: "Successfully found user."
+    };
+    return res.status(200).send(data);
+  });
