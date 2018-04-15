@@ -33,13 +33,13 @@ exports.login = (req, res) => {
       return res.status(401).send(data);
     }
 
-    //create a token and send back
+    // create a token and send back
     const payload = { sub: user._id };
     const token = jwt.sign(payload, process.env.SECRET);
     const data = {
       isGood: true,
       msg: "Successfully logged in.",
-      user: { token }
+      data: { user: { token } }
     };
     return res.status(200).send(data);
   })(fakeReqObj, res);
@@ -57,7 +57,7 @@ exports.isLoggedIn = (req, res, next) => {
       const obj = JSON.parse(req.body.data);
 
       // concat onto req.body
-      Object.keys(obj).forEach((x) => {
+      Object.keys(obj).forEach(x => {
         req.body[x] = obj[x];
       });
     } else {
@@ -204,17 +204,17 @@ exports.updatePassword = async (req, res, next) => {
       return;
     }
 
-    //save pw
+    // save pw
     const setPassword = promisify(user.setPassword, user);
     await setPassword(req.body.password);
 
-    //remove token and token expiration from db
+    // remove token and token expiration from db
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
     await user.save();
 
-    //log user in -- need to bind email to req.body first
-    //can clean up req.body too since local passport only needs email and password
+    // log user in -- need to bind email to req.body first
+    // can clean up req.body too since local passport only needs email and password
     req.body.email = user.email;
     req.body.confirmPassword = undefined;
     req.body.token = undefined;
@@ -223,7 +223,6 @@ exports.updatePassword = async (req, res, next) => {
     return;
   } catch (err) {
     res.send(err);
-    
   }
 };
 
