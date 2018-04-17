@@ -105,11 +105,24 @@ exports.getUser = async (req, res) => {
   }
 };
 
+// TODO: Sanity check for params
+/** @description update specifc user with new name and email
+ *  @param {String} req.body.user._id - unique user identifier
+ *  @param {String} req.body.user.name - name to update to
+ *  @param {String} req.body.user.email - email to update to
+ *  @return {Object} data - response container
+ *    @return {Boolean} data.isGood - whether user was able to be found or not
+ *    @return {String} data.msg - small blurb about isGood bool
+ *    @return {Object} data.user - user container
+ *      @return {String} data.user._id - unique person identifier
+ *      @return {String} data.user.email - user email
+ *      @return {String} data.user.name - user's name (first last)
+ */
 exports.updateUser = async (req, res) => {
   try {
     const updates = {
-      name: req.body.update.name,
-      email: req.body.update.email
+      name: req.body.user.name,
+      email: req.body.user.email
     };
     const user = await User.findOneAndUpdate(
       { _id: req.body.user._id },
@@ -117,10 +130,18 @@ exports.updateUser = async (req, res) => {
       { new: true, runValidators: true, context: "query" }
     );
 
+    if (!user) {
+      const data = {
+        isGood: false,
+        msg: "Could not update user. Please try again"
+      };
+      return res.status(400).send(data);
+    }
+
     const data = {
       isGood: true,
       msg: "Successfully updated user information.",
-      user: { email: user.email, name: user.name }
+      user: { email: user.email, name: user.name, _id: user._id }
     };
 
     return res.status(200).send(data);
