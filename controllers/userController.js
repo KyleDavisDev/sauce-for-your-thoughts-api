@@ -68,10 +68,24 @@ exports.register = async (req, res, next) => {
   }
 };
 
-exports.getUser = (req, res) =>
-  // check if a user exists
-  User.findById(req.body.user._id, (userErr, user) => {
-    if (userErr || !user) {
+// TODO: Sanity checks for params
+/** @description search DB for user
+ *  @param {String} req.body.user._id - unique user identifer
+ *  @return {Object} data - container object
+ *    @return {Boolean} data.isGood - whether user was able to be found or not
+ *    @return {String} data.msg - small blurb about isGood bool
+ *    @return {Object} data.user - user container
+ *      @return {String} data.user._id - unique person identifier
+ *      @return {String} data.user.email - user email
+ *      @return {String} data.user.name - user's name (first last)
+ */
+exports.getUser = async (req, res) => {
+  try {
+    // grab user _id
+    const query = req.body.user._id;
+    // find user
+    const user = await User.findById(query, { _id: 1, email: 1, name: 1 });
+    if (!user) {
       const data = {
         isGood: false,
         msg: "Unable to find user. Please try again."
@@ -79,14 +93,17 @@ exports.getUser = (req, res) =>
       return res.status(401).send(data);
     }
 
-    // only pass back relevant information
+    // construct return object
     const data = {
       isGood: true,
-      user: { email: user.email, name: user.name },
+      data: { user: { _id: user._id, name: user.name, email: user.email } },
       msg: "Successfully found user."
     };
     return res.status(200).send(data);
-  });
+  } catch (err) {
+    console.log(err);
+  }
+};
 
 exports.updateUser = async (req, res) => {
   try {
@@ -208,10 +225,13 @@ exports.toggleHeart = async (req, res) => {
   }
 };
 
-exports.getUserById = (req, res, next) =>
-  // check if a user exists
-  User.findById(req.body.user._id, (userErr, user) => {
-    if (userErr || !user) {
+exports.getUserById = async (req, res, next) => {
+  try {
+    // grab user _id
+    const query = req.body.user._id;
+    // find user
+    const user = await User.findById(query, { _id: 1, email: 1, name: 1 });
+    if (!user) {
       const data = {
         isGood: false,
         msg: "Unable to find user. Please try again."
@@ -219,11 +239,14 @@ exports.getUserById = (req, res, next) =>
       return res.status(401).send(data);
     }
 
-    // only pass back relevant information
+    // construct return object
     const data = {
       isGood: true,
-      user: { email: user.email, name: user.name },
+      data: { user: { _id: user._id, name: user.name, email: user.email } },
       msg: "Successfully found user."
     };
     return res.status(200).send(data);
-  });
+  } catch (err) {
+    console.log(err);
+  }
+};
