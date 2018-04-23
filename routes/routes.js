@@ -64,7 +64,8 @@ router.post(
 router.get(
   "/api/sauces/get",
   sauceController.getSauces,
-  reviewController.findReviewsBySauceID
+  reviewController.findReviewsBySauceID,
+  authController.encodeID
 );
 
 // 1. Check if user is legit
