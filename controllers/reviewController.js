@@ -92,7 +92,7 @@ exports.findReviewByUserAndSauce = async (req, res) => {
  *  @param {Integer[]} _id sauce id in req.response.sauces
  *  @return array of reviews attached to each req.response.sauces[] object
  */
-exports.findReviewsBySauceID = async (req, res) => {
+exports.findReviewsBySauceID = async (req, res, next) => {
   // make sure req.response.sauces[]._id was actually passed
   if (
     req.response === undefined ||
@@ -134,15 +134,9 @@ exports.findReviewsBySauceID = async (req, res) => {
         return sauceObj;
       })
     );
-
-    // construct our final return object
-    const data = {
-      isGood: true,
-      data: req.response
-    };
-
-    // send response back
-    res.status(200).send(data);
+    // All is good if we made it here.
+    // Go to authController.encodeID
+    next();
   } catch (err) {
     console.log(err);
     res.status(400).send(err);
