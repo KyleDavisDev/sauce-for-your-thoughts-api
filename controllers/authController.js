@@ -3,7 +3,8 @@ const jwt = require("jsonwebtoken");
 const User = require("mongoose").model("User");
 const promisify = require("es6-promisify");
 const mail = require("../handlers/mail.js");
-const hashid = require("hashids");
+const Hashids = require("hashids");
+const hashids = new Hashids();
 
 exports.login = (req, res) => {
   if (req.body.user === undefined || Object.keys(req.body.user) === 0) {
@@ -71,7 +72,7 @@ exports.isLoggedIn = (req, res, next) => {
   }
 
   // get token from post
-  const token = req.body.user.token;
+  const { token } = req.body.user;
 
   // decode the token using a secret key-phrase
   return jwt.verify(token, process.env.SECRET, (err, decoded) => {
@@ -232,7 +233,54 @@ exports.validateToken = (req, res) => {
 };
 
 /** @description Search through return data object for any mongoose _id's and encodes them.
- *  @param Object return data object with mongoose _id in it
- *  @return Null
  */
-exports.EncodeObjectID = (req, res) => {};
+exports.encodeID = (req, res) => {
+  function encode(obj) {
+    if (!obj) return;
+
+    // Check if obj is an array and then loop through
+    if (Object.prototype.toString.call(obj) === "[object Array]") {
+      return obj.map(x => encode(x));
+    }
+
+    // Check if obj is an object
+    if (Object.prototype.toString.call(obj) === "[object Object]") {
+      if (obj._id !== undefined) {
+        obj._id = hashids.encodeHex(obj._id);
+      }
+
+      if ("sauces" in obj) {
+        obj.sauces = encode(obj.sauces);
+      }
+      if ("reviews" in obj) {
+        obj.reviews = encode(obj.reviews);
+      }
+      if ("users" in obj) {
+        obj.users = encode(obj.users);
+      }
+      if ("author" in obj) {
+        obj.author = encode(obj.author);
+      }
+      return obj;
+    }
+  }
+
+  try {
+    // We need to search through sauces/users/reviews in req.response for
+    // any _id properties and convert it to a hashed value.
+    if (req.response) {
+      // TODO: use the arr array instead of searching through the 'prop in obj' method
+      // const arr = ["sauces", "users", "reviews", "author"];
+    }
+
+    // construct our final return object
+    const data = {
+      isGood: true,
+      data: req.response
+    };
+    return res.status(200).send(data);
+  } catch (err) {
+    console.log(err);
+    res.status(400).send(err);
+  }
+};
