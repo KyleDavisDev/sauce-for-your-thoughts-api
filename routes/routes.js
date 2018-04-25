@@ -33,7 +33,8 @@ router.post(
 router.get(
   "/api/sauce/get/:slug",
   sauceController.getSauceBySlug,
-  reviewController.findReviewsBySauceID
+  reviewController.findReviewsBySauceID,
+  authController.encodeID
 );
 
 // 1. Verify if user is valid
