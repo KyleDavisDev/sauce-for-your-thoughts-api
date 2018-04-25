@@ -232,9 +232,24 @@ exports.validateToken = (req, res) => {
   return res.status(200).send(data);
 };
 
+// TODO: use the arr array instead of searching through the 'prop in obj' method
 /** @description Search through return data object for any mongoose _id's and encodes them.
  */
 exports.encodeID = (req, res) => {
+  // Simple guard clause
+  if (!req.response) {
+    const data = {
+      isGood: false,
+      msg: "response object failed to be created. Please try again",
+      data: {}
+    };
+    res.status(400).send(data);
+  }
+
+  /** @description Recursive function that searches through object looking for any _id to encode
+   *  @param {Object} obj - object to look through
+   *  @returns {Object} obj - same object as above with encoded _id values
+   */
   function encode(obj) {
     if (!obj) return;
 
@@ -258,8 +273,14 @@ exports.encodeID = (req, res) => {
       if ("users" in obj) {
         obj.users = encode(obj.users);
       }
+      if ("user" in obj) {
+        obj.user = encode(obj.user);
+      }
       if ("author" in obj) {
         obj.author = encode(obj.author);
+      }
+      if ("hearts" in obj) {
+        obj.hearts = encode(obj.hearts);
       }
       return obj;
     }
@@ -268,16 +289,15 @@ exports.encodeID = (req, res) => {
   try {
     // We need to search through sauces/users/reviews in req.response for
     // any _id properties and convert it to a hashed value.
-    if (req.response) {
-      // TODO: use the arr array instead of searching through the 'prop in obj' method
-      // const arr = ["sauces", "users", "reviews", "author"];
-    }
+    // const arr = ["sauces", "users", "reviews", "author"];
+    req.response = encode(req.response);
 
     // construct our final return object
     const data = {
       isGood: true,
       data: req.response
     };
+
     return res.status(200).send(data);
   } catch (err) {
     console.log(err);
