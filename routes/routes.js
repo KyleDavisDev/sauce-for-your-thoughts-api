@@ -42,7 +42,8 @@ router.post(
   "/api/sauce/get/id",
   authController.isLoggedIn,
   sauceController.getSauceById,
-  reviewController.findReviewsBySauceID
+  reviewController.findReviewsBySauceID,
+  authController.encodeID
 );
 
 // 1. Check mimetype of image and set req.body
@@ -115,10 +116,14 @@ router.post(
   authController.validateToken
 );
 
+// 1. Validate user
+// 2. Find user hearts
+// 3. Encode _id's
 router.post(
   "/api/user/getHearts",
   authController.isLoggedIn,
-  userController.getHearts
+  userController.getHearts,
+  authController.encodeID
 );
 
 // 1. Check is token is legit
