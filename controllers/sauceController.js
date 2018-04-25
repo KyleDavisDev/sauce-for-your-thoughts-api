@@ -233,7 +233,9 @@ exports.editSauce = async (req, res) => {
   }
 };
 
-// Grabs all available sauces and attaches to req.response.sauces
+/** @description Grabs all available sauces and attaches to req.response.sauces
+ *  @extends req.response - extrends/creates onto the custom 'global' object between middleware
+ */
 exports.getSauces = async (req, res, next) => {
   try {
     // get all sauces
