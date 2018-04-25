@@ -187,25 +187,43 @@ exports.getSauceUser = async (req, res, next) => {
   }
 };
 
-exports.getHearts = async (req, res) => {
+// TODO: Better error handling and sanity checks.
+/** @description Find all of the hearted sauces for a specific user
+ *  @extends req.response - extrends/creates onto the custom 'global' object between middleware
+ *  @param {String} req.body.user._id - unique user string
+ */
+exports.getHearts = async (req, res, next) => {
+  // Quick guard clause
+  if (!req.body || !req.body.user || !req.body.user._id) {
+    const data = {
+      isGood: false,
+      msg: "Could not find a specific user to lookup.",
+      data: {}
+    };
+    return res.status(400).send(data);
+  }
+
   try {
+    // get array of sauce _id's for specific user's hearts
     const user = await User.findById(req.body.user._id, { _id: 0, hearts: 1 });
 
+    // Make sure user didn't fudge up
     if (!user) {
       const data = {
         isGood: false,
-        msg: "Could not find user. Please try again."
+        msg: "Could not find your user in the database. Please try again."
       };
       return res.status(400).send(data);
     }
 
-    const data = {
-      isGood: true,
-      msg: "Found user hearts.",
-      data: { hearts: user.hearts }
-    };
+    // Init req.response if it doesn't already exist
+    if (req.response === undefined) req.response = {};
 
-    return res.status(200).send(data);
+    // Attach hearts to global object
+    // Going to tranform array of strings to array of objects so encoding step can parse propery
+    req.response.hearts = user.hearts.map(x => ({ _id: x }));
+
+    next();
   } catch (err) {
     return res.status(400).send(err);
   }
@@ -246,7 +264,22 @@ exports.toggleHeart = async (req, res) => {
   }
 };
 
+// TODO: Better error handling and sanity checks
+/** @description Get user info from DB by querying a specific _id
+ *  @extends req.response - extrends/creates onto the custom 'global' object between middleware
+ *  @param {String} req.body.user._id - unique user string
+ */
 exports.getUserById = async (req, res, next) => {
+  // Quick guard clause
+  if (!req.body || !req.body.user || !req.body.user._id) {
+    const data = {
+      isGood: false,
+      msg: "Could not find a specific user to lookup.",
+      data: {}
+    };
+    return res.status(400).send(data);
+  }
+
   try {
     // grab user _id
     const query = req.body.user._id;
@@ -260,14 +293,16 @@ exports.getUserById = async (req, res, next) => {
       return res.status(401).send(data);
     }
 
-    // construct return object
-    const data = {
-      isGood: true,
-      data: { user: { _id: user._id, name: user.name, email: user.email } },
-      msg: "Successfully found user."
-    };
-    return res.status(200).send(data);
+    // init req.response if not already exists
+    if (req.response === undefined) req.response = {};
+
+    // attach sauces to req.response
+    req.response.user = user;
+
+    // Goto authController.encodeID
+    next();
   } catch (err) {
-    console.log(err);
+    const data = { isGood: false, msg: "Could not find user.", data: {} };
+    return res.status(400).send(data);
   }
 };
