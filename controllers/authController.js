@@ -267,8 +267,14 @@ exports.encodeID = (req, res) => {
       if ("sauces" in obj) {
         obj.sauces = encode(obj.sauces);
       }
+      if ("sauce" in obj) {
+        obj.sauce = encode(obj.sauce);
+      }
       if ("reviews" in obj) {
         obj.reviews = encode(obj.reviews);
+      }
+      if ("review" in obj) {
+        obj.review = encode(obj.review);
       }
       if ("users" in obj) {
         obj.users = encode(obj.users);
