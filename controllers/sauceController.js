@@ -69,6 +69,14 @@ exports.stringToProperType = (req, res, next) => {
   }
 };
 
+/** @description Save a sauce into the database
+ *  @extends req.response - extrends/creates onto the custom 'global' object between middleware
+ *  @param {String} req.body.user._id - unique user string
+ *  @param {String} req.body.sauce.name - name of the sauce
+ *  @param {String} req.body.sauce.description - description of the sauce
+ *  @param {String[]} req.body.sauce.tags - tags that help to describe the sauce
+ *  @param {String} req.body.sauce.photo - unique name of the photo saved on server
+ */
 exports.addSauce = async (req, res, next) => {
   if (!req.body.sauce || Object.keys(req.body.sauce) === 0) {
     const data = {
