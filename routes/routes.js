@@ -15,9 +15,11 @@ const reviewController = require("../controllers/reviewController.js");
 
 // 1. Check mimetype of image and set req.body
 // 2. Verify if user is valid
-// 3. Resize image and write to server
+// 3. Resize image and save to server
 // 4. Convert req.body data to be proper format for DB
-// 5. Write to DB
+// 5. Save sauce to DB
+// 6. Save review to DB
+// 7. Encode _id's
 router.post(
   "/api/sauce/add",
   sauceController.upload,
@@ -25,7 +27,8 @@ router.post(
   sauceController.resize,
   sauceController.stringToProperType,
   sauceController.addSauce,
-  reviewController.addReview
+  reviewController.addReview,
+  authController.encodeID
 );
 
 // 1. Use :slug param to find and return sauce
@@ -159,11 +162,5 @@ router.post(
 );
 
 // END API ---
-
-// let react handle rest
-router.get("*", (req, res) => {
-  // Temp removed since this is just API
-  // res.sendFile(`${process.cwd()}/dist/index.html`);
-});
 
 module.exports = router;
