@@ -5,7 +5,6 @@ const slug = require("slugs"); // Hi there! How are you! --> hi-there-how-are-yo
 const multer = require("multer"); // helps uploading images/files
 const jimp = require("jimp"); // helps with resizing photos
 const uuid = require("uuid"); // generated unique identifiers
-const userController = require("./userController.js");
 
 const multerOptions = {
   storage: multer.memoryStorage(),
