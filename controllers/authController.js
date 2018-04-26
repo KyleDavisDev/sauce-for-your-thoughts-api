@@ -232,9 +232,7 @@ exports.validateToken = (req, res) => {
   return res.status(200).send(data);
 };
 
-// TODO: use the arr array instead of searching through the 'prop in obj' method
-/** @description Search through return data object for any mongoose _id's and encodes them.
- */
+/** @description Search through return data object for any mongoose _id's and encodes them. */
 exports.encodeID = (req, res) => {
   // Simple guard clause
   if (!req.response) {
@@ -246,57 +244,10 @@ exports.encodeID = (req, res) => {
     res.status(400).send(data);
   }
 
-  /** @description Recursive function that searches through object looking for any _id to encode
-   *  @param {Object} obj - object to look through
-   *  @returns {Object} obj - same object as above with encoded _id values
-   */
-  function encode(obj) {
-    if (!obj) return;
-
-    // Check if obj is an array and then loop through
-    if (Object.prototype.toString.call(obj) === "[object Array]") {
-      return obj.map(x => encode(x));
-    }
-
-    // Check if obj is an object
-    if (Object.prototype.toString.call(obj) === "[object Object]") {
-      if (obj._id !== undefined) {
-        obj._id = hashids.encodeHex(obj._id);
-      }
-
-      if ("sauces" in obj) {
-        obj.sauces = encode(obj.sauces);
-      }
-      if ("sauce" in obj) {
-        obj.sauce = encode(obj.sauce);
-      }
-      if ("reviews" in obj) {
-        obj.reviews = encode(obj.reviews);
-      }
-      if ("review" in obj) {
-        obj.review = encode(obj.review);
-      }
-      if ("users" in obj) {
-        obj.users = encode(obj.users);
-      }
-      if ("user" in obj) {
-        obj.user = encode(obj.user);
-      }
-      if ("author" in obj) {
-        obj.author = encode(obj.author);
-      }
-      if ("hearts" in obj) {
-        obj.hearts = encode(obj.hearts);
-      }
-      return obj;
-    }
-  }
-
   try {
     // We need to search through sauces/users/reviews in req.response for
     // any _id properties and convert it to a hashed value.
-    // const arr = ["sauces", "users", "reviews", "author"];
-    req.response = encode(req.response);
+    req.response = encodeDecode(req.response, hashids.encodeHex);
 
     // construct our final return object
     const data = {
@@ -310,3 +261,56 @@ exports.encodeID = (req, res) => {
     res.status(400).send(err);
   }
 };
+
+// TODO: Clean up the if chain
+// TODO: Open ticket for issue regarding passing hashid.encodeHex as param
+/** @description Recursive function that searches through object looking for any _id to encode
+ *  @param {Object} obj - object to look through
+ *  @param {string} type - either encode or decode to determine which action should be taken
+ *  @param {String} fn - hashid's encode or decode function
+ *  @returns {Object} obj - same object as above with encoded _id values
+ */
+function encodeDecode(obj, type, fn) {
+  if (!obj) return;
+
+  // Check if obj is an array and then loop through
+  if (Object.prototype.toString.call(obj) === "[object Array]") {
+    return obj.map(x => encodeDecode(x, fn));
+  }
+
+  // Check if obj is an object
+  if (Object.prototype.toString.call(obj) === "[object Object]") {
+    if (obj._id !== undefined) {
+      obj._id =
+        type === "encode"
+          ? hashids.encodeHex(obj._id)
+          : hashids.decodeHex(obj._id);
+    }
+
+    if ("sauces" in obj) {
+      obj.sauces = encodeDecode(obj.sauces, fn);
+    }
+    if ("sauce" in obj) {
+      obj.sauce = encodeDecode(obj.sauce, fn);
+    }
+    if ("reviews" in obj) {
+      obj.reviews = encodeDecode(obj.reviews, fn);
+    }
+    if ("review" in obj) {
+      obj.review = encodeDecode(obj.review, fn);
+    }
+    if ("users" in obj) {
+      obj.users = encodeDecode(obj.users, fn);
+    }
+    if ("user" in obj) {
+      obj.user = encodeDecode(obj.user, fn);
+    }
+    if ("author" in obj) {
+      obj.author = encodeDecode(obj.author, fn);
+    }
+    if ("hearts" in obj) {
+      obj.hearts = encodeDecode(obj.hearts, fn);
+    }
+    return obj;
+  }
+}
