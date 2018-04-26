@@ -1,16 +1,23 @@
 const mongoose = require("mongoose");
 const Review = mongoose.model("Review");
+const Hashids = require("hashids");
+const hashids = new Hashids();
 
+// TODO: Add sanity checks
+// TODO: Better error handling/logging
 /** @description Add review to DB
- *  @param {Object} review - review to be saved
- *  @return {Object} attaches review to req.response.sauce OR req.response if sauce doesn't exist
+ *  @extends req.response attaches review to req.response.sauce OR req.response if sauce doesn't exist
+ *  @param {String} req.body.user._id - unique user string
+ *  @param {String} req.body.sauce._id - unique sauce string
+ *  @param {String} req.body.review.text - user's  review
+ *  @param {Number} req.body.review.rating - 1-10 value
  */
-exports.addReview = async (req, res) => {
+exports.addReview = async (req, res, next) => {
   try {
     // construct review to save
     const record = {
       author: req.body.user._id,
-      sauce: req.body.sauce._id,
+      sauce: hashids.decodeHex(req.body.sauce._id),
       text: req.body.review.text || "",
       rating: req.body.review.rating
     };
@@ -22,7 +29,8 @@ exports.addReview = async (req, res) => {
     if (!review) {
       const data = {
         isGood: false,
-        msg: "Could not add sauce"
+        msg:
+          "Could save sauce to the database. Please be sure your sauce _id is correct."
       };
       return res.status(400).send(data);
     }
@@ -36,20 +44,19 @@ exports.addReview = async (req, res) => {
     } else {
       // We will land here if user is submitting only a review and not a sauce along with it.
       req.response.review = review.toObject();
+
+      // Format review object
+      req.response.review.sauce = { _id: req.response.review.sauce };
+      req.response.review.author = { _id: req.response.review.author };
     }
 
-    // construct final payload
-    const data = {
-      isGood: true,
-      msg: "Successfully added sauce.",
-      data: req.response
-    };
-    return res.status(200).send(data);
+    next();
   } catch (err) {
-    // TODO: Better error handling/logging
     const data = {
       isGood: false,
-      msg: "Could not add sauce. Make sure all fields are filled and try again."
+      msg:
+        "Could not add sauce. Make sure all fields are filled and try again.",
+      err
     };
     return res.status(400).send(data);
   }
