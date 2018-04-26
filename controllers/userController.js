@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const User = mongoose.model("User");
 const promisify = require("es6-promisify");
-const jwt = require("jsonwebtoken");
+const Hashids = require("hashids");
+const hashids = new Hashids();
 
 exports.validateRegister = (req, res, next) => {
   req.sanitizeBody("user.name");
@@ -229,7 +230,30 @@ exports.getHearts = async (req, res, next) => {
   }
 };
 
+// TODO: Better error handling
+// TODO: More sanity checks
+/** @description add/remove a sauce _id from the user's heart's array
+ *  @extends req.response - extrends/creates onto the custom 'global' object between middleware
+ *  @param {String} req.body.user._id - unique user string
+ *  @param {String} req.body.sauce._id - unique sauce string
+ */
 exports.toggleHeart = async (req, res) => {
+  // Simple guard clause
+  if (
+    !req.body ||
+    !req.body.user ||
+    !req.body.user._id ||
+    !req.body.sauce ||
+    !req.body.sauce._id
+  ) {
+    const data = {
+      isGood: false,
+      msg: "Your sauce or user _id got lost. Please try again.",
+      data: {}
+    };
+    return res.status(400).send(data);
+  }
+
   try {
     // grab all user hearts
     // turn mongodb results to workable objects
@@ -238,17 +262,17 @@ exports.toggleHeart = async (req, res) => {
       hearts: 1
     });
 
+    const sauceID = hashids.decodeHex(req.body.sauce._id);
+
     // figure out if we need to remove sauce id from hearts array or add to it
-    const operator = user.hearts
-      .map(x => x.toString())
-      .includes(req.body.sauce._id)
+    const operator = user.hearts.map(x => x.toString()).includes(sauceID)
       ? "$pull"
       : "$addToSet";
 
     // update user's hearts
     await User.findByIdAndUpdate(
       req.body.user._id,
-      { [operator]: { hearts: req.body.sauce._id } },
+      { [operator]: { hearts: sauceID } },
       { new: true }
     );
 
@@ -258,8 +282,6 @@ exports.toggleHeart = async (req, res) => {
       data: { sauce: { _id: req.body.sauce._id } }
     });
   } catch (err) {
-    // TODO: Better error handling
-    console.log(err);
     return res.status(400).send(err);
   }
 };
