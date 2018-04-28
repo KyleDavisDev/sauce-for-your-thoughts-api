@@ -247,7 +247,7 @@ exports.encodeID = (req, res) => {
   try {
     // We need to search through sauces/users/reviews in req.response for
     // any _id properties and convert it to a hashed value.
-    req.response = encodeDecode(req.response, hashids.encodeHex);
+    req.response = encryptDecrypt(req.response, hashids.encodeHex);
 
     // construct our final return object
     const data = {
@@ -270,12 +270,12 @@ exports.encodeID = (req, res) => {
  *  @param {String} fn - hashid's encode or decode function
  *  @returns {Object} obj - same object as above with encoded _id values
  */
-function encodeDecode(obj, type, fn) {
+function encryptDecrypt(obj, type, fn) {
   if (!obj) return;
 
   // Check if obj is an array and then loop through
   if (Object.prototype.toString.call(obj) === "[object Array]") {
-    return obj.map(x => encodeDecode(x, fn));
+    return obj.map(x => encryptDecrypt(x, fn));
   }
 
   // Check if obj is an object
@@ -288,28 +288,28 @@ function encodeDecode(obj, type, fn) {
     }
 
     if ("sauces" in obj) {
-      obj.sauces = encodeDecode(obj.sauces, fn);
+      obj.sauces = encryptDecrypt(obj.sauces, fn);
     }
     if ("sauce" in obj) {
-      obj.sauce = encodeDecode(obj.sauce, fn);
+      obj.sauce = encryptDecrypt(obj.sauce, fn);
     }
     if ("reviews" in obj) {
-      obj.reviews = encodeDecode(obj.reviews, fn);
+      obj.reviews = encryptDecrypt(obj.reviews, fn);
     }
     if ("review" in obj) {
-      obj.review = encodeDecode(obj.review, fn);
+      obj.review = encryptDecrypt(obj.review, fn);
     }
     if ("users" in obj) {
-      obj.users = encodeDecode(obj.users, fn);
+      obj.users = encryptDecrypt(obj.users, fn);
     }
     if ("user" in obj) {
-      obj.user = encodeDecode(obj.user, fn);
+      obj.user = encryptDecrypt(obj.user, fn);
     }
     if ("author" in obj) {
-      obj.author = encodeDecode(obj.author, fn);
+      obj.author = encryptDecrypt(obj.author, fn);
     }
     if ("hearts" in obj) {
-      obj.hearts = encodeDecode(obj.hearts, fn);
+      obj.hearts = encryptDecrypt(obj.hearts, fn);
     }
     return obj;
   }
