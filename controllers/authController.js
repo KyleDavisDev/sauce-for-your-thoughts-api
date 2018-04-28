@@ -247,7 +247,7 @@ exports.encodeID = (req, res) => {
   try {
     // We need to search through sauces/users/reviews in req.response for
     // any _id properties and convert it to a hashed value.
-    req.response = encryptDecrypt(req.response, hashids.encodeHex);
+    req.response = encryptDecrypt(req.response, "encode", hashids.encodeHex);
 
     // construct our final return object
     const data = {
@@ -256,6 +256,32 @@ exports.encodeID = (req, res) => {
     };
 
     return res.status(200).send(data);
+  } catch (err) {
+    console.log(err);
+    res.status(400).send(err);
+  }
+};
+
+exports.decodeID = (req, res, next) => {
+  // Simple guard clause
+  if (!req.body) {
+    const data = {
+      isGood: false,
+      msg:
+        "Oops! Looks like nothing was passed to the server. Please ensure you are sending data in a JSON format.",
+      data: {}
+    };
+    res.status(300).send(data);
+  }
+
+  try {
+    // We need to search through sauces/users/reviews in req.response for
+    // any _id properties and convert it to a hashed value.
+    req.body = encryptDecrypt(req.body, "decode", hashids.encodeHex);
+
+    console.log(req.body);
+
+    next();
   } catch (err) {
     console.log(err);
     res.status(400).send(err);
@@ -275,7 +301,7 @@ function encryptDecrypt(obj, type, fn) {
 
   // Check if obj is an array and then loop through
   if (Object.prototype.toString.call(obj) === "[object Array]") {
-    return obj.map(x => encryptDecrypt(x, fn));
+    return obj.map(x => encryptDecrypt(x, type, fn));
   }
 
   // Check if obj is an object
@@ -288,28 +314,28 @@ function encryptDecrypt(obj, type, fn) {
     }
 
     if ("sauces" in obj) {
-      obj.sauces = encryptDecrypt(obj.sauces, fn);
+      obj.sauces = encryptDecrypt(obj.sauces, type, fn);
     }
     if ("sauce" in obj) {
-      obj.sauce = encryptDecrypt(obj.sauce, fn);
+      obj.sauce = encryptDecrypt(obj.sauce, type, fn);
     }
     if ("reviews" in obj) {
-      obj.reviews = encryptDecrypt(obj.reviews, fn);
+      obj.reviews = encryptDecrypt(obj.reviews, type, fn);
     }
     if ("review" in obj) {
-      obj.review = encryptDecrypt(obj.review, fn);
+      obj.review = encryptDecrypt(obj.review, type, fn);
     }
     if ("users" in obj) {
-      obj.users = encryptDecrypt(obj.users, fn);
+      obj.users = encryptDecrypt(obj.users, type, fn);
     }
     if ("user" in obj) {
-      obj.user = encryptDecrypt(obj.user, fn);
+      obj.user = encryptDecrypt(obj.user, type, fn);
     }
     if ("author" in obj) {
-      obj.author = encryptDecrypt(obj.author, fn);
+      obj.author = encryptDecrypt(obj.author, type, fn);
     }
     if ("hearts" in obj) {
-      obj.hearts = encryptDecrypt(obj.hearts, fn);
+      obj.hearts = encryptDecrypt(obj.hearts, type, fn);
     }
     return obj;
   }
