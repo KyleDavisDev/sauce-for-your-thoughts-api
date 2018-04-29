@@ -130,8 +130,10 @@ router.post(
   authController.encodeID
 );
 
-// 1. Check is token is legit
-// 2. Toggle sauce.ID in user.hearts
+// 1. Check is user.token is legit, place user's _id onto user
+// 2. Decode all ._id's if applicable
+// 3. Toggle sauce._id in user.hearts
+// 4. Encode all ._id's
 router.post(
   "/api/user/toggleSauce",
   authController.isLoggedIn,
@@ -140,9 +142,14 @@ router.post(
   authController.encodeID
 );
 
+// 1. Check if user.token is legit, place user's _id onto user
+// 2. Decode all .id's if applicable
+// 3. Add review to DB
+// 4. Encode all .id's
 router.post(
   "/api/review/add",
   authController.isLoggedIn,
+  authController.decodeID,
   reviewController.addReview,
   authController.encodeID
 );
