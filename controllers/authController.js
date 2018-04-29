@@ -3,8 +3,7 @@ const jwt = require("jsonwebtoken");
 const User = require("mongoose").model("User");
 const promisify = require("es6-promisify");
 const mail = require("../handlers/mail.js");
-const Hashids = require("hashids");
-const hashids = new Hashids();
+const { encryptDecrypt } = require("../handlers/auth");
 
 exports.login = (req, res) => {
   if (req.body.user === undefined || Object.keys(req.body.user) === 0) {
@@ -232,10 +231,13 @@ exports.validateToken = (req, res) => {
   return res.status(200).send(data);
 };
 
-/** @description Search through return data object for any mongoose _id's and encodes them. */
+/** @description Search through return data object for any mongoose _id's and encodes them.
+ *  @extends req.response - semi 'global' object between middleware
+ *  @param {Object} req.response - expects something to be here
+ */
 exports.encodeID = (req, res) => {
   // Simple guard clause
-  if (!req.response) {
+  if (!req.response || Object.keys(req.response).length === 0) {
     const data = {
       isGood: false,
       msg: "response object failed to be created. Please try again",
@@ -247,7 +249,7 @@ exports.encodeID = (req, res) => {
   try {
     // We need to search through sauces/users/reviews in req.response for
     // any _id properties and convert it to a hashed value.
-    req.response = encryptDecrypt(req.response, "encode", hashids.encodeHex);
+    req.response = encryptDecrypt(req.response, "encode");
 
     // construct our final return object
     const data = {
@@ -262,9 +264,12 @@ exports.encodeID = (req, res) => {
   }
 };
 
+/** @description Decode any _id found and go to next middleware
+ *  @param {Object} req.body - expects data to be found here to decode
+ */
 exports.decodeID = (req, res, next) => {
   // Simple guard clause
-  if (!req.body) {
+  if (!req.body || Object.keys(req.body).length === 0) {
     const data = {
       isGood: false,
       msg:
@@ -277,7 +282,8 @@ exports.decodeID = (req, res, next) => {
   try {
     // We need to search through sauces/users/reviews in req.response for
     // any _id properties and convert it to a hashed value.
-    req.body = encryptDecrypt(req.body, "decode", hashids.encodeHex);
+    console.log(req.body);
+    req.body = encryptDecrypt(req.body, "decode");
 
     console.log(req.body);
 
@@ -287,56 +293,3 @@ exports.decodeID = (req, res, next) => {
     res.status(400).send(err);
   }
 };
-
-// TODO: Clean up the if chain
-// TODO: Open ticket for issue regarding passing hashid.encodeHex as param
-/** @description Recursive function that searches through object looking for any _id to encode
- *  @param {Object} obj - object to look through
- *  @param {string} type - either encode or decode to determine which action should be taken
- *  @param {String} fn - hashid's encode or decode function
- *  @returns {Object} obj - same object as above with encoded _id values
- */
-function encryptDecrypt(obj, type, fn) {
-  if (!obj) return;
-
-  // Check if obj is an array and then loop through
-  if (Object.prototype.toString.call(obj) === "[object Array]") {
-    return obj.map(x => encryptDecrypt(x, type, fn));
-  }
-
-  // Check if obj is an object
-  if (Object.prototype.toString.call(obj) === "[object Object]") {
-    if (obj._id !== undefined) {
-      obj._id =
-        type === "encode"
-          ? hashids.encodeHex(obj._id)
-          : hashids.decodeHex(obj._id);
-    }
-
-    if ("sauces" in obj) {
-      obj.sauces = encryptDecrypt(obj.sauces, type, fn);
-    }
-    if ("sauce" in obj) {
-      obj.sauce = encryptDecrypt(obj.sauce, type, fn);
-    }
-    if ("reviews" in obj) {
-      obj.reviews = encryptDecrypt(obj.reviews, type, fn);
-    }
-    if ("review" in obj) {
-      obj.review = encryptDecrypt(obj.review, type, fn);
-    }
-    if ("users" in obj) {
-      obj.users = encryptDecrypt(obj.users, type, fn);
-    }
-    if ("user" in obj) {
-      obj.user = encryptDecrypt(obj.user, type, fn);
-    }
-    if ("author" in obj) {
-      obj.author = encryptDecrypt(obj.author, type, fn);
-    }
-    if ("hearts" in obj) {
-      obj.hearts = encryptDecrypt(obj.hearts, type, fn);
-    }
-    return obj;
-  }
-}
