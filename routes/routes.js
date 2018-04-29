@@ -135,7 +135,9 @@ router.post(
 router.post(
   "/api/user/toggleSauce",
   authController.isLoggedIn,
-  userController.toggleHeart
+  authController.decodeID,
+  userController.toggleHeart,
+  authController.encodeID
 );
 
 router.post(
