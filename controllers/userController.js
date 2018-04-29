@@ -237,7 +237,7 @@ exports.getHearts = async (req, res, next) => {
  *  @param {String} req.body.user._id - unique user string
  *  @param {String} req.body.sauce._id - unique sauce string
  */
-exports.toggleHeart = async (req, res) => {
+exports.toggleHeart = async (req, res, next) => {
   // Simple guard clause
   if (
     !req.body ||
@@ -262,25 +262,28 @@ exports.toggleHeart = async (req, res) => {
       hearts: 1
     });
 
-    const sauceID = hashids.decodeHex(req.body.sauce._id);
+    const { _id } = req.body.sauce;
 
     // figure out if we need to remove sauce id from hearts array or add to it
-    const operator = user.hearts.map(x => x.toString()).includes(sauceID)
+    const operator = user.hearts.map(x => x.toString()).includes(_id)
       ? "$pull"
       : "$addToSet";
 
     // update user's hearts
     await User.findByIdAndUpdate(
       req.body.user._id,
-      { [operator]: { hearts: sauceID } },
+      { [operator]: { hearts: _id } },
       { new: true }
     );
 
-    return res.status(200).send({
-      isGood: true,
-      msg: `Sauce ${req.body.sauce._id} has been toggled.`,
-      data: { sauce: { _id: req.body.sauce._id } }
-    });
+    // init req.response if not already exists
+    if (req.response === undefined) req.response = {};
+
+    // attach toggled sauce _id to req.response
+    req.response.sauce = { _id };
+
+    // Go to authController.encodeID
+    next();
   } catch (err) {
     return res.status(400).send(err);
   }
