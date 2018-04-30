@@ -17,7 +17,7 @@ exports.addReview = async (req, res, next) => {
     // construct review to save
     const record = {
       author: req.body.user._id,
-      sauce: hashids.decodeHex(req.body.sauce._id),
+      sauce: req.body.sauce._id,
       text: req.body.review.text || "",
       rating: req.body.review.rating
     };
@@ -39,8 +39,13 @@ exports.addReview = async (req, res, next) => {
     if (!("response" in req) || req.response === undefined) req.response = {};
 
     // attach review to sauce OR directly onto response
-    if ("sauce" in req.response && req.response.sauce !== undefined) {
-      req.response.sauce.review = [review.toObject()];
+    if ("sauces" in req.response && req.response.sauces !== undefined) {
+      const reviewObj = review.toObject();
+
+      // Format obj to have consistant format
+      reviewObj.author = { _id: reviewObj.author };
+
+      req.response.sauces[0].reviews = [reviewObj];
     } else {
       // We will land here if user is submitting only a review and not a sauce along with it.
       req.response.review = review.toObject();
