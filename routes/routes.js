@@ -14,16 +14,18 @@ const reviewController = require("../controllers/reviewController.js");
 // multer will put data object onto req.body like normal
 
 // 1. Check mimetype of image and set req.body
-// 2. Verify if user is valid
-// 3. Resize image and save to server
-// 4. Convert req.body data to be proper format for DB
-// 5. Save sauce to DB
-// 6. Save review to DB
-// 7. Encode _id's
+// 2. Verify user.token, attach _id to user
+// 3. Decode all _id's if applicable
+// 4. Resize image and save to server
+// 5. Convert req.body data to be proper format for DB
+// 6. Save sauce to DB
+// 7. Save review to DB
+// 8. Encode _id's
 router.post(
   "/api/sauce/add",
   sauceController.upload,
   authController.isLoggedIn,
+  authController.decodeID,
   sauceController.resize,
   sauceController.stringToProperType,
   sauceController.addSauce,
@@ -53,7 +55,7 @@ router.post(
 // 1. Check mimetype of image and set req.body
 // 2. Verify if user is valid
 // 3. Resize image and write to server
-// 4. Conver req.body data to be proper format for DB
+// 4. Convert req.body data to be proper format for DB
 // 5. Write to DB
 router.post(
   "/api/sauce/update",
@@ -73,8 +75,7 @@ router.get(
   authController.encodeID
 );
 
-// 1. Check if user is legit
-// 2. return sauces by specific tag
+// 1. return sauces by specific tag
 router.post("/api/sauces/get/by/tag/", sauceController.getSauceByTag);
 
 // TODO: Add comment
@@ -113,7 +114,7 @@ router.post(
   userController.updateUser
 );
 
-// 1. Check if token relates to a user
+// 1. Check is user.token is legit, place user's _id onto user
 router.post(
   "/api/user/isloggedin",
   authController.isLoggedIn,
