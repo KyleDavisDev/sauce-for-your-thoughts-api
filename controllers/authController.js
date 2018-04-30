@@ -282,10 +282,7 @@ exports.decodeID = (req, res, next) => {
   try {
     // We need to search through sauces/users/reviews in req.response for
     // any _id properties and convert it to a hashed value.
-    console.log(req.body);
     req.body = encryptDecrypt(req.body, "decode");
-
-    console.log(req.body);
 
     next();
   } catch (err) {
