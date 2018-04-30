@@ -48,7 +48,9 @@ exports.encryptDecrypt = (obj, type, fn) => {
       // Only decode _id if type is decode AND _id is not already a mongoose object id
       if (type === "decode" && !module.exports.toObjectId(obj._id)) {
         obj._id = hashids.decodeHex(obj._id);
-      } else if (type === "encode") {
+      }
+
+      if (type === "encode") {
         obj._id = hashids.encodeHex(obj._id);
       }
     }
