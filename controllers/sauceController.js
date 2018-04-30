@@ -115,10 +115,10 @@ exports.addSauce = async (req, res, next) => {
     if (!req.response) req.response = {};
 
     // add sauce to req.response for next middleware
-    req.response.sauce = sauce.toObject();
+    req.response.sauces = [sauce.toObject()];
 
     // update .author to the 'standard' return author object
-    req.response.sauce.author = user.toObject();
+    req.response.sauces[0].author = user.toObject();
 
     next(); // go to reviewController.addReview
   } catch (err) {
