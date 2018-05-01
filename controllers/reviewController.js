@@ -164,7 +164,7 @@ exports.getCompleteReviewsBySauceID = async (req, res, next) => {
  *  @param {String[]} req.response.sauces[]._id - unique sauce string
  *  @return array of reviews _ids attached to each req.response.sauces[] object
  */
-exports.getReviewIDsBySauceID = async (req, res, next) => {
+exports.getOnlyReviewIDsBySauceID = async (req, res, next) => {
   // make sure req.response.sauces[]._id was actually passed
   if (
     req.response === undefined ||
