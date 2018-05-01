@@ -38,7 +38,7 @@ router.post(
 router.get(
   "/api/sauce/get/:slug",
   sauceController.getSauceBySlug,
-  reviewController.findReviewsBySauceID,
+  reviewController.getCompleteReviewsBySauceID,
   authController.encodeID
 );
 
@@ -48,7 +48,7 @@ router.post(
   "/api/sauce/get/id",
   authController.isLoggedIn,
   sauceController.getSauceById,
-  reviewController.findReviewsBySauceID,
+  reviewController.getCompleteReviewsBySauceID,
   authController.encodeID
 );
 
