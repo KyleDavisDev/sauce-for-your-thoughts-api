@@ -331,9 +331,9 @@ exports.getSauceByTag = async (req, res) => {
 
     // replace sauce.author with sauce.author.email
     sauces = sauces.map(sauce => {
-      sauce = sauce.toObject();
-      sauce.author = sauce.author.email;
-      return sauce;
+      const sauceObj = sauce.toObject();
+      sauceObj.author = sauceObj.author.email;
+      return sauceObj;
     });
 
     const data = {
