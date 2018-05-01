@@ -71,7 +71,7 @@ router.post(
 router.get(
   "/api/sauces/get",
   sauceController.getSauces,
-  reviewController.findReviewsBySauceID,
+  reviewController.getReviewIDsBySauceID,
   authController.encodeID
 );
 
