@@ -238,9 +238,10 @@ exports.editSauce = async (req, res) => {
     // go into here if user didn't input name or some other model requirement wasn't met
     const data = {
       isGood: false,
-      msg: "Could not update your sauce."
+      msg: "Could not update your sauce.",
+      err
     };
-    res.send(err);
+    res.satus(400).send(data);
   }
 };
 
