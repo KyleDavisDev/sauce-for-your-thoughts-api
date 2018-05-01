@@ -105,7 +105,7 @@ exports.findReviewByUserAndSauce = async (req, res) => {
  *  @param {String[]} req.response.sauces[]._id - unique sauce string
  *  @return array of reviews attached to each req.response.sauces[] object
  */
-exports.findReviewsBySauceID = async (req, res, next) => {
+exports.getCompleteReviewsBySauceID = async (req, res, next) => {
   // make sure req.response.sauces[]._id was actually passed
   if (
     req.response === undefined ||
@@ -141,12 +141,15 @@ exports.findReviewsBySauceID = async (req, res, next) => {
         const sauceObj = sauce.toObject();
 
         // assign reviews to sauce
-        sauceObj.reviews = reviews.map(x => x.toObject());
+        sauceObj.reviews = reviews.map(x =>
+          Object.assign({}, x.toObject(), { sauce: { _id: sauce._id } })
+        );
 
         // return sauce
         return sauceObj;
       })
     );
+    console.log(req.response.sauces[0].reviews);
     // All is good if we made it here.
     // Go to authController.encodeID
     next();
