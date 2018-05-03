@@ -1,3 +1,30 @@
-This is project is the Node API for Wes Bos' NodeJS course. In his course, he makes use of Pug to serve html files while I, in contrast, decided to split the project into a Node API service and a ReactJS frontend.
+# Hello World!
 
-This file will be updated/styled soon.
+This is the source code for the **Sauce For Your Thoughts** API service.
+
+# Install
+
+Run `npm install` to download all of the necessary packages.
+
+# Usage
+
+1) You will need to create a `variables.env` file. The file must contain a `DATABASE` connection string, a `SECRET` string for authentication, `PORT` for the port number express should be listening to, and `MAIL_HOST`, `MAIL_PORT`, `MAIL_USER`, `MAIL_PASS` for sending emails.
+
+2) Run `npm run watch` to start the server.
+
+# Port Number 
+
+The default port number is `8080` but can easily be overriden by setting a `PORT` in the variables.env file.
+
+If everything has gone well, Express should now be listening to API requests.
+
+# Roadmap
+
+- [x] Standardize JSON that is expected by the server
+- [x] Add route for adding a review
+- [x] Skew mongoose object _id's
+- [x] Reduce amount of data returned on requests to get all sauces
+- [ ] Add additional sauce parameters (label, smell, texture, etc.)
+- [ ] Figure out way to manage user image uploads
+- [ ] Add 'staging' feature for sauces.
+- [ ] Add way to handle when/if user reports inappropriate content
