@@ -8,13 +8,13 @@ Run `npm install` to download all of the necessary packages.
 
 # Requirements
 
-This application was built in [NodeJS](https://nodejs.org/en/) on version `v7.10.0`.  
+1) This application requires [NodeJS](https://nodejs.org/en/) on version `v7.10.0` or a `v7.10.0` compatible version.
+
+2) You will need to create a `variables.env` file. The file must contain a `DATABASE` connection string, a `SECRET` string for authentication, `PORT` for the port number express should be listening to, and `MAIL_HOST`, `MAIL_PORT`, `MAIL_USER`, `MAIL_PASS` for sending emails.
 
 # Usage
 
-1) You will need to create a `variables.env` file. The file must contain a `DATABASE` connection string, a `SECRET` string for authentication, `PORT` for the port number express should be listening to, and `MAIL_HOST`, `MAIL_PORT`, `MAIL_USER`, `MAIL_PASS` for sending emails.
-
-2) Run `npm run watch` to start the server.
+Run `npm run watch` to start the server.
 
 # Port Number 
 
