@@ -24,11 +24,19 @@ If everything has gone well, Express should now be listening to API requests.
 
 # Roadmap
 
-- [x] Standardize JSON that is expected by the server
-- [x] Add route for adding a review
-- [x] Skew mongoose object _id's
-- [x] Reduce amount of data returned on requests to get all sauces
-- [ ] Add additional sauce parameters (label, smell, texture, etc.)
-- [ ] Figure out way to manage user image uploads
-- [ ] Add 'staging' feature for sauces before they go out to public
-- [ ] Add way to handle when/if user reports inappropriate content
+- [x] Standardize JSON that is expected by the server.
+- [x] Add route for adding a review.
+- [x] Skew mongoose object _id's.
+- [x] Reduce amount of data returned on requests to get all sauces.
+- [ ] Add additional sauce parameters (label, smell, texture, etc.).
+- [ ] Figure out way to manage user image uploads.
+- [ ] Add 'staging' feature for sauces before they go out to public.
+- [ ] Add way to handle when/if user reports inappropriate content.
+- [ ] Create a Model that has a list of inappropriate/unacceptable words.
+- [ ] Run user input through scanner to filter out unwanted language.
+- [ ] Add way for users to filter by pepper.
+- [ ] Allow users to mark if they have tried a sauce already.
+- [ ] Allow users to have favorite sauces.
+- [ ] Allow users to follow other users.
+- [ ] Standardize code documentation.
+- [ ] Write tests.
