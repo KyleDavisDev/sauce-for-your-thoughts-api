@@ -34,7 +34,7 @@ If everything has gone well, Express should now be listening to API requests.
 - [ ] Add way to handle when/if user reports inappropriate content.
 - [ ] Create a Model that has a list of inappropriate/unacceptable words.
 - [ ] Run user input through scanner to filter out unwanted language.
-- [ ] Add way for users to filter by pepper.
+- [ ] Add different ways for users to filter through the sauces (i.e. by pepper, hottest, highest rated, etc.).
 - [ ] Allow users to mark if they have tried a sauce already.
 - [ ] Allow users to have favorite sauces.
 - [ ] Allow users to follow other users.
