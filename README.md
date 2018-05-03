@@ -6,6 +6,10 @@ This is the source code for the **Sauce For Your Thoughts** API service.
 
 Run `npm install` to download all of the necessary packages.
 
+# Requirements
+
+This application was built in [NodeJS](https://nodejs.org/en/) on version `v7.10.0`.  
+
 # Usage
 
 1) You will need to create a `variables.env` file. The file must contain a `DATABASE` connection string, a `SECRET` string for authentication, `PORT` for the port number express should be listening to, and `MAIL_HOST`, `MAIL_PORT`, `MAIL_USER`, `MAIL_PASS` for sending emails.
@@ -26,5 +30,5 @@ If everything has gone well, Express should now be listening to API requests.
 - [x] Reduce amount of data returned on requests to get all sauces
 - [ ] Add additional sauce parameters (label, smell, texture, etc.)
 - [ ] Figure out way to manage user image uploads
-- [ ] Add 'staging' feature for sauces.
+- [ ] Add 'staging' feature for sauces before they go out to public
 - [ ] Add way to handle when/if user reports inappropriate content
