@@ -264,7 +264,7 @@ exports.getSauces = async (req, res, next) => {
     // get all sauces
     const sauces = await Sauce.find({}, { created: 0 })
       .limit(limit)
-      .sort({ name: 1 })
+      .sort({ created: -1 })
       .populate({
         path: "author",
         select: "_id name"
