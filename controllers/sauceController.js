@@ -250,6 +250,17 @@ exports.editSauce = async (req, res) => {
  */
 exports.getSauces = async (req, res, next) => {
   try {
+    // Grab page and limit. Make sure they are numbers.
+    const page = parseInt(req.query.page, 10);
+    const limit = parseInt(req.query.limit, 10);
+    if (Number.isNaN(page) || Number.isNaN(limit)) {
+      const data = {
+        isGood: false,
+        msg: "Your search query was invalid. Try using numbers only."
+      };
+      return res.status(400).send(data);
+    }
+
     // get all sauces
     const sauces = await Sauce.find({}, { created: 0 }).populate(
       "author",
