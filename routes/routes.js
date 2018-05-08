@@ -69,7 +69,7 @@ router.post(
 // 1. Return array of sauce objects
 // (Note: will likely change from method get to method post soon)
 router.get(
-  "/api/sauces/get",
+  "/api/sauces/get?",
   sauceController.getSauces,
   reviewController.getOnlyReviewIDsBySauceID,
   authController.encodeID
