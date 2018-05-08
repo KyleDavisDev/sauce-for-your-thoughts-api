@@ -262,10 +262,13 @@ exports.getSauces = async (req, res, next) => {
     }
 
     // get all sauces
-    const sauces = await Sauce.find({}, { created: 0 }).populate(
-      "author",
-      "_id name"
-    );
+    const sauces = await Sauce.find({}, { created: 0 })
+      .limit(limit)
+      .sort({ name: 1 })
+      .populate({
+        path: "author",
+        select: "_id name"
+      });
 
     if (!sauces) {
       const data = { isGood: false, msg: "Unable to find any sauces" };
