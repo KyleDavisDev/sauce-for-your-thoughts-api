@@ -263,8 +263,8 @@ exports.getSauces = async (req, res, next) => {
 
     // get all sauces
     const sauces = await Sauce.find({}, { created: 0 })
+      .skip(limit * (page - 1))
       .limit(limit)
-      .sort({ created: -1 })
       .populate({
         path: "author",
         select: "_id name"
@@ -281,7 +281,7 @@ exports.getSauces = async (req, res, next) => {
     // attach sauces to req.response
     req.response.sauces = sauces;
 
-    // go to reviewController.findReviewsBySauceID
+    // go to reviewController.getOnlyReviewIDsBySauceID
     next();
   } catch (err) {
     const data = { isGood: false, msg: "Unable to find any sauces" };
