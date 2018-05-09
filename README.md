@@ -40,3 +40,5 @@ If everything has gone well, Express should now be listening to API requests.
 - [ ] Allow users to follow other users.
 - [ ] Standardize code documentation.
 - [ ] Write tests.
+- [ ] Look into Typescript and/or Java Spring for long-term migration.
+- [ ] Look into switching from noSQL to SQL.
