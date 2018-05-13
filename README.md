@@ -28,6 +28,8 @@ If everything has gone well, Express should now be listening to API requests.
 - [x] Add route for adding a review.
 - [x] Skew mongoose object _id's.
 - [x] Reduce amount of data returned on requests to get all sauces.
+- [x] Impliment means to handle limit and page query params.
+- [ ] Extend ability to handle different query params
 - [ ] Add additional sauce parameters (label, smell, texture, etc.).
 - [ ] Figure out way to manage user image uploads.
 - [ ] Add 'staging' feature for sauces before they go out to public.
