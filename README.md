@@ -46,3 +46,4 @@ If everything has gone well, Express should now be listening to API requests.
 - [ ] Look into switching from noSQL to SQL.
 - [ ] Extend 'forgot password' system.
 - [ ] Look into sending emails via node.
+- [ ] Confirm email to activate account.
