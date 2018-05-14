@@ -149,7 +149,7 @@ exports.getCompleteReviewsBySauceID = async (req, res, next) => {
         return sauceObj;
       })
     );
-    console.log(req.response.sauces[0].reviews);
+
     // All is good if we made it here.
     // Go to authController.encodeID
     next();
