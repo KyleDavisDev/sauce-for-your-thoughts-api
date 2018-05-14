@@ -4,17 +4,27 @@ mongoose.Promise = global.Promise;
 // Abstractions since these will be used across multiple methods
 const rating = {
   type: Number,
-  required:
-    "You must supply a rating to `{PATH}` and the value must be between `{MIN}` and `{MAX}`",
-  min: 1,
-  max: 10
+  required: true,
+  min: [
+    1,
+    "You must provide a rating to `{PATH}` and the value must be greater than `{MIN}`"
+  ],
+  max: [
+    10,
+    "You must provide a rating to `{PATH}` and the value must be greater than `{MAX}`"
+  ]
 };
 const description = {
   type: String,
-  required:
-    "You must privde a description to `{PATH}` with a charactor length between `{MINLENGTH}` and `{MAXLENGTH}`",
-  minlength: 10,
-  maxlength: 255,
+  required: true,
+  minlength: [
+    10,
+    "You must provide a description to `{PATH}` with a charactor length greater than `{MINLENGTH}`"
+  ],
+  maxlength: [
+    255,
+    "You must provide a description to `{PATH}` with a charactor length less than `{MAXLENGTH}`"
+  ],
   trim: true
 };
 
