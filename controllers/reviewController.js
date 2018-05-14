@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const Review = mongoose.model("Review");
-const Hashids = require("hashids");
-const hashids = new Hashids();
+const { createNewRecord } = require("../handlers/helpers");
 
 // TODO: Add sanity checks
 // TODO: Better error handling/logging
@@ -9,18 +8,26 @@ const hashids = new Hashids();
  *  @extends req.response attaches review to req.response.sauce OR req.response if sauce doesn't exist
  *  @param {String} req.body.user._id - unique user string
  *  @param {String} req.body.sauce._id - unique sauce string
- *  @param {String} req.body.review.text - user's  review
- *  @param {Number} req.body.review.rating - 1-10 value
+ *  @param {Object} req.body.review.taste - taste object
+ *    @param {String} req.body.review.taste.description - description of the taste
+ *    @param {Number} req.body.review.taste.rating - 1-10 value
+ *  @param {Object} req.body.review.aroma - aroma object
+ *    @param {String} req.body.review.aroma.description - description of the aroma
+ *    @param {Number} req.body.review.aroma.rating - 1-10 value
+ *  @param {Object} req.body.review.label - label object
+ *    @param {String} req.body.review.label.description - description of the label
+ *    @param {Number} req.body.review.label.rating - 1-10 value
+ *  @param {Object} req.body.review.heat - heat object
+ *    @param {String} req.body.review.heat.description - description of the heat
+ *    @param {Number} req.body.review.heat.rating - 1-10 value
+ *  @param {Object} req.body.review.overall - overall object
+ *    @param {String} req.body.review.overall.description - description of the overall
+ *    @param {Number} req.body.review.overall.rating - 1-10 value
  */
 exports.addReview = async (req, res, next) => {
   try {
     // construct review to save
-    const record = {
-      author: req.body.user._id,
-      sauce: req.body.sauce._id,
-      text: req.body.review.text || "",
-      rating: req.body.review.rating
-    };
+    const record = createNewRecord(req.body);
 
     // save into DB
     const review = await new Review(record).save();
