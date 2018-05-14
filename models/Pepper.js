@@ -11,7 +11,9 @@ const pepperSchema = new mongoose.Schema({
   },
   SHU: {
     type: Number,
-    required: "Each pepper must have a SHU rating."
+    required: "Each pepper must have a SHU rating.",
+    min: 1,
+    max: 17000000
   }
 });
 
