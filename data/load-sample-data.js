@@ -1,4 +1,4 @@
-require("dotenv").config({ path: __dirname + "/../variables.env" });
+require("dotenv").config({ path: `${__dirname}/../variables.env` });
 const fs = require("fs");
 
 const mongoose = require("mongoose");
@@ -7,17 +7,24 @@ mongoose.Promise = global.Promise; // Tell Mongoose to use ES6 promises
 
 // import all of our models - they need to be imported only once
 const Sauce = require("../models/Sauce");
-// const Review = require('../models/Review');
+const Review = require("../models/Review");
 const User = require("../models/User");
+const Pepper = require("../models/Pepper");
 
-const sauces = JSON.parse(fs.readFileSync(__dirname + "/sauces.json", "utf-8"));
-// const reviews = JSON.parse(fs.readFileSync(__dirname + '/reviews.json', 'utf-8'));
-const users = JSON.parse(fs.readFileSync(__dirname + "/users.json", "utf-8"));
+const sauces = JSON.parse(fs.readFileSync(`${__dirname}/sauces.json`, "utf-8"));
+const reviews = JSON.parse(
+  fs.readFileSync(`${__dirname}/reviews.json`, "utf-8")
+);
+const users = JSON.parse(fs.readFileSync(`${__dirname}/users.json`, "utf-8"));
+
+const peppers = JSON.parse(
+  fs.readFileSync(`${__dirname}/peppers.json`, "utf-8")
+);
 
 async function deleteData() {
   console.log("😢😢 Goodbye Data...");
   await Sauce.remove();
-  // await Review.remove();
+  await Review.remove();
   await User.remove();
   console.log(
     "Data Deleted. To load sample data, run\n\n\t npm run sample\n\n"
@@ -28,8 +35,9 @@ async function deleteData() {
 async function loadData() {
   try {
     await Sauce.insertMany(sauces);
-    // await Review.insertMany(reviews);
+    await Review.insertMany(reviews);
     await User.insertMany(users);
+    await Pepper.insertMany(peppers);
     console.log("👍👍👍👍👍👍👍👍 Done!");
     process.exit();
   } catch (e) {
