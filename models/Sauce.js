@@ -23,7 +23,32 @@ const sauceSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: "User",
     required: "You must supply an author"
-  }
+  },
+  location: {
+    country: {
+      type: String,
+      required: "You must supply a country!",
+      default: "United States"
+    },
+    city: {
+      type: String,
+      required: "You must supply a city!"
+    }
+  },
+  shu: {
+    type: Number,
+    required: "You must supply a SHU rating."
+  },
+  ingrediants: {
+    type: String,
+    required: "You must suppply the listed ingrediants."
+  },
+  peppers: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: "Pepper"
+    }
+  ]
 });
 
 // index name and desc for faster lookups
