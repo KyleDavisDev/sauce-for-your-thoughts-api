@@ -9,7 +9,7 @@ const pepperSchema = new mongoose.Schema({
     type: String,
     required: "Each pepper must have a name."
   },
-  SHU: {
+  shu: {
     type: Number,
     required: "Each pepper must have a SHU rating.",
     min: 1,
