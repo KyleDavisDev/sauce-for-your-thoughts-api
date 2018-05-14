@@ -34,8 +34,8 @@ async function deleteData() {
 
 async function loadData() {
   try {
-    await Sauce.insertMany(sauces);
-    await Review.insertMany(reviews);
+    // await Sauce.insertMany(sauces);
+    // await Review.insertMany(reviews);
     await User.insertMany(users);
     await Pepper.insertMany(peppers);
     console.log("👍👍👍👍👍👍👍👍 Done!");
