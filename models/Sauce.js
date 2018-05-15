@@ -13,7 +13,7 @@ const sauceSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
-  tags: [String],
+  tags: [{ type: String, trim: true }],
   created: {
     type: Date,
     default: Date.now
@@ -27,12 +27,16 @@ const sauceSchema = new mongoose.Schema({
   location: {
     country: {
       type: String,
-      required: "You must supply a country!",
+      required: false,
       default: "United States"
+    },
+    state: {
+      type: String,
+      required: false
     },
     city: {
       type: String,
-      required: "You must supply a city!"
+      required: false
     }
   },
   shu: {
