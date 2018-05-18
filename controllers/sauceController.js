@@ -270,7 +270,7 @@ exports.getSauces = async (req, res, next) => {
         select: "_id name"
       });
 
-    if (!sauces) {
+    if (!sauces || sauces.length === 0) {
       const data = { isGood: false, msg: "Unable to find any sauces" };
       return res.status(400).send(data);
     }
