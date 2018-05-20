@@ -1,7 +1,6 @@
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const User = require("mongoose").model("User");
-const promisify = require("es6-promisify");
 const mail = require("../handlers/mail.js");
 const { encryptDecrypt } = require("../handlers/auth");
 
