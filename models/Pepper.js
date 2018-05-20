@@ -17,4 +17,14 @@ const pepperSchema = new mongoose.Schema({
   }
 });
 
+// Tells .toObject() to also not include __v
+// which is a mongoose housekeeping thing
+pepperSchema.set("toObject", {
+  versionKey: false,
+  transform: (doc, ret) => {
+    delete ret.__v;
+    return ret;
+  }
+});
+
 module.exports = mongoose.model("Pepper", pepperSchema);
