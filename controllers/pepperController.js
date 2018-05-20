@@ -5,7 +5,7 @@ const Pepper = require("mongoose").model("Pepper");
  */
 exports.getPeppers = async (req, res, next) => {
   try {
-    const peppers = await Pepper.find({});
+    const peppers = await Pepper.find({}).sort({ name: 1 });
 
     if (!peppers || peppers.length === 0) {
       const data = {
