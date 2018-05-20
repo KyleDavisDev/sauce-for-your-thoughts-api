@@ -6,6 +6,7 @@ const sauceController = require("../controllers/sauceController.js");
 const userController = require("../controllers/userController.js");
 const authController = require("../controllers/authController.js");
 const reviewController = require("../controllers/reviewController.js");
+const pepperController = require("../controllers/pepperController.js");
 
 // APIs here -----
 
@@ -169,6 +170,14 @@ router.post(
   authController.confirmPasswords,
   authController.updatePassword,
   authController.login
+);
+
+// Peppers
+
+router.get(
+  "/api/peppers/get",
+  pepperController.getPeppers,
+  authController.encodeID
 );
 
 // END API ---
