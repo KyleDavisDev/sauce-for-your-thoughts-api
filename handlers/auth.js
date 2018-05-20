@@ -24,6 +24,19 @@ exports.toObjectId = id => {
   return result;
 };
 
+// Used by encryptDecrypt
+const keys = [
+  "sauces",
+  "sauce",
+  "reviews",
+  "review",
+  "users",
+  "user",
+  "author",
+  "hearts",
+  "peppers",
+  "pepper"
+];
 // TODO: Clean up the if chain
 // TODO: Open ticket for issue regarding passing hashid.encodeHex as param
 /** @description Recursive function that searches through object looking for any _id to encode
@@ -55,30 +68,13 @@ exports.encryptDecrypt = (obj, type, fn) => {
       }
     }
 
-    if ("sauces" in obj) {
-      obj.sauces = module.exports.encryptDecrypt(obj.sauces, type, fn);
-    }
-    if ("sauce" in obj) {
-      obj.sauce = module.exports.encryptDecrypt(obj.sauce, type, fn);
-    }
-    if ("reviews" in obj) {
-      obj.reviews = module.exports.encryptDecrypt(obj.reviews, type, fn);
-    }
-    if ("review" in obj) {
-      obj.review = module.exports.encryptDecrypt(obj.review, type, fn);
-    }
-    if ("users" in obj) {
-      obj.users = module.exports.encryptDecrypt(obj.users, type, fn);
-    }
-    if ("user" in obj) {
-      obj.user = module.exports.encryptDecrypt(obj.user, type, fn);
-    }
-    if ("author" in obj) {
-      obj.author = module.exports.encryptDecrypt(obj.author, type, fn);
-    }
-    if ("hearts" in obj) {
-      obj.hearts = module.exports.encryptDecrypt(obj.hearts, type, fn);
-    }
+    // Loop through all keys to see if key is inside of obj
+    keys.forEach(key => {
+      if ([key] in obj) {
+        obj[key] = module.exports.encryptDecrypt(obj[key], type, fn);
+      }
+    });
+
     return obj;
   }
 };
