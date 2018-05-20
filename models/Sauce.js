@@ -8,12 +8,17 @@ const sauceSchema = new mongoose.Schema({
     trim: true,
     required: "Please enter a sauce name!"
   },
-  slug: String,
+  maker: {
+    type: String,
+    trim: true,
+    required: "Sauce cannot be saved unless we know who made it."
+  },
+  slug: { type: String, trim: true, required: false },
   description: {
     type: String,
-    trim: true
+    trim: true,
+    required: false
   },
-  tags: [{ type: String, trim: true }],
   created: {
     type: Date,
     default: Date.now
@@ -41,11 +46,11 @@ const sauceSchema = new mongoose.Schema({
   },
   shu: {
     type: Number,
-    required: "You must supply a SHU rating."
+    required: false
   },
   ingrediants: {
     type: String,
-    required: "You must suppply the listed ingrediants."
+    required: false
   },
   peppers: [
     {
