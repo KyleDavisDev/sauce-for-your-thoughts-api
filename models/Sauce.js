@@ -57,7 +57,11 @@ const sauceSchema = new mongoose.Schema({
       type: mongoose.Schema.ObjectId,
       ref: "Pepper"
     }
-  ]
+  ],
+  isActive: {
+    type: Boolean,
+    default: true
+  }
 });
 
 // index name and desc for faster lookups
