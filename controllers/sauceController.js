@@ -49,16 +49,16 @@ exports.resize = async (req, res, next) => {
 exports.stringToProperType = (req, res, next) => {
   try {
     if (
-      Object.prototype.toString.call(req.body.sauce.tags) === "[object String]"
+      Object.prototype.toString.call(req.body.sauce.peppers) ===
+      "[object String]"
     ) {
-      req.body.sauce.tags = req.body.sauce.tags.split(",");
+      req.body.sauce.peppers = req.body.sauce.peppers.split(",");
     }
 
     if (
-      Object.prototype.toString.call(req.body.review.rating) ===
-      "[object String]"
+      Object.prototype.toString.call(req.body.sauce.shu) === "[object String]"
     ) {
-      req.body.review.rating = parseInt(req.body.review.rating);
+      req.body.sauce.shu = parseInt(req.body.sauce.shu);
     }
 
     next(); // next middleware
@@ -85,14 +85,29 @@ exports.addSauce = async (req, res, next) => {
     return res.status(300).send(data);
   }
 
+  const {
+    name,
+    maker,
+    description,
+    ingredients,
+    shu,
+    location,
+    peppers,
+    photo
+  } = req.body.sauce;
+
   try {
     // create save query
     const record = {
       author: req.body.user._id,
-      name: req.body.sauce.name,
-      description: req.body.sauce.description,
-      tags: req.body.sauce.tags,
-      photo: req.body.sauce.photo
+      name,
+      maker,
+      ingredients,
+      shu,
+      location,
+      description,
+      peppers,
+      photo
     };
 
     // add sauce to DB
