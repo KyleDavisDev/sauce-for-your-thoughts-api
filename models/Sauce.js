@@ -54,8 +54,9 @@ const sauceSchema = new mongoose.Schema({
   },
   peppers: [
     {
-      type: mongoose.Schema.ObjectId,
-      ref: "Pepper"
+      type: String,
+      trim: true,
+      required: false
     }
   ],
   isActive: {
