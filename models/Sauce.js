@@ -32,8 +32,7 @@ const sauceSchema = new mongoose.Schema({
   location: {
     country: {
       type: String,
-      required: false,
-      default: "United States"
+      required: false
     },
     state: {
       type: String,
