@@ -48,6 +48,7 @@ exports.resize = async (req, res, next) => {
 // string so we need to reformat to match model
 exports.stringToProperType = (req, res, next) => {
   try {
+    // console.log(req.body, req.body.sauce.peppers);
     if (
       Object.prototype.toString.call(req.body.sauce.peppers) ===
       "[object String]"
@@ -55,10 +56,14 @@ exports.stringToProperType = (req, res, next) => {
       req.body.sauce.peppers = req.body.sauce.peppers.split(",");
     }
 
+    // Either convert shu to int, or assign as null
     if (
+      req.body.sauce.shu.length > 0 &&
       Object.prototype.toString.call(req.body.sauce.shu) === "[object String]"
     ) {
-      req.body.sauce.shu = parseInt(req.body.sauce.shu);
+      req.body.sauce.shu = parseInt(req.body.sauce.shu) || null;
+    } else {
+      req.body.sauce.shu = null;
     }
 
     next(); // next middleware
@@ -145,6 +150,7 @@ exports.addSauce = async (req, res, next) => {
 
     next(); // go to reviewController.addReview
   } catch (err) {
+    console.log(err);
     // TODO log error somewhere so can be referenced later
     const data = {
       isGood: false,
