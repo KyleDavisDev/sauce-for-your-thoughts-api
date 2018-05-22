@@ -1,6 +1,7 @@
 const Hashids = require("hashids");
 const hashids = new Hashids();
 const { ObjectId } = require("mongoose").Types;
+const validator = require("validator");
 
 /** @description Checks whether an int/string is a valid mongoose object id or not
  *  @param {String|Number} id - what will be checked if is legit or not
@@ -57,9 +58,8 @@ exports.encryptDecrypt = (obj, type, fn) => {
   if (Object.prototype.toString.call(obj) === "[object Object]") {
     // Check if obj has _id key
     if (obj._id !== undefined) {
-      // This step is to prevent strings from being decoded if they are already mongoose objectIds
       // Only decode _id if type is decode AND _id is not already a mongoose object id
-      if (type === "decode" && !module.exports.toObjectId(obj._id)) {
+      if (type === "decode" && !validator.isMongoId(obj._id)) {
         obj._id = hashids.decodeHex(obj._id);
       }
 
