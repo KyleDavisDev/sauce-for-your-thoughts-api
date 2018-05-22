@@ -85,13 +85,21 @@ exports.addSauce = async (req, res, next) => {
     return res.status(300).send(data);
   }
 
+  // Set location. Only set country value if either a city or state was provided too.
+  const location = {};
+  location.city = req.body.sauce.location.city || "";
+  location.state = req.body.sauce.location.state || "";
+  location.country =
+    location.state.length > 0 || location.city.length > 0
+      ? req.body.sauce.location.country
+      : "";
+
   const {
     name,
     maker,
     description,
     ingredients,
     shu,
-    location,
     peppers,
     photo
   } = req.body.sauce;
