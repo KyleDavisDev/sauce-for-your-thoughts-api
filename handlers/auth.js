@@ -1,28 +1,27 @@
 const Hashids = require("hashids");
 const hashids = new Hashids();
 const { ObjectId } = require("mongoose").Types;
-const validator = require("validator");
 
 /** @description Checks whether an int/string is a valid mongoose object id or not
  *  @param {String|Number} id - what will be checked if is legit or not
- *  @returns {NULL|ObjectID} returns null if not legit and the object ID if it is legit
+ *  @returns {Boolean} is mongoose id or not
  */
-exports.toObjectId = id => {
+exports.isMongooseID = id => {
   const stringId = id.toString().toLowerCase();
 
   // This can throw false positives, for example if the string is the appropriate length
   if (!ObjectId.isValid(stringId)) {
-    return null;
+    return false;
   }
 
   // A legit id will not change when casted as a new ObjectID but something that passes the .isValid check will
   const result = new ObjectId(stringId);
   if (result.toString() !== stringId) {
-    return null;
+    return false;
   }
 
   // We could also be returning stringId at this point since they are the same
-  return result;
+  return true;
 };
 
 // Used by encryptDecrypt
@@ -59,7 +58,7 @@ exports.encryptDecrypt = (obj, type, fn) => {
     // Check if obj has _id key
     if (obj._id !== undefined) {
       // Only decode _id if type is decode AND _id is not already a mongoose object id
-      if (type === "decode" && !validator.isMongoId(obj._id)) {
+      if (type === "decode" && !module.exports.isMongooseID(obj._id)) {
         obj._id = hashids.decodeHex(obj._id);
       }
 
@@ -77,4 +76,7 @@ exports.encryptDecrypt = (obj, type, fn) => {
 
     return obj;
   }
+
+  // Will get here if obj is a number of string
+  return obj;
 };
