@@ -145,7 +145,6 @@ exports.addSauce = async (req, res, next) => {
 
     next(); // go to reviewController.addReview
   } catch (err) {
-    console.log(err);
     // TODO log error somewhere so can be referenced later
     const data = {
       isGood: false,
