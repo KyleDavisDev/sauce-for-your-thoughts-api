@@ -30,7 +30,6 @@ router.post(
   sauceController.resize,
   sauceController.stringToProperType,
   sauceController.addSauce,
-  reviewController.addReview,
   authController.encodeID
 );
 
