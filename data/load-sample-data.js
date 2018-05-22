@@ -17,6 +17,8 @@ const reviews = JSON.parse(
 );
 const users = JSON.parse(fs.readFileSync(`${__dirname}/users.json`, "utf-8"));
 
+// Pepper data found from:
+// https://www.cayennediane.com/the-scoville-scale/
 const peppers = JSON.parse(
   fs.readFileSync(`${__dirname}/peppers.json`, "utf-8")
 );
