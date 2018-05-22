@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 mongoose.Promise = global.Promise; // ES6 promise
+const mongodbErrorHandler = require("mongoose-mongodb-errors");
 const slug = require("slugs"); // Hi there! How are you! --> hi-there-how-are-you
 
 const sauceSchema = new mongoose.Schema({
@@ -113,5 +114,7 @@ sauceSchema.set("toObject", {
     return ret;
   }
 });
+
+sauceSchema.plugin(mongodbErrorHandler); // change ugly errors to nice
 
 module.exports = mongoose.model("Sauce", sauceSchema);

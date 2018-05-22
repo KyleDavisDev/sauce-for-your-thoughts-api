@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 mongoose.Promise = global.Promise;
+const mongodbErrorHandler = require("mongoose-mongodb-errors");
 
 // Abstractions since these will be used across multiple methods
 const rating = {
@@ -88,5 +89,7 @@ reviewSchema.set("toObject", {
     return ret;
   }
 });
+
+reviewSchema.plugin(mongodbErrorHandler); // change ugly errors to nice
 
 module.exports = mongoose.model("Review", reviewSchema);
