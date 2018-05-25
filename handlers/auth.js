@@ -35,7 +35,9 @@ const keys = [
   "author",
   "hearts",
   "peppers",
-  "pepper"
+  "pepper",
+  "types",
+  "type"
 ];
 // TODO: Clean up the if chain
 // TODO: Open ticket for issue regarding passing hashid.encodeHex as param
