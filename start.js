@@ -15,6 +15,7 @@ require("./models/Sauce.js");
 require("./models/User.js");
 require("./models/Review.js");
 require("./models/Pepper.js");
+require("./models/Type.js");
 
 // Start the app
 const app = require("./app.js");
