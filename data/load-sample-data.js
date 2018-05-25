@@ -10,6 +10,7 @@ const Sauce = require("../models/Sauce");
 const Review = require("../models/Review");
 const User = require("../models/User");
 const Pepper = require("../models/Pepper");
+const Type = require("../models/Type");
 
 const sauces = JSON.parse(fs.readFileSync(`${__dirname}/sauces.json`, "utf-8"));
 const reviews = JSON.parse(
@@ -23,12 +24,15 @@ const peppers = JSON.parse(
   fs.readFileSync(`${__dirname}/peppers.json`, "utf-8")
 );
 
+const types = JSON.parse(fs.readFileSync(`${__dirname}/type.json`, "utf-8"));
+
 async function deleteData() {
   console.log("😢😢 Goodbye Data...");
   await Sauce.remove();
   await Review.remove();
   await User.remove();
   await Pepper.remove();
+  await Type.remove();
   console.log(
     "Data Deleted. To load sample data, run\n\n\t npm run sample\n\n"
   );
@@ -41,6 +45,7 @@ async function loadData() {
     // await Review.insertMany(reviews);
     await User.insertMany(users);
     await Pepper.insertMany(peppers);
+    await Type.insertMany(types);
     console.log("👍👍👍👍👍👍👍👍 Done!");
     process.exit();
   } catch (e) {
