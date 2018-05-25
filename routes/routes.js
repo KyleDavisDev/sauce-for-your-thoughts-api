@@ -7,6 +7,7 @@ const userController = require("../controllers/userController.js");
 const authController = require("../controllers/authController.js");
 const reviewController = require("../controllers/reviewController.js");
 const pepperController = require("../controllers/pepperController.js");
+const typeController = require("../controllers/typeController.js");
 
 // APIs here -----
 
@@ -172,12 +173,14 @@ router.post(
 );
 
 // Peppers
-
 router.get(
   "/api/peppers/get",
   pepperController.getPeppers,
   authController.encodeID
 );
+
+// Types
+router.get("/api/types/get", typeController.getTypes, authController.encodeID);
 
 // END API ---
 
