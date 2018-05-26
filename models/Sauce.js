@@ -59,6 +59,13 @@ const sauceSchema = new mongoose.Schema({
       required: false
     }
   ],
+  types: [
+    {
+      type: String,
+      trim: true,
+      required: false
+    }
+  ],
   isActive: {
     type: Boolean,
     default: true
