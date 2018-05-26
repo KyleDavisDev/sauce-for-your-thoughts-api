@@ -48,7 +48,7 @@ exports.resize = async (req, res, next) => {
 // string so we need to reformat to match model
 exports.stringToProperType = (req, res, next) => {
   try {
-    // console.log(req.body, req.body.sauce.peppers);
+    // Break peppers string up into array of strings
     if (
       Object.prototype.toString.call(req.body.sauce.peppers) ===
       "[object String]"
@@ -56,12 +56,21 @@ exports.stringToProperType = (req, res, next) => {
       req.body.sauce.peppers = req.body.sauce.peppers.split(",");
     }
 
-    // Either convert shu to int, or assign as null
+    // Break types string into array of strings
     if (
-      req.body.sauce.shu.length > 0 &&
-      Object.prototype.toString.call(req.body.sauce.shu) === "[object String]"
+      Object.prototype.toString.call(req.body.sauce.types) === "[object String]"
     ) {
+      req.body.sauce.types = req.body.sauce.types.split(",");
+    }
+
+    // If shu is a string, make sure not empty and convert to number or null
+    // If shu is number, leave as is
+    // Else assign to null
+    const type = Object.prototype.toString.call(req.body.sauce.shu);
+    if (type === "[object String]" && req.body.sauce.shu.length > 0) {
       req.body.sauce.shu = parseInt(req.body.sauce.shu) || null;
+    } else if (type === "[object Number]") {
+      // do nothing
     } else {
       req.body.sauce.shu = null;
     }
@@ -77,8 +86,16 @@ exports.stringToProperType = (req, res, next) => {
  *  @extends req.response - extrends/creates onto the custom 'global' object between middleware
  *  @param {String} req.body.user._id - unique user string
  *  @param {String} req.body.sauce.name - name of the sauce
+ *  @param {String} req.body.sauce.maker - name of person/company that made sauce
  *  @param {String} req.body.sauce.description - description of the sauce
- *  @param {String[]} req.body.sauce.tags - tags that help to describe the sauce
+ *  @param {String?} req.body.sauce.ingrediants - ingrediants of the sauce
+ *  @param {Number?|null} req.body.sauce.shu - spiciness of sauce
+ *  @param {String[]?} req.body.sauce.peppers - peppers that went into sauce
+ *  @param {String[]?} req.body.sauce.types - how the suace is intended to be used
+ *  @param {Object?} req.body.sauce.location - location object
+ *    @param {String?} req.body.sauce.country - country sauce was made in
+ *    @param {String?} req.body.sauce.state - state/region sauce was made in
+ *    @param {String?} req.body.sauce.city - city sauce was made in
  *  @param {String} req.body.sauce.photo - unique name of the photo saved on server
  */
 exports.addSauce = async (req, res, next) => {
@@ -90,29 +107,34 @@ exports.addSauce = async (req, res, next) => {
     return res.status(300).send(data);
   }
 
-  // Set location. Only set country value if either a city or state was provided too.
-  const location = {};
-  location.city = req.body.sauce.location.city || "";
-  location.state = req.body.sauce.location.state || "";
-  location.country =
-    location.state.length > 0 || location.city.length > 0
-      ? req.body.sauce.location.country
-      : "";
-
-  const {
-    name,
-    maker,
-    description,
-    ingredients,
-    shu,
-    peppers,
-    photo
-  } = req.body.sauce;
-
   try {
+    // Set location. Only set country value if either a city or state was provided too.
+    const location = {};
+    location.city = req.body.sauce.location.city || "";
+    location.state = req.body.sauce.location.state || "";
+    location.country =
+      location.state.length > 0 || location.city.length > 0
+        ? req.body.sauce.location.country
+        : "";
+
+    // Grab values from req.body.sauce
+    const {
+      name,
+      maker,
+      description,
+      ingredients,
+      shu,
+      peppers,
+      photo,
+      types
+    } = req.body.sauce;
+
+    // Grab author from req.body.user
+    const author = req.body.user._id;
+
     // create save query
     const record = {
-      author: req.body.user._id,
+      author,
       name,
       maker,
       ingredients,
@@ -120,6 +142,7 @@ exports.addSauce = async (req, res, next) => {
       location,
       description,
       peppers,
+      types,
       photo
     };
 
@@ -136,7 +159,7 @@ exports.addSauce = async (req, res, next) => {
       return res.status(400).send(data);
     }
 
-    // look up author
+    // look up author so we can assign it to the sauce that was just saved later
     const user = await User.findById(sauce.author, { _id: 1, name: 1 });
 
     // create response object if not already created
