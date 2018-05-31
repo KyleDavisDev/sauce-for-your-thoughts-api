@@ -186,14 +186,17 @@ exports.addSauce = async (req, res, next) => {
 
 /** @description look up a specific sauce by the sauce's slug
  *  @extends req.response - extrends/creates onto the custom 'global' object between middleware
- *  @param {String} req.body.sauce.slug - unique sauce string
+ *  @param {String?} req.parms.slug - unique sauce string
+ *  @param {String?} req.body.sauce.slug - unique sauce string
  */
 exports.getSauceBySlug = async (req, res, next) => {
   try {
-    const sauce = await Sauce.findOne({ slug: req.params.slug }).populate(
-      "author",
-      { _id: 1, name: 1 }
-    );
+    // Slug will either come from params of the request body
+    const slug = req.params.slug || req.body.sauce.slug;
+    const sauce = await Sauce.findOne({ slug }).populate("author", {
+      _id: 1,
+      name: 1
+    });
 
     // init req.response if not already exists
     if (req.response === undefined) req.response = {};
