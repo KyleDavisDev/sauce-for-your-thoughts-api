@@ -7,27 +7,34 @@ const { createNewRecord } = require("../handlers/helpers");
 /** @description Add review to DB
  *  @extends req.response attaches review to req.response.sauce OR req.response if sauce doesn't exist
  *  @param {String} req.body.user._id - unique user string
- *  @param {String} req.body.sauce._id - unique sauce string
+ *  @param {String} req.body.sauce.slug - unique sauce string
  *  @param {Object} req.body.review.taste - taste object
- *    @param {String} req.body.review.taste.description - description of the taste
+ *    @param {String} req.body.review.taste.txt - txt of the taste
  *    @param {Number} req.body.review.taste.rating - 1-10 value
  *  @param {Object} req.body.review.aroma - aroma object
- *    @param {String} req.body.review.aroma.description - description of the aroma
+ *    @param {String} req.body.review.aroma.txt - txt of the aroma
  *    @param {Number} req.body.review.aroma.rating - 1-10 value
  *  @param {Object} req.body.review.label - label object
- *    @param {String} req.body.review.label.description - description of the label
+ *    @param {String} req.body.review.label.txt - txt of the label
  *    @param {Number} req.body.review.label.rating - 1-10 value
  *  @param {Object} req.body.review.heat - heat object
- *    @param {String} req.body.review.heat.description - description of the heat
+ *    @param {String} req.body.review.heat.txt - txt of the heat
  *    @param {Number} req.body.review.heat.rating - 1-10 value
  *  @param {Object} req.body.review.overall - overall object
- *    @param {String} req.body.review.overall.description - description of the overall
+ *    @param {String} req.body.review.overall.txt - txt of the overall
  *    @param {Number} req.body.review.overall.rating - 1-10 value
+ *  @param {Object} req.body.review.note - note obj
+ *    @param {Object} req.body.review.note.txt - txt of anything extra
  */
 exports.addReview = async (req, res, next) => {
   try {
     // construct review to save
+    // Moved this out simply to save space
     const record = createNewRecord(req.body);
+
+    // Add sauce to record
+    record.sauce = {};
+    record.sauce = req.response.sauces[0]._id;
 
     // save into DB
     const review = await new Review(record).save();
