@@ -1,24 +1,26 @@
 exports.createNewRecord = obj => ({
   author: obj.user._id,
-  sauce: obj.sauce._id,
   taste: {
-    description: obj.review.taste.description || "",
+    txt: obj.review.taste.txt || "",
     rating: obj.review.taste.rating || 0
   },
   aroma: {
-    description: obj.review.aroma.description || "",
+    txt: obj.review.aroma.txt || "",
     rating: obj.review.aroma.rating || 0
   },
   label: {
-    description: obj.review.label.description || "",
+    txt: obj.review.label.txt || "",
     rating: obj.review.label.rating || 0
   },
   overall: {
-    description: obj.review.overall.description || "",
+    txt: obj.review.overall.txt || "",
     rating: obj.review.overall.rating || 0
   },
   heat: {
-    description: obj.review.heat.description || "",
+    txt: obj.review.heat.txt || "",
     rating: obj.review.heat.rating || 0
+  },
+  note: {
+    txt: obj.review.note.txt || ""
   }
 });
