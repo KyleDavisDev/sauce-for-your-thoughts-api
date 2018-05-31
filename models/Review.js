@@ -11,7 +11,7 @@ const rating = {
     "You must provide a rating to `{PATH}` and the value must be greater than `{MIN}`"
   ],
   max: [
-    10,
+    5,
     "You must provide a rating to `{PATH}` and the value must be greater than `{MAX}`"
   ]
 };
@@ -19,7 +19,7 @@ const txt = {
   type: String,
   required: true,
   minlength: [
-    10,
+    1,
     "You must provide text to `{PATH}` with a charactor length greater than `{MINLENGTH}`"
   ],
   maxlength: [
@@ -62,21 +62,16 @@ const reviewSchema = new mongoose.Schema({
     rating,
     txt
   },
-  sight: {
-    rating,
-    txt
-  },
-  pairings: {
-    type: String,
-    required: true,
-    maxlength: [
-      255,
-      "You must provide text to `{PATH}` with a charactor length less than `{MAXLENGTH}`"
-    ],
-    minlength: [
-      10,
-      "You must provide a pairings to `{PATH}` with a charactor length greater than `{MINLENGTH}`"
-    ]
+  note: {
+    txt: {
+      type: String,
+      required: false,
+      maxlength: [
+        255,
+        "You must provide text to `{PATH}` with a charactor length less than `{MAXLENGTH}`"
+      ],
+      trim: true
+    }
   }
 });
 
