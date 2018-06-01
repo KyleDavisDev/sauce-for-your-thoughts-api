@@ -52,22 +52,15 @@ exports.addReview = async (req, res, next) => {
     // check to see if req.response is a thing or not
     if (!("response" in req) || req.response === undefined) req.response = {};
 
-    // attach review to sauce OR directly onto response
-    if ("sauces" in req.response && req.response.sauces !== undefined) {
-      const reviewObj = review.toObject();
+    // Initialize reviews{}
+    req.response.review = {};
 
-      // Format obj to have consistant format
-      reviewObj.author = { _id: reviewObj.author };
+    // Add review to response obj
+    req.response.review = review.toObject();
 
-      req.response.sauces[0].reviews = [reviewObj];
-    } else {
-      // We will land here if user is submitting only a review and not a sauce along with it.
-      req.response.review = review.toObject();
-
-      // Format review object
-      req.response.review.sauce = { _id: req.response.review.sauce };
-      req.response.review.author = { _id: req.response.review.author };
-    }
+    // Format review object
+    req.response.review.sauce = { _id: req.response.review.sauce };
+    req.response.review.author = { _id: req.response.review.author };
 
     next();
   } catch (err) {
