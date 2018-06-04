@@ -47,5 +47,5 @@ If everything has gone well, Express should now be listening to API requests.
 - [ ] Extend 'forgot password' system.
 - [ ] Look into sending emails via node.
 - [ ] Confirm email to activate account.
-- [ ] Extend 'Add Sauce' page.
-- [ ] Extend 'Add Review' section.
+- [x] Extend 'Add Sauce' page.
+- [x] Extend 'Add Review' section.
