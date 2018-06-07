@@ -315,14 +315,17 @@ exports.getSauces = async (req, res, next) => {
       return res.status(400).send(data);
     }
 
-    // get all sauces
-    const sauces = await Sauce.find({}, { created: 0 })
+    // get all sauces within the given range (skip, limit)
+    const sauces = await Sauce.find({ isActive: true }, { isActive: 0 })
       .skip(limit * (page - 1))
       .limit(limit)
       .populate({
         path: "author",
         select: "_id name"
       });
+
+    // Get the total number of sauces w/o any range
+    const total = await Sauce.count({ isActive: true });
 
     if (!sauces || sauces.length === 0) {
       const data = { isGood: false, msg: "Unable to find any sauces" };
@@ -332,8 +335,9 @@ exports.getSauces = async (req, res, next) => {
     // init req.response if not already exists
     if (req.response === undefined) req.response = {};
 
-    // attach sauces to req.response
+    // attach sauces and total to req.response
     req.response.sauces = sauces;
+    req.response.total = total;
 
     // go to reviewController.getOnlyReviewIDsBySauceID
     next();
