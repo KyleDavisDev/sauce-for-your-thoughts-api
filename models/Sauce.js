@@ -24,7 +24,7 @@ const sauceSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  photo: String,
+  photo: { type: String, default: null },
   author: {
     type: mongoose.Schema.ObjectId,
     ref: "User",
