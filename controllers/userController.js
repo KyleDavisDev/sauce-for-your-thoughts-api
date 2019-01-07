@@ -1,33 +1,52 @@
 const mongoose = require("mongoose");
 const User = mongoose.model("User");
+const { body, validationResult } = require("express-validator/check");
+const { sanitizeBody } = require("express-validator/filter");
 const promisify = require("es6-promisify");
 const Hashids = require("hashids");
 const hashids = new Hashids();
 
 exports.validateRegister = (req, res, next) => {
-  req.sanitizeBody("user.name");
-  req.checkBody("user.name", "You must supply a name.").notEmpty();
-  req.checkBody("user.email", "That email is not valid.").isEmail();
-  req.sanitizeBody("user.email").normalizeEmail({
-    remove_dots: false,
-    remove_extension: false,
-    gmail_remove_subaddress: false
-  });
-  req.checkBody("user.password", "Password cannot be empty.").notEmpty();
-  req
-    .checkBody("user.confirmPassword", "Confirmed password cannot be empty.")
-    .notEmpty();
-  req
-    .checkBody("user.confirmPassword", "Oops! Your passwords do not match.")
-    .equals(req.body.user.password);
+  // Make sure all fields are not empty
+  body("user.email", "You must supply an email")
+    .not()
+    .isEmpty();
+  body("user.confirmEmail", "You must supply a confirmation email")
+    .not()
+    .isEmpty();
+  body("user.password", "Password cannot be empty.")
+    .not()
+    .isEmpty();
+  body("user.confirmPassword", "Confirmed password cannot be empty.")
+    .not()
+    .isEmpty();
+  body("user.displayName", "You must supply a name.")
+    .not()
+    .isEmpty();
 
-  const errors = req.validationErrors();
-  if (errors) {
-    const data = {
-      isGood: false,
-      msg: errors
-    };
-    return res.status(401).send(data);
+  // Make sure email is legit, normalized, and the two emails match
+  body(
+    "user.email",
+    "That email is not valid or did not match the confirmed email."
+  )
+    .isEmail()
+    .equals(req.body.user.confirmEmail)
+    .normalizeEmail({
+      remove_dots: false,
+      remove_extension: false,
+      gmail_remove_subaddress: false
+    });
+
+  // Make sure passwords match
+  body("user.confirmPassword", "Oops! Your passwords do not match.").equals(
+    req.body.user.password
+  );
+
+  // Find if there were any erros
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    // console.log(errors.array());
+    return res.status(422).json({ errors: errors.array() });
   }
   next();
 };
@@ -36,7 +55,7 @@ exports.register = async (req, res, next) => {
   try {
     const record = {
       email: req.body.user.email,
-      name: req.body.user.name
+      name: req.body.user.displayName
     };
 
     const user = new User(record);
@@ -49,14 +68,11 @@ exports.register = async (req, res, next) => {
       return res.status(300).send(data);
     }
 
-    // switch User.register() to be promised-based instead of callback
-    // now register method can be awaited
-    // need to pass method to promisify and the object in which the method lives so it can rebind
-    const register = promisify(User.register, User);
+    // Insert/hash password
+    await user.setPassword(req.body.user.password);
 
-    // actually register user
-    // stores hashed pw
-    await register(user, req.body.user.password);
+    // Save user
+    await user.save();
 
     next(); // go to authController.login
   } catch (errors) {
