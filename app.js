@@ -1,5 +1,4 @@
 const express = require("express");
-const expressValidator = require("express-validator");
 // const mongoose = require("mongoose");
 const path = require("path");
 const routes = require("./routes/routes.js");
