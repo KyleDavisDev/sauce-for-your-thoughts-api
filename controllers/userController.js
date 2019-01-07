@@ -1,54 +1,64 @@
 const mongoose = require("mongoose");
 const User = mongoose.model("User");
-const { body, validationResult } = require("express-validator/check");
-const { sanitizeBody } = require("express-validator/filter");
-const promisify = require("es6-promisify");
+const validator = require("validator");
 const Hashids = require("hashids");
 const hashids = new Hashids();
 
 exports.validateRegister = (req, res, next) => {
-  // Make sure all fields are not empty
-  body("user.email", "You must supply an email")
-    .not()
-    .isEmpty();
-  body("user.confirmEmail", "You must supply a confirmation email")
-    .not()
-    .isEmpty();
-  body("user.password", "Password cannot be empty.")
-    .not()
-    .isEmpty();
-  body("user.confirmPassword", "Confirmed password cannot be empty.")
-    .not()
-    .isEmpty();
-  body("user.displayName", "You must supply a name.")
-    .not()
-    .isEmpty();
+  try {
+    // Make sure all fields are not empty
+    if (validator.isEmpty(req.body.user.email)) {
+      throw new Error("You must supply an email");
+    }
+    if (validator.isEmpty(req.body.user.confirmEmail)) {
+      throw new Error("You must supply a confirmation email");
+    }
+    if (validator.isEmpty(req.body.user.password)) {
+      throw new Error("Password cannot be empty.");
+    }
+    if (validator.isEmpty(req.body.user.confirmPassword)) {
+      throw new Error("Confirmed password cannot be empty.");
+    }
+    if (validator.isEmpty(req.body.user.displayName)) {
+      throw new Error("You must supply a name.");
+    }
 
-  // Make sure email is legit, normalized, and the two emails match
-  body(
-    "user.email",
-    "That email is not valid or did not match the confirmed email."
-  )
-    .isEmail()
-    .equals(req.body.user.confirmEmail)
-    .normalizeEmail({
-      remove_dots: false,
-      remove_extension: false,
+    // Make sure email is legit, matches the confirmEmail, and is normalized
+    if (!validator.isEmail(req.body.user.email)) {
+      throw new Error("Email is not valid. Please try again.");
+    }
+
+    // Make sure emails match
+    if (!validator.equals(req.body.user.email, req.body.user.confirmEmail)) {
+      throw new Error("Emails do not match. Please try again.");
+    }
+
+    // Sanitize user's email
+    req.body.user.email = validator.normalizeEmail(req.body.user.email, {
+      all_lowercase: true,
+      gmail_remove_dots: false,
       gmail_remove_subaddress: false
     });
 
-  // Make sure passwords match
-  body("user.confirmPassword", "Oops! Your passwords do not match.").equals(
-    req.body.user.password
-  );
+    // Make sure passwords match
+    if (
+      !validator.equals(req.body.user.password, req.body.user.confirmPassword)
+    ) {
+      throw new Error("Passwords do not match. Please try again.");
+    }
 
-  // Find if there were any erros
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    // console.log(errors.array());
-    return res.status(422).json({ errors: errors.array() });
+    // Sanitize user's name
+    req.body.user.displayName = validator.trim(req.body.user.displayName);
+
+    next();
+  } catch (err) {
+    console.log(err);
+    const data = {
+      isGood: false,
+      msg: err.message
+    };
+    return res.status(401).send(data);
   }
-  next();
 };
 
 exports.register = async (req, res, next) => {
@@ -75,11 +85,11 @@ exports.register = async (req, res, next) => {
     await user.save();
 
     next(); // go to authController.login
-  } catch (errors) {
-    console.log(errors);
+  } catch (err) {
+    console.log("am i here?", err.errors);
     const data = {
       isGood: false,
-      msg: errors.message
+      msg: err.message
     };
     return res.status(401).send(data);
   }
