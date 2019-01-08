@@ -63,6 +63,7 @@ exports.validateRegister = (req, res, next) => {
 
 exports.register = async (req, res, next) => {
   try {
+    // These should have already been checked via validateRegister method
     const record = {
       email: req.body.user.email,
       name: req.body.user.displayName
@@ -86,10 +87,11 @@ exports.register = async (req, res, next) => {
 
     next(); // go to authController.login
   } catch (err) {
-    console.log("am i here?", err.errors);
+    // Will land here if email/name already in use or there was issue making connection
     const data = {
       isGood: false,
-      msg: err.message
+      msg:
+        "Oops! Either the email or display name you have submitted is already in use. Please try again."
     };
     return res.status(401).send(data);
   }
