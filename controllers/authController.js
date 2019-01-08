@@ -22,38 +22,16 @@ exports.login = (req, res) => {
       return res.status(401).send(err);
     }
 
-    console.log(result);
+    // create a token and send back
+    const payload = { sub: result._id };
+    const token = jwt.sign(payload, process.env.SECRET);
+    const data = {
+      isGood: true,
+      msg: "Successfully logged in.",
+      data: { user: { token } }
+    };
+    return res.status(200).send(data);
   });
-
-  // local strategy expects login information to be attached to req.body so
-  // we need to trick it to by moving our req.body.user object to a tempory object
-  // and passing that instead. This will also help with passing passport only information
-  // it needs and not passing stuff it doesn't/wont use.
-  // More information here: https://github.com/jaredhanson/passport-local/pull/151
-  // const fakeReqObj = {};
-  // fakeReqObj.body = req.body.user;
-
-  // // generate the authenticate method and pass the req/res
-  // passport.authenticate("local", (err, user, info) => {
-  //   if (err) {
-  //     return res.status(401).send(err);
-  //   }
-
-  //   if (!user) {
-  //     const data = { isGood: false, msg: "Invalid email or password" };
-  //     return res.status(401).send(data);
-  //   }
-
-  //   // create a token and send back
-  //   const payload = { sub: user._id };
-  //   const token = jwt.sign(payload, process.env.SECRET);
-  //   const data = {
-  //     isGood: true,
-  //     msg: "Successfully logged in.",
-  //     data: { user: { token } }
-  //   };
-  //   return res.status(200).send(data);
-  // })(fakeReqObj, res);
 };
 
 exports.isLoggedIn = (req, res, next) => {
