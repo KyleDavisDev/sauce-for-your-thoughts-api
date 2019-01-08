@@ -20,16 +20,36 @@ const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: "Please supply a name",
-    trim: true
+    trim: true,
+    unique: true
   },
-  hearts: [
-    {
-      type: mongoose.Schema.ObjectId,
-      ref: "Sauce"
-    }
-  ],
+  created: {
+    type: Date,
+    default: Date.now
+  },
   resetPasswordToken: String,
   resetPasswordExpires: Date
+});
+
+userSchema.pre("save", async function(next) {
+  if (!this.isModified("name")) {
+    next(); // skip checking if unique
+    return; // stop function
+  }
+
+  try {
+    const user = await this.constructor.find({ name: this.name }).limit(1);
+    // If another user is found, we need to throw error
+    if (user.length > 0) {
+      throw new Error("You must supply a unique name");
+    }
+
+    // Keep on chuggin!
+    next();
+  } catch (err) {
+    // Name wasn't unique
+    next({ message: err.message }, false);
+  }
 });
 
 // Tells .toObject() to also not include __v
