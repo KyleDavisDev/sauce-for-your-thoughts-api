@@ -10,16 +10,11 @@ const userSchema = new mongoose.Schema({
     unique: true,
     lowercase: true,
     trim: true,
-    validate: {
-      isAsync: true,
-      validator: validator.isEmail,
-      msg: "Invalid Email Address"
-    },
     required: "Please supply an email address"
   },
   name: {
     type: String,
-    required: "Please supply a name",
+    required: 'Please supply a name',
     trim: true,
     unique: true
   },
@@ -31,23 +26,29 @@ const userSchema = new mongoose.Schema({
   resetPasswordExpires: Date
 });
 
-userSchema.pre("save", async function(next) {
+userSchema.pre("save", async function (next) {
   if (!this.isModified("name")) {
-    next(); // skip checking if unique
-    return; // stop function
+    return next(); // stop rest of function from running
   }
 
   try {
-    const user = await this.constructor.find({ name: this.name }).limit(1);
-    // If another user is found, we need to throw error
+    // Make sure email is unique
+    let user = await this.constructor.find({ email: this.email }).limit(1);
     if (user.length > 0) {
-      throw new Error("You must supply a unique name");
+      return next(new Error("Oops! That email is already in use.")); // throw error
+    }
+
+    // Make sure name is unique
+    user = await this.constructor.find({ name: this.name }).limit(1);
+    if (user.length > 0) {
+      return next(new Error("You must supply a unique name")); // throw error
     }
 
     // Keep on chuggin!
-    next();
+    return next();
   } catch (err) {
-    // Name wasn't unique
+    // the 'return next()'s' from above should mean that we dont actually make it here if there is an issue
+    // Email or name wasn't unique
     next({ message: err.message }, false);
   }
 });
