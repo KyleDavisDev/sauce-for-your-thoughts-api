@@ -1,14 +1,14 @@
 {
   "name": "dang-thats-delicious-api",
   "version": "1.0.0",
-  "description": "Following Wes Bos's NodeJS course but using react/redux instead of pug.",
+  "description": "An Node API service for SFYT's react frontend.",
   "main": "app.js",
   "scripts": {
     "watch": "nodemon ./start.js",
     "sample": "node ./data/load-sample-data.js",
     "blowitallaway": "node ./data/load-sample-data.js --delete"
   },
-  "author": "Kyle Bonar",
+  "author": "Kyle Davis",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.16.2",
