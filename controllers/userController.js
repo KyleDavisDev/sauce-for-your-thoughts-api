@@ -80,8 +80,7 @@ exports.register = async (req, res, next) => {
     }
 
     // Insert/hash password
-    // Empty callback b/c method requires it
-    await user.setPassword(req.body.user.password, function () { });
+    await user.setPassword(req.body.user.password);
 
     // Save user
     await user.save();
