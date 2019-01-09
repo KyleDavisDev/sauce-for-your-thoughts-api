@@ -80,7 +80,8 @@ exports.register = async (req, res, next) => {
     }
 
     // Insert/hash password
-    await user.setPassword(req.body.user.password);
+    // Empty callback b/c method requires it
+    await user.setPassword(req.body.user.password, function () { });
 
     // Save user
     await user.save();
@@ -90,8 +91,7 @@ exports.register = async (req, res, next) => {
     // Will land here if email/name already in use or there was issue making connection
     const data = {
       isGood: false,
-      msg:
-        "Oops! Either the email or display name you have submitted is already in use. Please try again."
+      msg: err.message || "Connection error. Please try again"
     };
     return res.status(401).send(data);
   }
