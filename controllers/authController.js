@@ -13,13 +13,22 @@ exports.login = (req, res) => {
     return res.status(400).send(data);
   }
 
-  User.authenticate()(req.body.email, req.body.user.password + "1", function(
+  User.authenticate()(req.body.user.email, req.body.user.password, function (
     err,
     result
   ) {
+
     if (err) {
       console.log(err);
       return res.status(401).send(err);
+    }
+
+    if (!result) {
+      const data = {
+        isGood: false,
+        msg: "Invalid username or password.",
+      };
+      return res.status(400).send(data);
     }
 
     // create a token and send back
@@ -121,7 +130,7 @@ exports.forgot = async (req, res) => {
     // create URL and email to user email
     const resetURL = `http://localhost:8080/account/reset/${
       user.resetPasswordToken
-    }`;
+      }`;
     await mail.send({
       user,
       subject: "Password reset",
