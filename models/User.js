@@ -35,13 +35,13 @@ userSchema.pre("save", async function (next) {
     // Make sure email is unique
     let user = await this.constructor.find({ email: this.email }).limit(1);
     if (user.length > 0) {
-      return next(new Error("Oops! That email is already in use.")); // throw error
+      return next(new Error("Oops! That email is already in use. If this is you, go to the log in page to log in.")); // throw error
     }
 
     // Make sure name is unique
     user = await this.constructor.find({ name: this.name }).limit(1);
     if (user.length > 0) {
-      return next(new Error("You must supply a unique name")); // throw error
+      return next(new Error("Oops! Someone is already using that name. Please try a different one.")); // throw error
     }
 
     // Keep on chuggin!
