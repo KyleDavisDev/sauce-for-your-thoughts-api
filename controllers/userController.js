@@ -33,6 +33,13 @@ exports.validateRegister = (req, res, next) => {
       throw new Error("Emails do not match. Please try again.");
     }
 
+    // Make sure password is sufficiently long
+    if (req.body.user.password.length < 8) {
+      throw new Error(
+        "Your password is too weak! Please make your password over 8 characters long."
+      );
+    }
+
     // Sanitize user's email
     req.body.user.email = validator.normalizeEmail(req.body.user.email, {
       all_lowercase: true,
@@ -52,7 +59,7 @@ exports.validateRegister = (req, res, next) => {
 
     next();
   } catch (err) {
-    console.log(err);
+    // Will be here is input failed a validator check
     const data = {
       isGood: false,
       msg: err.message
