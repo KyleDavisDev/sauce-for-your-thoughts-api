@@ -1,4 +1,4 @@
-const passport = require("passport");
+// const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const User = require("mongoose").model("User");
 const mail = require("../handlers/mail.js");
@@ -13,31 +13,33 @@ exports.login = (req, res) => {
     return res.status(400).send(data);
   }
 
-  User.authenticate()(req.body.user.email, req.body.user.password, function (
+  User.authenticate()(req.body.user.email, req.body.user.password, function(
     err,
     result
   ) {
-
     if (err) {
-      console.log(err);
       return res.status(401).send(err);
     }
 
-    if (!result) {
+    // Login was bad or user is locked
+    if (!result || User.isLocked()) {
       const data = {
         isGood: false,
-        msg: "Invalid username or password.",
+        msg: "Invalid username or password."
       };
       return res.status(400).send(data);
     }
 
-    // create a token and send back
+    // create JWT token
     const payload = { sub: result._id };
     const token = jwt.sign(payload, process.env.SECRET);
+
+    // get name and email
+    const { name, email } = result;
     const data = {
       isGood: true,
       msg: "Successfully logged in.",
-      data: { user: { token } }
+      data: { user: { token, name, email } }
     };
     return res.status(200).send(data);
   });
@@ -118,7 +120,7 @@ exports.forgot = async (req, res) => {
 
     // create a token string
     const payload = {
-      sub: user._id
+      sub: user.email
     };
     const token = jwt.sign(payload, process.env.SECRET);
 
@@ -130,7 +132,7 @@ exports.forgot = async (req, res) => {
     // create URL and email to user email
     const resetURL = `http://localhost:8080/account/reset/${
       user.resetPasswordToken
-      }`;
+    }`;
     await mail.send({
       user,
       subject: "Password reset",
