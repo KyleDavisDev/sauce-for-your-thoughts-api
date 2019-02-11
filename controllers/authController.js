@@ -13,10 +13,11 @@ exports.login = (req, res) => {
     return res.status(400).send(data);
   }
 
-  User.authenticate()(req.body.user.email, req.body.user.password, function(
+  User.testAuthenticate(req.body.user.email, req.body.user.password, function(
     err,
     result
   ) {
+    console.log("am i here?");
     if (err) {
       return res.status(401).send(err);
     }
