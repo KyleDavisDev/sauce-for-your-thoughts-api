@@ -2,7 +2,7 @@ const express = require("express");
 // const mongoose = require("mongoose");
 const path = require("path");
 const routes = require("./routes/routes.js");
-const passport = require("passport");
+// const passport = require("passport");
 require("./handlers/passport.js");
 
 //create express app
@@ -28,8 +28,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Passport JS is what we use to handle our logins
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.initialize());
+// app.use(passport.session());
 
 //handle routes
 app.use("/", routes);
