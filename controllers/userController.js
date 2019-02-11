@@ -73,7 +73,8 @@ exports.register = async (req, res, next) => {
     // These should have already been checked via validateRegister method
     const record = {
       email: req.body.user.email,
-      name: req.body.user.displayName
+      name: req.body.user.displayName,
+      password: req.body.user.password
     };
 
     const user = new User(record);
@@ -86,15 +87,16 @@ exports.register = async (req, res, next) => {
       return res.status(300).send(data);
     }
 
-    // Insert/hash password
+    // hash/update password
     await user.setPassword(req.body.user.password);
+    console.log("after setPassword: ", user);
 
     // Save user
-    await user.save();
+    // await user.save();
 
-    next(); // go to authController.login
+    // next(); // go to authController.login
   } catch (err) {
-    // Will land here if email/name already in use or there was issue making connection
+    // Will land here if email/name already in use or there was issue hasing password
     const data = {
       isGood: false,
       msg: err.message || "Connection error. Please try again"
