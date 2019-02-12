@@ -91,8 +91,8 @@ exports.register = async (req, res, next) => {
     await user.setPassword(req.body.user.password);
     console.log("after setPassword: ", user);
 
-    // Save user
-    // await user.save();
+    // Save user -- This will execute the .pre("save") method
+    await user.save();
 
     // next(); // go to authController.login
   } catch (err) {
