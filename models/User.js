@@ -25,7 +25,6 @@ const userSchema = new mongoose.Schema({
   },
   password: { type: String, required: true },
   hash: { type: String, default: "" },
-  salt: { type: String, default: "" },
   name: {
     type: String,
     required: "Please supply a name",
@@ -47,9 +46,6 @@ userSchema.pre("save", async function(next) {
   // if (!this.isModified("name")) {
   //   return next(); // stop rest of function from running
   // }
-
-  // Keep on chuggin!
-  return next();
 
   try {
     // Make sure email is unique
@@ -76,7 +72,6 @@ userSchema.pre("save", async function(next) {
     return next();
   } catch (err) {
     // the 'return next()'s' from above should mean that we dont actually make it here if there is an issue
-    // Email or name wasn't unique
     next({ message: err.message }, false);
   }
 });
@@ -174,13 +169,9 @@ userSchema.methods.setPassword = async function(password) {
     const salt = await bcrypt.genSalt(SALT_WORK_FACTOR);
 
     const hash = await bcrypt.hash(password, salt);
-    console.log("hash: ", hash);
 
     // Save hashed password
     user.password = hash;
-
-    // Save salt
-    user.salt = salt;
   } catch (err) {
     // Bubble error up
     throw Error("Error creating account. Please try again.");
