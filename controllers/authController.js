@@ -15,18 +15,18 @@ exports.login = (req, res) => {
 
   User.testAuthenticate(req.body.user.email, req.body.user.password, function(
     err,
-    result
+    result,
+    msg
   ) {
-    console.log("am i here?", err);
     if (err) {
       return res.status(401).send(err);
     }
 
     // Login was bad or user is locked
-    if (!result || User.isLocked()) {
+    if (!result) {
       const data = {
         isGood: false,
-        msg: "Invalid username or password."
+        msg: msg || "Invalid username or password."
       };
       return res.status(400).send(data);
     }
