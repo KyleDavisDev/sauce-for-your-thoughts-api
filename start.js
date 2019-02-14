@@ -4,11 +4,17 @@ const mongoose = require("mongoose");
 require("dotenv").config({ path: "variables.env" });
 
 // connect to Database and handle any bad connections
-mongoose.connect(process.env.DATABASE);
+mongoose.connect(process.env.DATABASE, {
+  useNewUrlParser: true,
+  useCreateIndex: true
+});
 mongoose.Promise = global.Promise; // use ES6 promises
 mongoose.connection.on("error", error => {
   console.log(error.message);
 });
+
+// Surpress error
+// mongoose.set("useCreateIndex", true);
 
 // import models --only need to do once per model
 require("./models/Sauce.js");
