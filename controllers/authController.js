@@ -17,7 +17,7 @@ exports.login = (req, res) => {
     err,
     result
   ) {
-    console.log("am i here?");
+    console.log("am i here?", err);
     if (err) {
       return res.status(401).send(err);
     }
