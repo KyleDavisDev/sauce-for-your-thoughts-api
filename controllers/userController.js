@@ -94,7 +94,7 @@ exports.register = async (req, res, next) => {
     // Save user -- This will execute the .pre("save") method
     await user.save();
 
-    // next(); // go to authController.login
+    next(); // go to authController.login
   } catch (err) {
     // Will land here if email/name already in use or there was issue hasing password
     const data = {
