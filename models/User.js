@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 mongoose.Promise = global.Promise; // surpresses error (?)
 const mongodbErrorHandler = require("mongoose-mongodb-errors");
 const MAX_LOGIN_ATTEMPTS = 5;
-const LOCK_TIME = 20000;
+const LOCK_TIME = 1000 * 60 * 60 * 2; // 2 hour lock
 const SALT_WORK_FACTOR = 10;
 
 const userSchema = new mongoose.Schema({
@@ -16,7 +16,6 @@ const userSchema = new mongoose.Schema({
     required: "Please supply an email address"
   },
   password: { type: String, required: true },
-  hash: { type: String, default: "" },
   name: {
     type: String,
     required: "Please supply a name",
@@ -78,9 +77,12 @@ userSchema.set("toObject", {
 });
 
 // Check if user is locked
+// returns bool
 userSchema.virtual("isLocked").get(function() {
-  // check for a future lockUntil timestamp
-  return !!(this.lockUntil && this.lockUntil > Date.now());
+  // if it's not set at all, then acc def isn't locked.
+  if (!this.lockedUntil) return false;
+  // lockedUntil time will be larger if acc still locked
+  return this.lockedUntil > Date.now();
 });
 
 userSchema.methods.incLoginAttempts = function(cb) {
@@ -99,10 +101,11 @@ userSchema.methods.incLoginAttempts = function(cb) {
   // otherwise we need to increase loginAttempts by 1
   const updates = { $inc: { loginAttempts: 1 } };
 
-  // lock the account if we've reached max attempts and it's not locked already
+  // lock the account if we've reached max attempts and it's not already locked
   if (this.loginAttempts + 1 >= MAX_LOGIN_ATTEMPTS && !this.isLocked) {
     updates.$set = { lockedUntil: Date.now() + LOCK_TIME };
   }
+
   return this.updateOne(updates, cb);
 };
 
@@ -123,24 +126,36 @@ userSchema.statics.testAuthenticate = function(username, password, cb) {
       // increment login attempts
       return user.incLoginAttempts(function(err) {
         if (err) return cb(err);
-        return cb(null, null);
+        return cb(
+          null,
+          null,
+          "This account is locked. Please try again in a few hours."
+        );
       });
     }
 
     bcrypt.compare(password, user.password, function(err, isMatch) {
       if (err) return cb(err);
 
+      // Password is good
       if (isMatch) {
         // if there's no lock or failed attempts, just return the user
-        if (!user.loginAttempts && !user.lockUntil) return cb(null, user);
+        if (!user.loginAttempts && !user.lockedUntil) return cb(null, user);
 
-        // reset attempts and lock info
+        // reset attempts and remove lockedUntil timer
         var updates = {
-          $set: { loginAttempts: 0 },
-          $unset: { lockUntil: 1 }
+          $set: { loginAttempts: 0 }
         };
+
+        // reset timer if exists
+        if (user.lockedUntil) {
+          updates.$unset = { lockedUntil: 1 };
+        }
+
         return user.updateOne(updates, function(err) {
           if (err) return cb(err);
+
+          // return user
           return cb(null, user);
         });
       }
@@ -148,7 +163,11 @@ userSchema.statics.testAuthenticate = function(username, password, cb) {
       // password is incorrect, so increment login attempts before responding
       user.incLoginAttempts(function(err) {
         if (err) return cb(err);
-        return cb(null, null);
+        return cb(
+          null,
+          null,
+          "This account is locked. Please try again in a few hours."
+        );
       });
     });
   });
