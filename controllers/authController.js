@@ -13,7 +13,7 @@ exports.login = (req, res) => {
     return res.status(400).send(data);
   }
 
-  User.testAuthenticate(req.body.user.email, req.body.user.password, function(
+  User.testAuthenticate(req.body.user.email, req.body.user.password, function (
     err,
     result,
     msg
@@ -51,11 +51,12 @@ exports.isLoggedIn = (req, res, next) => {
   if (!req.body.user || !req.body.user.token) {
     // One last check: maybe we were passed a stringified object
     if (
-      req.body.data !== undefined &&
-      Object.prototype.toString.call(req.body.data) === "[object String]"
+      req.body.user !== undefined &&
+      Object.prototype.toString.call(req.body.user) === "[object String]"
     ) {
       // convert string to object
-      const obj = JSON.parse(req.body.data);
+      const obj = JSON.parse(req.body.user);
+      console.log(obj);
 
       // concat onto req.body
       Object.keys(obj).forEach(x => {
@@ -71,8 +72,10 @@ exports.isLoggedIn = (req, res, next) => {
     }
   }
 
+  console.log(req.body);
   // get token from post
   const { token } = req.body.user;
+  console.log(token);
 
   // decode the token using a secret key-phrase
   return jwt.verify(token, process.env.SECRET, (err, decoded) => {
@@ -133,7 +136,7 @@ exports.forgot = async (req, res) => {
     // create URL and email to user email
     const resetURL = `http://localhost:8080/account/reset/${
       user.resetPasswordToken
-    }`;
+      }`;
     await mail.send({
       user,
       subject: "Password reset",
