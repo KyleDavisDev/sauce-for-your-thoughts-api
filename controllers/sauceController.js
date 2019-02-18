@@ -19,9 +19,10 @@ const multerOptions = {
   dest: "uploads/"
 };
 
-exports.upload = multer(multerOptions).single("image");
+exports.upload = multer(multerOptions).single("SauceImage");
 
 exports.resize = async (req, res, next) => {
+  console.log("inside resize");
   // check if new file to resize
   if (!req.file) {
     next(); // go to next middleware
@@ -35,6 +36,7 @@ exports.resize = async (req, res, next) => {
   // resize photo
   try {
     const photo = await jimp.read(req.file.buffer);
+    console.log(photo);
     await photo.resize(800, jimp.AUTO);
     await photo.write(`./public/uploads/${req.body.photo}`);
     req.body.sauce.photo = req.body.photo;
@@ -367,7 +369,7 @@ exports.searchSauces = async (req, res) => {
     if (!sauces || sauces.length === 0) {
       const data = {
         isGood: false,
-        msg: `Unable to find any sauces!`
+        msg: "Unable to find any sauces!"
       };
       return res.status(300).send(data);
     }
