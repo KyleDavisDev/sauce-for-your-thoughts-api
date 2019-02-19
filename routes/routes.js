@@ -27,7 +27,7 @@ router.post(
   "/api/sauce/add",
   sauceController.upload,
   authController.isLoggedIn,
-  authController.decodeID,
+  // authController.decodeID,
   sauceController.resize,
   sauceController.stringToProperType,
   sauceController.addSauce,
