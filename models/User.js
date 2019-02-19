@@ -163,11 +163,7 @@ userSchema.statics.testAuthenticate = function(username, password, cb) {
       // password is incorrect, so increment login attempts before responding
       user.incLoginAttempts(function(err) {
         if (err) return cb(err);
-        return cb(
-          null,
-          null,
-          "This account is locked. Please try again in a few hours."
-        );
+        return cb(null, null);
       });
     });
   });
