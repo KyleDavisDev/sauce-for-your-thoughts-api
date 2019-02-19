@@ -19,10 +19,9 @@ const multerOptions = {
   dest: "uploads/"
 };
 
-exports.upload = multer(multerOptions).single("SauceImage");
+exports.upload = multer(multerOptions).single("image");
 
 exports.resize = async (req, res, next) => {
-  console.log("inside resize");
   // check if new file to resize
   if (!req.file) {
     next(); // go to next middleware
@@ -30,16 +29,15 @@ exports.resize = async (req, res, next) => {
   }
 
   // get file extension and generate unique name
-  const extension = req.file.mimetype.split("/")[1];
+  const extension = req.file.mimetype;
   req.body.photo = `${uuid.v4()}.${extension}`;
 
   // resize photo
   try {
     const photo = await jimp.read(req.file.buffer);
-    console.log(photo);
     await photo.resize(800, jimp.AUTO);
-    await photo.write(`./public/uploads/${req.body.photo}`);
-    req.body.sauce.photo = req.body.photo;
+    await photo.write(`./public/uploads/${req.file.originalname}`);
+    req.body.sauce.photo = req.file;
     next();
   } catch (err) {
     next({ message: "Image was unable to be saved" }, false);
@@ -49,50 +47,26 @@ exports.resize = async (req, res, next) => {
 // when using FormData, which is needed to upload image, all data gets turned into
 // string so we need to reformat to match model
 exports.stringToProperType = (req, res, next) => {
-  try {
-    // Break peppers string up into array of strings
-    if (
-      Object.prototype.toString.call(req.body.sauce.peppers) ===
-      "[object String]"
-    ) {
-      req.body.sauce.peppers = req.body.sauce.peppers.split(",");
-    }
+  // grab string from req.body.sauce
+  const obj = JSON.parse(req.body.sauce);
 
-    // Break types string into array of strings
-    if (
-      Object.prototype.toString.call(req.body.sauce.types) === "[object String]"
-    ) {
-      req.body.sauce.types = req.body.sauce.types.split(",");
-    }
+  // Remove the string from req.body.sauce and reinitialize so we can assign values
+  delete req.body.sauce;
+  req.body.sauce = {};
+  Object.keys(obj.sauce).forEach(x => {
+    req.body.sauce[x] = obj.sauce[x];
+  });
 
-    // If shu is a string, make sure not empty and convert to number or null
-    // If shu is number, leave as is
-    // Else assign to null
-    const type = Object.prototype.toString.call(req.body.sauce.shu);
-    if (type === "[object String]" && req.body.sauce.shu.length > 0) {
-      req.body.sauce.shu = parseInt(req.body.sauce.shu) || null;
-    } else if (type === "[object Number]") {
-      // do nothing
-    } else {
-      req.body.sauce.shu = null;
-    }
-
-    next(); // next middleware
-  } catch (err) {
-    // TODO:proper error handling
-    return res.status(400).send(err);
-  }
+  next();
 };
 
 /** @description Save a sauce into the database
  *  @extends req.response - extrends/creates onto the custom 'global' object between middleware
- *  @param {String} req.body.user._id - unique user string
  *  @param {String} req.body.sauce.name - name of the sauce
  *  @param {String} req.body.sauce.maker - name of person/company that made sauce
  *  @param {String} req.body.sauce.description - description of the sauce
  *  @param {String?} req.body.sauce.ingrediants - ingrediants of the sauce
  *  @param {Number?|null} req.body.sauce.shu - spiciness of sauce
- *  @param {String[]?} req.body.sauce.peppers - peppers that went into sauce
  *  @param {String[]?} req.body.sauce.types - how the suace is intended to be used
  *  @param {Object?} req.body.sauce.location - location object
  *    @param {String?} req.body.sauce.country - country sauce was made in
@@ -112,12 +86,17 @@ exports.addSauce = async (req, res, next) => {
   try {
     // Set location. Only set country value if either a city or state was provided too.
     const location = {};
-    location.city = req.body.sauce.location.city || "";
-    location.state = req.body.sauce.location.state || "";
-    location.country =
-      location.state.length > 0 || location.city.length > 0
-        ? req.body.sauce.location.country
-        : "";
+    if (
+      req.body.sauce.location !== undefined &&
+      Object.keys(req.body.sauce.location).length !== 0
+    ) {
+      location.city = req.body.sauce.location.city || "";
+      location.state = req.body.sauce.location.state || "";
+      location.country =
+        location.state.length > 0 || location.city.length > 0
+          ? req.body.sauce.location.country
+          : "";
+    }
 
     // Grab values from req.body.sauce
     const {
@@ -126,7 +105,6 @@ exports.addSauce = async (req, res, next) => {
       description,
       ingredients,
       shu,
-      peppers,
       photo,
       types
     } = req.body.sauce;
@@ -143,7 +121,6 @@ exports.addSauce = async (req, res, next) => {
       shu,
       location,
       description,
-      peppers,
       types,
       photo
     };
@@ -194,8 +171,8 @@ exports.addSauce = async (req, res, next) => {
 exports.getSauceBySlug = async (req, res, next) => {
   try {
     // Slug will either come from params of the request body
-    const slug = req.params.slug || req.body.sauce.slug;
-    const sauce = await Sauce.findOne({ slug }).populate("author", {
+    const SauceSlug = req.params.slug || req.body.sauce.slug;
+    const sauce = await Sauce.findOne({ SauceSlug }).populate("author", {
       _id: 1,
       name: 1
     });
