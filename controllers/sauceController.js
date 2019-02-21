@@ -27,7 +27,6 @@ exports.resize = async (req, res, next) => {
     next(); // go to next middleware
     return;
   }
-
   // get file extension and generate unique name
   const extension = req.file.mimetype;
   req.body.photo = `${uuid.v4()}.${extension}`;
@@ -152,7 +151,6 @@ exports.addSauce = async (req, res, next) => {
 
     next(); // go to reviewController.addReview
   } catch (err) {
-    console.log(err);
     // TODO log error somewhere so can be referenced later
     const data = {
       isGood: false,
