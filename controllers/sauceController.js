@@ -2,50 +2,11 @@ const mongoose = require("mongoose");
 const Sauce = mongoose.model("Sauce");
 const User = mongoose.model("User");
 const slug = require("slugs"); // Hi there! How are you! --> hi-there-how-are-you
-const multer = require("multer"); // helps uploading images/files
-const jimp = require("jimp"); // helps with resizing photos
-const uuid = require("uuid"); // generated unique identifiers
-
-const multerOptions = {
-  storage: multer.memoryStorage(),
-  fileFilter(req, file, next) {
-    const isPhoto = file.mimetype.startsWith("image/");
-    if (isPhoto) {
-      next(null, true);
-    } else {
-      next({ message: "That filetype is not allowed" }, false);
-    }
-  },
-  dest: "uploads/"
-};
-
-exports.upload = multer(multerOptions).single("image");
-
-exports.resize = async (req, res, next) => {
-  // check if new file to resize
-  if (!req.file) {
-    next(); // go to next middleware
-    return;
-  }
-  // get file extension and generate unique name
-  const extension = req.file.mimetype;
-  req.body.photo = `${uuid.v4()}.${extension}`;
-
-  // resize photo
-  try {
-    const photo = await jimp.read(req.file.buffer);
-    await photo.resize(800, jimp.AUTO);
-    await photo.write(`./public/uploads/${req.file.originalname}`);
-    req.body.sauce.photo = req.file;
-    next();
-  } catch (err) {
-    next({ message: "Image was unable to be saved" }, false);
-  }
-};
 
 // when using FormData, which is needed to upload image, all data gets turned into
 // string so we need to reformat to match model
 exports.stringToProperType = (req, res, next) => {
+  console.log("string to proper type");
   // grab string from req.body.sauce
   const obj = JSON.parse(req.body.sauce);
 
@@ -56,6 +17,7 @@ exports.stringToProperType = (req, res, next) => {
     req.body.sauce[x] = obj.sauce[x];
   });
 
+  console.log("string to proper type");
   next();
 };
 
