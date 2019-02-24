@@ -89,7 +89,6 @@ exports.register = async (req, res, next) => {
 
     // hash/update password
     await user.setPassword(req.body.user.password);
-    console.log("after setPassword: ", user);
 
     // Save user -- This will execute the .pre("save") method
     await user.save();
