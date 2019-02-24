@@ -8,6 +8,7 @@ const authController = require("../controllers/authController.js");
 const reviewController = require("../controllers/reviewController.js");
 const pepperController = require("../controllers/pepperController.js");
 const typeController = require("../controllers/typeController.js");
+const imageController = require("../controllers/imageController.js");
 
 // APIs here -----
 
@@ -25,10 +26,10 @@ const typeController = require("../controllers/typeController.js");
 // 8. Encode _id's
 router.post(
   "/api/sauce/add",
-  sauceController.upload,
+  imageController.upload,
   authController.isLoggedIn,
   // authController.decodeID,
-  sauceController.resize,
+  imageController.resize,
   sauceController.stringToProperType,
   sauceController.addSauce,
   authController.encodeID
@@ -60,9 +61,9 @@ router.post(
 // 5. Write to DB
 router.post(
   "/api/sauce/update",
-  sauceController.upload,
+  imageController.upload,
   authController.isLoggedIn,
-  sauceController.resize,
+  imageController.resize,
   sauceController.stringToProperType,
   sauceController.editSauce
 );
