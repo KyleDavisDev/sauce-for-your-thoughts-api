@@ -13,7 +13,7 @@ exports.login = (req, res) => {
     return res.status(400).send(data);
   }
 
-  User.testAuthenticate(req.body.user.email, req.body.user.password, function(
+  User.AuthenticateUser(req.body.user.email, req.body.user.password, function(
     err,
     result,
     msg
