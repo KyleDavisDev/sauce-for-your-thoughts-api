@@ -116,23 +116,23 @@ userSchema.methods.incLoginAttempts = function(cb) {
   return this.updateOne(updates, cb);
 };
 
-userSchema.statics.testAuthenticate = function(username, password, cb) {
-  // Match email
+userSchema.statics.AuthenticateUser = function(username, password, cb) {
+  // Find user by email
   this.findOne({ email: username }, function(err, user) {
-    // If error occured
-    if (err) return cb(err);
+    // If error occured, get out
+    if (err) return cb(err, null, null);
 
-    // If cannot find user
-    if (!user) {
-      return cb(null, null);
-    }
+    // If cannot find user, get out
+    if (!user) return cb(null, null, null);
 
     // See if account is locked
     // We will skip hashing password and whatnot if it's locked
     if (user.isLocked) {
       // increment login attempts
       return user.incLoginAttempts(function(err) {
-        if (err) return cb(err);
+        // If error occured, get out
+        if (err) return cb(err, null, null);
+
         return cb(
           null,
           null,
@@ -142,28 +142,31 @@ userSchema.statics.testAuthenticate = function(username, password, cb) {
     }
 
     bcrypt.compare(password, user.password, function(err, isMatch) {
-      if (err) return cb(err);
+      // If error occured, get out
+      if (err) return cb(err, null, null);
 
       // Password is good
       if (isMatch) {
         // if there's no lock or failed attempts, just return the user
-        if (!user.loginAttempts && !user.lockedUntil) return cb(null, user);
+        if (!user.loginAttempts && !user.lockedUntil)
+          return cb(null, user, null);
 
         // reset attempts and remove lockedUntil timer
         var updates = {
           $set: { loginAttempts: 0 }
         };
 
-        // reset timer if exists
+        // remove timer if exists
         if (user.lockedUntil) {
           updates.$unset = { lockedUntil: 1 };
         }
 
         return user.updateOne(updates, function(err) {
-          if (err) return cb(err);
+          // If error, get out
+          if (err) return cb(err, null, null);
 
           // return user
-          return cb(null, user);
+          return cb(null, user, null);
         });
       }
 
