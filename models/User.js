@@ -38,6 +38,13 @@ userSchema.pre("save", async function(next) {
   // }
 
   try {
+    // Create salt
+    const salt = await bcrypt.genSalt(SALT_WORK_FACTOR);
+    // Create hash
+    const hash = await bcrypt.hash(this.password, salt);
+    // Save hashed password
+    this.password = hash;
+
     // Make sure email is unique
     let user = await this.constructor.find({ email: this.email }).limit(1);
     if (user.length > 0) {
@@ -167,22 +174,6 @@ userSchema.statics.testAuthenticate = function(username, password, cb) {
       });
     });
   });
-};
-
-userSchema.methods.setPassword = async function(password) {
-  const user = this;
-
-  try {
-    const salt = await bcrypt.genSalt(SALT_WORK_FACTOR);
-
-    const hash = await bcrypt.hash(password, salt);
-
-    // Save hashed password
-    user.password = hash;
-  } catch (err) {
-    // Bubble error up
-    throw Error("Error creating account. Please try again.");
-  }
 };
 
 userSchema.plugin(mongodbErrorHandler); // change ugly errors to nice
