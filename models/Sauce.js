@@ -52,13 +52,6 @@ const sauceSchema = new mongoose.Schema({
     type: String,
     required: false
   },
-  peppers: [
-    {
-      type: String,
-      trim: true,
-      required: false
-    }
-  ],
   types: [
     {
       type: String,
@@ -69,6 +62,10 @@ const sauceSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  isPrivate: {
+    type: Boolean,
+    default: false
   }
 });
 
