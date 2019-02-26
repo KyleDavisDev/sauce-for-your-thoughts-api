@@ -66,12 +66,15 @@ exports.addSauce = async (req, res, next) => {
       description,
       ingredients,
       shu,
-      photo,
       types
     } = req.body.sauce;
 
     // Grab author from req.body.user
     const author = req.body.user._id;
+
+    // Grab photo name if exists
+    let photo = null;
+    if (req.body.photo) photo = req.body.photo;
 
     // create save query
     const record = {
@@ -196,7 +199,6 @@ exports.getSauceById = async (req, res, next) => {
     // go to reviewController.findReviewByUserID
     next();
   } catch (err) {
-    console.log(err);
     const data = {
       isGood: false,
       msg: "Something broke or your sauce was unable to be found, Try again."
