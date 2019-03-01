@@ -2,76 +2,43 @@ const mongoose = require("mongoose");
 mongoose.Promise = global.Promise;
 const mongodbErrorHandler = require("mongoose-mongodb-errors");
 
-// Abstractions since these will be used across multiple methods
-const rating = {
-  type: Number,
-  required: true,
-  min: [
-    1,
-    "You must provide a rating to `{PATH}` and the value must be greater than `{MIN}`"
-  ],
-  max: [
-    5,
-    "You must provide a rating to `{PATH}` and the value must be greater than `{MAX}`"
-  ]
-};
-const txt = {
-  type: String,
-  required: true,
-  minlength: [
-    1,
-    "You must provide text to `{PATH}` with a charactor length greater than `{MINLENGTH}`"
-  ],
-  maxlength: [
-    255,
-    "You must provide text to `{PATH}` with a charactor length less than `{MAXLENGTH}`"
-  ],
-  trim: true
-};
-
 const reviewSchema = new mongoose.Schema({
   author: {
     type: mongoose.Schema.ObjectId,
-    ref: "User"
+    ref: "User",
+    required: true
   },
   sauce: {
     type: mongoose.Schema.ObjectId,
-    ref: "Sauce"
+    ref: "Sauce",
+    required: true
   },
   created: {
     type: Date,
     default: Date.now
   },
   label: {
-    rating,
-    txt
+    rating: { type: Number, require: false, min: 1, max: 5 },
+    txt: { type: String, required: false, maxlength: 300, trim: true }
   },
   aroma: {
-    rating,
-    txt
+    rating: { type: Number, require: false, min: 1, max: 5 },
+    txt: { type: String, required: false, maxlength: 300, trim: true }
   },
   taste: {
-    rating,
-    txt
+    rating: { type: Number, require: false, min: 1, max: 5 },
+    txt: { type: String, required: false, maxlength: 300, trim: true }
   },
   heat: {
-    rating,
-    txt
+    rating: { type: Number, require: false, min: 1, max: 5 },
+    txt: { type: String, required: false, maxlength: 300, trim: true }
   },
   overall: {
-    rating,
-    txt
+    rating: { type: Number, require: true, min: 1, max: 5 },
+    txt: { type: String, required: true, maxlength: 300, trim: true }
   },
   note: {
-    txt: {
-      type: String,
-      required: false,
-      maxlength: [
-        255,
-        "You must provide text to `{PATH}` with a charactor length less than `{MAXLENGTH}`"
-      ],
-      trim: true
-    }
+    txt: { type: String, required: false, maxlength: 300, trim: true }
   }
 });
 
