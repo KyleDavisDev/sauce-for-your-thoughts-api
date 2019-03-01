@@ -1,8 +1,105 @@
 const mongoose = require("mongoose");
 const Review = mongoose.model("Review");
-const { createNewRecord } = require("../handlers/helpers");
+const validator = require("validator");
 
-// TODO: Add sanity checks
+exports.validateReview = (req, res, next) => {
+  try {
+    // Grab review
+    const { review } = req.body;
+    console.log(review);
+    // Make sure required fields are present
+    if (
+      validator.isEmpty(review.overall) ||
+      validator.isEmpty(review.overall.txt) ||
+      validator.isEmpty(review.overall.rating)
+    ) {
+      throw new Error("You must supply a complete overall review");
+    }
+    if (
+      validator.isEmpty(review.sauce) ||
+      validator.isEmpty(review.sauce.slug)
+    ) {
+      throw new Error("You must tell us which sauce this is a review for");
+    }
+
+    // Check txt lengths
+    if (validator.isLength(review.overall.txt, { min: 1, max: 300 })) {
+      throw new Error(
+        "Length for overall is too long! Must be less than 300 charactors"
+      );
+    }
+    if (validator.isLength(review.label.txt, { min: 1, max: 300 })) {
+      throw new Error(
+        "Length for label is too long! Must be less than 300 charactors"
+      );
+    }
+    if (validator.isLength(review.aroma.txt, { min: 1, max: 300 })) {
+      throw new Error(
+        "Length for aroma is too long! Must be less than 300 charactors"
+      );
+    }
+    if (validator.isLength(review.taste.txt, { min: 1, max: 300 })) {
+      throw new Error(
+        "Length for taste is too long! Must be less than 300 charactors"
+      );
+    }
+    if (validator.isLength(review.heat.txt, { min: 1, max: 300 })) {
+      throw new Error(
+        "Length for heat is too long! Must be less than 300 charactors"
+      );
+    }
+    if (validator.isLength(review.note.txt, { min: 1, max: 300 })) {
+      throw new Error(
+        "Length for note is too long! Must be less than 300 charactors"
+      );
+    }
+
+    // Check rating val's
+    if (validator.isInt(review.overall.rating, { min: 1, max: 5 })) {
+      throw new Error(
+        "Rating for overall is too out of range! Must be between 1 and 5."
+      );
+    }
+    if (validator.isInt(review.label.rating, { min: 1, max: 5 })) {
+      throw new Error(
+        "Rating for label is too out of range! Must be between 1 and 5."
+      );
+    }
+    if (validator.isInt(review.aroma.rating, { min: 1, max: 5 })) {
+      throw new Error(
+        "Rating for aroma is too out of range! Must be between 1 and 5."
+      );
+    }
+    if (validator.isInt(review.taste.rating, { min: 1, max: 5 })) {
+      throw new Error(
+        "Rating for taste is too out of range! Must be between 1 and 5."
+      );
+    }
+    if (validator.isInt(review.heat.rating, { min: 1, max: 5 })) {
+      throw new Error(
+        "Rating for heat is too out of range! Must be between 1 and 5."
+      );
+    }
+    if (validator.isInt(review.note.rating, { min: 1, max: 5 })) {
+      throw new Error(
+        "Rating for note is too out of range! Must be between 1 and 5."
+      );
+    }
+
+    console.log("checkpoint!");
+    // Keep goin!
+    next();
+  } catch (err) {
+    console.log(err.message);
+    // Will be here is input failed a validator check
+    const data = {
+      isGood: false,
+      msg: err.message
+    };
+    return res.status(401).send(data);
+  }
+};
+
 // TODO: Better error handling/logging
 /** @description Add review to DB
  *  @extends req.response attaches review to req.response.sauce OR req.response if sauce doesn't exist
@@ -28,16 +125,16 @@ const { createNewRecord } = require("../handlers/helpers");
  */
 exports.addReview = async (req, res, next) => {
   try {
-    // construct review to save
-    // Moved this out simply to save space
-    const record = createNewRecord(req.body);
+    // Grab from review
+    console.log(req.body);
+    const { overall, label, aroma, taste, heat, note, sauce } = req.body.review;
 
     // Add sauce to record
     record.sauce = {};
     record.sauce = req.response.sauces[0]._id;
 
     // save into DB
-    const review = await new Review(record).save();
+    // const review = await new Review(record).save();
 
     // make sure record is good
     if (!review) {
@@ -62,7 +159,13 @@ exports.addReview = async (req, res, next) => {
     req.response.review.sauce = { _id: req.response.review.sauce };
     req.response.review.author = { _id: req.response.review.author };
 
-    next();
+    // construct return object
+    const data = {
+      isGood: true,
+      data: { review }
+    };
+
+    return res.status(200).send(data);
   } catch (err) {
     const data = {
       isGood: false,
