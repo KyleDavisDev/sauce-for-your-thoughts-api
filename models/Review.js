@@ -18,23 +18,23 @@ const reviewSchema = new mongoose.Schema({
     default: Date.now
   },
   label: {
-    rating: { type: Number, require: false, min: 1, max: 5 },
+    rating: { type: Number, required: false, min: 0, max: 5 },
     txt: { type: String, required: false, maxlength: 300, trim: true }
   },
   aroma: {
-    rating: { type: Number, require: false, min: 1, max: 5 },
+    rating: { type: Number, required: false, min: 0, max: 5 },
     txt: { type: String, required: false, maxlength: 300, trim: true }
   },
   taste: {
-    rating: { type: Number, require: false, min: 1, max: 5 },
+    rating: { type: Number, required: false, min: 0, max: 5 },
     txt: { type: String, required: false, maxlength: 300, trim: true }
   },
   heat: {
-    rating: { type: Number, require: false, min: 1, max: 5 },
+    rating: { type: Number, required: false, min: 0, max: 5 },
     txt: { type: String, required: false, maxlength: 300, trim: true }
   },
   overall: {
-    rating: { type: Number, require: true, min: 1, max: 5 },
+    rating: { type: Number, require: true, min: 0, max: 5 },
     txt: { type: String, required: true, maxlength: 300, trim: true }
   },
   note: {
