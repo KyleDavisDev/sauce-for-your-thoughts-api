@@ -6,7 +6,6 @@ const slug = require("slugs"); // Hi there! How are you! --> hi-there-how-are-yo
 // when using FormData, which is needed to upload image, all data gets turned into
 // string so we need to reformat to match model
 exports.stringToProperType = (req, res, next) => {
-  console.log("string to proper type");
   // grab string from req.body.sauce
   const obj = JSON.parse(req.body.sauce);
 
@@ -17,7 +16,7 @@ exports.stringToProperType = (req, res, next) => {
     req.body.sauce[x] = obj.sauce[x];
   });
 
-  console.log("string to proper type");
+  // Keep on chuggin'!
   next();
 };
 
@@ -114,7 +113,13 @@ exports.addSauce = async (req, res, next) => {
     // update .author to the 'standard' return author object
     req.response.sauces[0].author = user.toObject();
 
-    next(); // go to reviewController.addReview
+    // construct return object
+    const data = {
+      isGood: true,
+      data: { sauce: { slug: sauce.slug } }
+    };
+
+    return res.status(200).send(data);
   } catch (err) {
     // TODO log error somewhere so can be referenced later
     const data = {
@@ -133,6 +138,7 @@ exports.addSauce = async (req, res, next) => {
  */
 exports.getSauceBySlug = async (req, res, next) => {
   try {
+    console.log(req.body);
     // Slug will either come from params of the request body
     const SauceSlug = req.params.slug || req.body.sauce.slug;
     const sauce = await Sauce.findOne({ SauceSlug }).populate("author", {
