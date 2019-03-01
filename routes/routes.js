@@ -152,10 +152,11 @@ router.post(
 router.post(
   "/api/review/add",
   authController.isLoggedIn,
-  authController.decodeID,
+  // authController.decodeID,
+  reviewController.validateReview,
   sauceController.getSauceBySlug,
-  reviewController.addReview,
-  authController.encodeID
+  reviewController.addReview
+  // authController.encodeID
 );
 
 // 1. Find user by email, send email if email is legit or not otherwise, set key and timer for person in DB
