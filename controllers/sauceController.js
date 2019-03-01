@@ -138,10 +138,15 @@ exports.addSauce = async (req, res, next) => {
  */
 exports.getSauceBySlug = async (req, res, next) => {
   try {
-    console.log(req.body);
     // Slug will either come from params of the request body
-    const SauceSlug = req.params.slug || req.body.sauce.slug;
-    const sauce = await Sauce.findOne({ SauceSlug }).populate("author", {
+    let SauceSlug;
+    if (req.body.sauce && req.body.sauce.slug) {
+      SauceSlug = req.body.sauce.slug;
+    } else {
+      SauceSlug = req.body.review.sauce.slug;
+    }
+
+    const sauce = await Sauce.findOne({ slug: SauceSlug }).populate("author", {
       _id: 1,
       name: 1
     });
