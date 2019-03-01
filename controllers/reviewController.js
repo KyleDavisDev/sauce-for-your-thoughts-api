@@ -9,80 +9,74 @@ exports.validateReview = (req, res, next) => {
     console.log(review);
     // Make sure required fields are present
     if (
-      validator.isEmpty(review.overall) ||
-      validator.isEmpty(review.overall.txt) ||
-      validator.isEmpty(review.overall.rating)
+      !review.overall ||
+      validator.isEmpty(review.overall.txt, { min: 1, max: 300 }) ||
+      validator.isEmpty(review.overall.rating.toString(), { min: 1, max: 5 })
     ) {
       throw new Error("You must supply a complete overall review");
     }
-    if (
-      validator.isEmpty(review.sauce) ||
-      validator.isEmpty(review.sauce.slug)
-    ) {
+    if (!review.sauce || validator.isEmpty(review.sauce.slug)) {
       throw new Error("You must tell us which sauce this is a review for");
     }
 
     // Check txt lengths
-    if (validator.isLength(review.overall.txt, { min: 1, max: 300 })) {
+    if (!validator.isLength(review.overall.txt, { min: 1, max: 300 })) {
       throw new Error(
         "Length for overall is too long! Must be less than 300 charactors"
       );
     }
-    if (validator.isLength(review.label.txt, { min: 1, max: 300 })) {
+    if (!validator.isLength(review.label.txt, { min: 1, max: 300 })) {
       throw new Error(
         "Length for label is too long! Must be less than 300 charactors"
       );
     }
-    if (validator.isLength(review.aroma.txt, { min: 1, max: 300 })) {
+    if (!validator.isLength(review.aroma.txt, { min: 1, max: 300 })) {
       throw new Error(
         "Length for aroma is too long! Must be less than 300 charactors"
       );
     }
-    if (validator.isLength(review.taste.txt, { min: 1, max: 300 })) {
+    if (!validator.isLength(review.taste.txt, { min: 1, max: 300 })) {
       throw new Error(
         "Length for taste is too long! Must be less than 300 charactors"
       );
     }
-    if (validator.isLength(review.heat.txt, { min: 1, max: 300 })) {
+    if (!validator.isLength(review.heat.txt, { min: 1, max: 300 })) {
       throw new Error(
         "Length for heat is too long! Must be less than 300 charactors"
       );
     }
-    if (validator.isLength(review.note.txt, { min: 1, max: 300 })) {
+    if (!validator.isLength(review.note.txt, { min: 1, max: 300 })) {
       throw new Error(
         "Length for note is too long! Must be less than 300 charactors"
       );
     }
 
     // Check rating val's
-    if (validator.isInt(review.overall.rating, { min: 1, max: 5 })) {
+    if (
+      !validator.isInt(review.overall.rating.toString(), { min: 0, max: 5 })
+    ) {
       throw new Error(
         "Rating for overall is too out of range! Must be between 1 and 5."
       );
     }
-    if (validator.isInt(review.label.rating, { min: 1, max: 5 })) {
+    if (!validator.isInt(review.label.rating.toString(), { min: 0, max: 5 })) {
       throw new Error(
         "Rating for label is too out of range! Must be between 1 and 5."
       );
     }
-    if (validator.isInt(review.aroma.rating, { min: 1, max: 5 })) {
+    if (!validator.isInt(review.aroma.rating.toString(), { min: 0, max: 5 })) {
       throw new Error(
         "Rating for aroma is too out of range! Must be between 1 and 5."
       );
     }
-    if (validator.isInt(review.taste.rating, { min: 1, max: 5 })) {
+    if (!validator.isInt(review.taste.rating.toString(), { min: 0, max: 5 })) {
       throw new Error(
         "Rating for taste is too out of range! Must be between 1 and 5."
       );
     }
-    if (validator.isInt(review.heat.rating, { min: 1, max: 5 })) {
+    if (!validator.isInt(review.heat.rating.toString(), { min: 0, max: 5 })) {
       throw new Error(
         "Rating for heat is too out of range! Must be between 1 and 5."
-      );
-    }
-    if (validator.isInt(review.note.rating, { min: 1, max: 5 })) {
-      throw new Error(
-        "Rating for note is too out of range! Must be between 1 and 5."
       );
     }
 
