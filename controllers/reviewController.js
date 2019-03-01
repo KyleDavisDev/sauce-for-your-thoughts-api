@@ -6,7 +6,6 @@ exports.validateReview = (req, res, next) => {
   try {
     // Grab review
     const { review } = req.body;
-    console.log(review);
     // Make sure required fields are present
     if (
       !review.overall ||
@@ -80,7 +79,6 @@ exports.validateReview = (req, res, next) => {
       );
     }
 
-    console.log("checkpoint!");
     // Keep goin!
     next();
   } catch (err) {
@@ -120,15 +118,11 @@ exports.validateReview = (req, res, next) => {
 exports.addReview = async (req, res, next) => {
   try {
     // Grab from review
-    console.log(req.body);
-    const { overall, label, aroma, taste, heat, note, sauce } = req.body.review;
-
-    // Add sauce to record
-    record.sauce = {};
-    record.sauce = req.response.sauces[0]._id;
+    const record = Object.assign({}, req.body.review);
+    record.user = req.body.user;
 
     // save into DB
-    // const review = await new Review(record).save();
+    const review = await new Review(record).save();
 
     // make sure record is good
     if (!review) {
@@ -139,19 +133,6 @@ exports.addReview = async (req, res, next) => {
       };
       return res.status(400).send(data);
     }
-
-    // check to see if req.response is a thing or not
-    if (!("response" in req) || req.response === undefined) req.response = {};
-
-    // Initialize reviews{}
-    req.response.review = {};
-
-    // Add review to response obj
-    req.response.review = review.toObject();
-
-    // Format review object
-    req.response.review.sauce = { _id: req.response.review.sauce };
-    req.response.review.author = { _id: req.response.review.author };
 
     // construct return object
     const data = {
