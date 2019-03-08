@@ -4,12 +4,22 @@ const validator = require("validator");
 
 exports.validateReview = (req, res, next) => {
   try {
+    // max length for txt inputs
+    const MAXLENGTH = 300;
+
+    // Remove any whitespace in .txt
+    Object.keys(req.body.review).forEach(key => {
+      if (req.body.review[key].txt) {
+        req.body.review[key].txt = req.body.review[key].txt.trim();
+      }
+    });
     // Grab review
-    const { review } = req.body;
+    const review = { ...req.body.review };
+
     // Make sure required fields are present
     if (
       !review.overall ||
-      validator.isEmpty(review.overall.txt, { min: 1, max: 300 }) ||
+      validator.isEmpty(review.overall.txt) ||
       validator.isEmpty(review.overall.rating.toString(), { min: 1, max: 5 })
     ) {
       throw new Error("You must supply a complete overall review");
@@ -19,32 +29,32 @@ exports.validateReview = (req, res, next) => {
     }
 
     // Check txt lengths
-    if (!validator.isLength(review.overall.txt, { min: 1, max: 300 })) {
+    if (!validator.isLength(review.overall.txt, { min: 1, max: MAXLENGTH })) {
       throw new Error(
         "Length for overall is too long! Must be less than 300 charactors"
       );
     }
-    if (!validator.isLength(review.label.txt, { min: 1, max: 300 })) {
+    if (!validator.isLength(review.label.txt, { max: MAXLENGTH })) {
       throw new Error(
         "Length for label is too long! Must be less than 300 charactors"
       );
     }
-    if (!validator.isLength(review.aroma.txt, { min: 1, max: 300 })) {
+    if (!validator.isLength(review.aroma.txt, { max: MAXLENGTH })) {
       throw new Error(
         "Length for aroma is too long! Must be less than 300 charactors"
       );
     }
-    if (!validator.isLength(review.taste.txt, { min: 1, max: 300 })) {
+    if (!validator.isLength(review.taste.txt, { max: MAXLENGTH })) {
       throw new Error(
         "Length for taste is too long! Must be less than 300 charactors"
       );
     }
-    if (!validator.isLength(review.heat.txt, { min: 1, max: 300 })) {
+    if (!validator.isLength(review.heat.txt, { max: MAXLENGTH })) {
       throw new Error(
         "Length for heat is too long! Must be less than 300 charactors"
       );
     }
-    if (!validator.isLength(review.note.txt, { min: 1, max: 300 })) {
+    if (!validator.isLength(review.note.txt, { max: MAXLENGTH })) {
       throw new Error(
         "Length for note is too long! Must be less than 300 charactors"
       );
@@ -78,6 +88,10 @@ exports.validateReview = (req, res, next) => {
         "Rating for heat is too out of range! Must be between 1 and 5."
       );
     }
+
+    // Push slug into req.body.sauce
+    req.body.sauce = {};
+    req.body.sauce.slug = review.sauce.slug;
 
     // Keep goin!
     next();
@@ -119,7 +133,11 @@ exports.addReview = async (req, res, next) => {
   try {
     // Grab from review
     const record = Object.assign({}, req.body.review);
-    record.user = req.body.user;
+    record.author = req.body.user._id;
+    record.sauce = req.body.sauce._id;
+
+    // Make sure there isn't an _id already on object
+    if (record._id !== undefined) delete record._id;
 
     // save into DB
     const review = await new Review(record).save();
@@ -142,6 +160,7 @@ exports.addReview = async (req, res, next) => {
 
     return res.status(200).send(data);
   } catch (err) {
+    console.log(err);
     const data = {
       isGood: false,
       msg:
