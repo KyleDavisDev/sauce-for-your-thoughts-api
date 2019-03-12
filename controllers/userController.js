@@ -87,10 +87,7 @@ exports.register = async (req, res, next) => {
       return res.status(300).send(data);
     }
 
-    // hash/update password
-    // await user.setPassword(req.body.user.password);
-
-    // Save user -- This will execute the .pre("save") method
+    // Save user -- This will execute the .pre("save") method which makes sure values are unique and password hashed
     await user.save();
 
     next(); // go to authController.login
