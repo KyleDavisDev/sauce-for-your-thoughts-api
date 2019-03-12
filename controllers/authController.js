@@ -40,7 +40,7 @@ exports.login = (req, res) => {
     const data = {
       isGood: true,
       msg: "Successfully logged in.",
-      data: { user: { token, name, email } }
+      user: { token, name, email }
     };
     return res.status(200).send(data);
   });
