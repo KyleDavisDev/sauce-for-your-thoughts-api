@@ -147,17 +147,17 @@ exports.addReview = async (req, res, next) => {
       const data = {
         isGood: false,
         msg:
-          "Could save sauce to the database. Please be sure your sauce _id is correct."
+          "Could save sauce to the database. Please be sure your sauce slug is correct."
       };
       return res.status(400).send(data);
     }
 
     // construct return object
     const data = {
-      isGood: true,
-      data: { review }
+      isGood: true
     };
 
+    // Send back successful submission
     return res.status(200).send(data);
   } catch (err) {
     console.log(err);
