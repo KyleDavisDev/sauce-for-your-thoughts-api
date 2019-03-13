@@ -29,9 +29,9 @@ exports.stringToProperType = (req, res, next) => {
  *  @param {Number?|null} req.body.sauce.shu - spiciness of sauce
  *  @param {String[]?} req.body.sauce.types - how the suace is intended to be used
  *  @param {Object?} req.body.sauce.location - location object
- *    @param {String?} req.body.sauce.country - country sauce was made in
- *    @param {String?} req.body.sauce.state - state/region sauce was made in
- *    @param {String?} req.body.sauce.city - city sauce was made in
+ *    @param {String?} req.body.sauce.location.country - country sauce was made in
+ *    @param {String?} req.body.sauce.location.state - state/region sauce was made in
+ *    @param {String?} req.body.sauce.location.city - city sauce was made in
  *  @param {String} req.body.sauce.photo - unique name of the photo saved on server
  */
 exports.addSauce = async (req, res, next) => {
@@ -101,22 +101,10 @@ exports.addSauce = async (req, res, next) => {
       return res.status(400).send(data);
     }
 
-    // look up author so we can assign it to the sauce that was just saved later
-    const user = await User.findById(sauce.author, { _id: 1, name: 1 });
-
-    // create response object if not already created
-    if (!req.response) req.response = {};
-
-    // add sauce to req.response for next middleware
-    req.response.sauces = [sauce.toObject()];
-
-    // update .author to the 'standard' return author object
-    req.response.sauces[0].author = user.toObject();
-
     // construct return object
     const data = {
       isGood: true,
-      data: { sauce: { slug: sauce.slug } }
+      sauce: { slug: sauce.slug }
     };
 
     return res.status(200).send(data);
