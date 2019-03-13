@@ -31,8 +31,8 @@ router.post(
   // authController.decodeID,
   imageController.resize,
   sauceController.stringToProperType,
-  sauceController.addSauce,
-  authController.encodeID
+  sauceController.addSauce
+  // authController.encodeID
 );
 
 // 1. Use :slug param to find and return sauce
