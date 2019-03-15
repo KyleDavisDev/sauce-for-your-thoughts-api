@@ -38,10 +38,10 @@ router.post(
 // 1. Use :slug param to find and return sauce
 // 2. Add reviews to sauce that was found
 router.get(
-  "/api/sauce/get/:slug",
+  "/api/sauce/get/by/slug",
   sauceController.getSauceBySlug,
-  reviewController.getCompleteReviewsBySauceID,
-  authController.encodeID
+  reviewController.getCompleteReviewsBySauceID
+  // authController.encodeID
 );
 
 // 1. Verify if user is valid
