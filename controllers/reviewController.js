@@ -2,10 +2,11 @@ const mongoose = require("mongoose");
 const Review = mongoose.model("Review");
 const validator = require("validator");
 
+const MAXLENGTH = 300;
+
 exports.validateReview = (req, res, next) => {
   try {
     // max length for txt inputs
-    const MAXLENGTH = 300;
 
     // Remove any whitespace in .txt
     Object.keys(req.body.review).forEach(key => {
@@ -96,7 +97,6 @@ exports.validateReview = (req, res, next) => {
     // Keep goin!
     next();
   } catch (err) {
-    console.log(err.message);
     // Will be here is input failed a validator check
     const data = {
       isGood: false,
@@ -135,6 +135,7 @@ exports.addReview = async (req, res, next) => {
     const record = Object.assign({}, req.body.review);
     record.author = req.body.user._id;
     record.sauce = req.body.sauce._id;
+    delete record.created; // Will be created by DB
 
     // Make sure there isn't an _id already on object
     if (record._id !== undefined) delete record._id;
