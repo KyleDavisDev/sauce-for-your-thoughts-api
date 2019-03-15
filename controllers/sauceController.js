@@ -133,20 +133,25 @@ exports.getSauceBySlug = async (req, res, next) => {
 
     const sauce = await Sauce.findOne({ slug: req.body.sauce.slug });
 
+    // Make sure we found the sauce or else throw error
+    if (!sauce) {
+      throw new Error(
+        "Could not find a sauce associated with this slug. Please make sure your slug is correct and try agian."
+      );
+    }
+
     // reassign sauce
     req.body.sauce = sauce;
 
-    // init req.response if not already exists
-    if (req.response === undefined) req.response = {};
-
-    // attach sauce to req.response object so we can access it in next middleware
-    // turn sauce in array since that is format reviewController.findReviewsBySauceID expects
-    req.response.sauce = sauce;
-
-    // go to reviewController.findReviewsBySauceID
+    // keep going
     next();
   } catch (err) {
-    res.send(err);
+    // Will be here is input failed a validator check
+    const data = {
+      isGood: false,
+      msg: err.message
+    };
+    return res.status(401).send(data);
   }
 };
 
