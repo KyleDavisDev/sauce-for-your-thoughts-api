@@ -120,7 +120,6 @@ exports.addSauce = async (req, res, next) => {
 };
 
 /** @description look up a specific sauce by the sauce's slug
- *  @extends req.response - extrends/creates onto the custom 'global' object between middleware
  *  @param {String?} req.parms.slug - unique sauce string
  *  @param {String?} req.body.sauce.slug - unique sauce string
  */
@@ -128,10 +127,33 @@ exports.getSauceBySlug = async (req, res, next) => {
   try {
     // Make sure slug is in right place
     if (!req.body.sauce || !req.body.sauce.slug) {
-      // Send error
+      const data = {
+        isGood: false,
+        msg: "Make sure you are providing a slug with your sauce."
+      };
+      return res.status(300).send(data);
     }
 
-    const sauce = await Sauce.findOne({ slug: req.body.sauce.slug });
+    const sauce = await Sauce.findOne(
+      {
+        slug: req.body.sauce.slug, //by slug
+        isPrivate: false, // make sure publicly available
+        isActive: true // make sure active
+      },
+      {
+        photo: 1,
+        types: 1,
+        name: 1,
+        maker: 1,
+        shu: 1,
+        location: 1,
+        description: 1,
+        created: 1,
+        slug: 1
+        // author: 1
+      }
+    ).populate("author", { _id: 0, name: 1, created: 1 });
+    console.log(sauce);
 
     // Make sure we found the sauce or else throw error
     if (!sauce) {
@@ -146,6 +168,7 @@ exports.getSauceBySlug = async (req, res, next) => {
     // keep going
     next();
   } catch (err) {
+    console.log(err);
     // Will be here is input failed a validator check
     const data = {
       isGood: false,
