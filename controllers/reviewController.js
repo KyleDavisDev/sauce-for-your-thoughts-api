@@ -210,54 +210,33 @@ exports.findReviewByUserAndSauce = async (req, res) => {
  *  @param {String[]} req.response.sauces[]._id - unique sauce string
  *  @return array of reviews attached to each req.response.sauces[] object
  */
-exports.getCompleteReviewsBySauceID = async (req, res, next) => {
-  // make sure req.response.sauces[]._id was actually passed
-  if (
-    req.response === undefined ||
-    req.response.sauces === undefined ||
-    req.response.sauces.length === 0 ||
-    !req.response.sauces[0]._id
-  ) {
+exports.getReviewsBySauceID = async (req, res, next) => {
+  // Make sure _id is in right place
+  if (!req.body.sauce || !req.body.sauce._id) {
     const data = {
       isGood: false,
-      msg: "Requires sauce object. Please try again."
+      msg:
+        "We couldn't find an id to look up the reviews. Make sure it's in the right place"
     };
     return res.status(300).send(data);
   }
 
   try {
-    // chain of promises all at once.
-    // assign reviews[] to each sauces[] object
-    req.response.sauces = await Promise.all(
-      req.response.sauces.map(async sauce => {
-        // find reviews by sauce._id
-        // do not populate sauce since we already have that information from previous middleware (sauceControll.getSauceById/getSauces)
-        const reviews = await Review.find(
-          {
-            sauce: sauce._id
-          },
-          {
-            sauce: 0,
-            created: 0
-          }
-        ).populate("author", { _id: 1, name: 1 });
-
-        // turn sauce from mongoose object to object
-        const sauceObj = sauce.toObject();
-
-        // assign reviews to sauce
-        sauceObj.reviews = reviews.map(x =>
-          Object.assign({}, x.toObject(), { sauce: { _id: sauce._id } })
-        );
-
-        // return sauce
-        return sauceObj;
-      })
-    );
+    const { _id } = req.body.sauce;
+    const reviews = await Review.find(
+      {
+        sauce: _id
+      },
+      {
+        sauce: 0,
+        _id: 0
+      }
+    ).populate("author", { _id: 0, name: 1, created: 1 });
+    console.log(reviews);
 
     // All is good if we made it here.
-    // Go to authController.encodeID
-    next();
+    // Go to authController.removeIDs
+    res.status(200).send({ isGood: true });
   } catch (err) {
     console.log(err);
     res.status(400).send(err);
