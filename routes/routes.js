@@ -35,23 +35,13 @@ router.post(
   // authController.encodeID
 );
 
-// 1. Use :slug param to find and return sauce
+// 1. Look up a sauce by unique slug
 // 2. Add reviews to sauce that was found
-router.get(
+router.post(
   "/api/sauce/get/by/slug",
   sauceController.getSauceBySlug,
-  reviewController.getCompleteReviewsBySauceID
+  reviewController.getReviewsBySauceID
   // authController.encodeID
-);
-
-// 1. Verify if user is valid
-// 2. Find and return ID-specific sauce.
-router.post(
-  "/api/sauce/get/id",
-  authController.isLoggedIn,
-  sauceController.getSauceById,
-  reviewController.getCompleteReviewsBySauceID,
-  authController.encodeID
 );
 
 // 1. Check mimetype of image and set req.body
