@@ -22,48 +22,27 @@ require("dotenv").config({ path: "variables.env" });
 // require("./models/Review.js");
 // require("./models/Pepper.js");
 // require("./models/Type.js");
+const Users = require("./models/Users");
 
-var mysql = require("mysql");
+var db = require("./db/db.js");
 
-var connection = mysql.createConnection({
-  host: "SG-SauceForYourThoughts-290-master.servers.mongodirector.com",
-  user: "Testerino",
-  password: "abcasd!@asdDFasdf12",
-  database: "Harriot",
-  port: 3306
-});
-
-connection.connect(function(err) {
+db.connect(async function(err) {
   if (err) throw err;
   console.log("You are now connected...");
-
-  connection.query(
-    `CREATE TABLE IF NOT EXISTS Orders123 (
-      OrderID int NOT NULL AUTO_INCREMENT,
-      OrderNumber int NOT NULL,
-      PersonID int,
-      PRIMARY KEY (OrderID)
-      );`,
-    function(err, result) {
-      if (err) throw err;
-      connection.query(
-        "INSERT INTO Orders123 (OrderNumber, PersonID) VALUES (?, ?)",
-        [41, 14],
-        function(err, result) {
-          if (err) throw err;
-          connection.query("SELECT * FROM Orders123", function(err, results) {
-            if (err) throw err;
-            console.log(results[0].OrderNumber);
-          });
-        }
-      );
+  await Users.insert(
+    {
+      email: "test@gmail",
+      password: "123123123",
+      displayName: "Test Guy"
+    },
+    function(err, res) {
+      console.log(err, res);
     }
   );
+  // // Start the app
+  // const app = require("./app.js");
+  // app.set("port", process.env.PORT || 8080);
+  // const server = app.listen(app.get("port"), () => {
+  //   console.log(`Express running on PORT ${server.address().port}`);
+  // });
 });
-
-// Start the app
-// const app = require("./app.js");
-// app.set("port", process.env.PORT || 8080);
-// const server = app.listen(app.get("port"), () => {
-//   console.log(`Express running on PORT ${server.address().port}`);
-// });
