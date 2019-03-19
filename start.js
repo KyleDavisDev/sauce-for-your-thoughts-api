@@ -26,7 +26,7 @@ const Users = require("./models/Users");
 
 var db = require("./db/db.js");
 
-db.connect(async function(err) {
+db.connect(function(err) {
   if (err) throw err;
   console.log("You are now connected...");
 
