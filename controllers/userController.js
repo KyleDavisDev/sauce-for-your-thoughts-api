@@ -74,22 +74,13 @@ exports.register = async (req, res, next) => {
     // These should have already been checked via validateRegister method
     const record = {
       email: req.body.user.email,
-      name: req.body.user.displayName,
+      displayName: req.body.user.displayName,
       password: req.body.user.password
     };
 
-    const user = new User(record);
-
-    if (!user) {
-      const data = {
-        isGood: false,
-        msg: "Unable to register this user. Please try again."
-      };
-      return res.status(300).send(data);
-    }
-
-    // Save user -- This will execute the .pre("save") method which makes sure values are unique and password hashed
-    await user.save();
+    await User.insert(record, function(err) {
+      if (err) throw err;
+    });
 
     next(); // go to authController.login
   } catch (err) {
