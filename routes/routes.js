@@ -4,7 +4,7 @@ const router = express.Router();
 // grab controllers
 // const sauceController = require("../controllers/sauceController.js");
 const userController = require("../controllers/userController.js");
-// const authController = require("../controllers/authController.js");
+const authController = require("../controllers/authController.js");
 // const reviewController = require("../controllers/reviewController.js");
 // const pepperController = require("../controllers/pepperController.js");
 // const typeController = require("../controllers/typeController.js");
