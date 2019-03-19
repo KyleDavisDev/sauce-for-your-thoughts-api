@@ -36,6 +36,7 @@ db.connect(async function(err) {
       displayName: "Test Guy"
     },
     function(err, res) {
+      if (err) throw err;
       console.log(err, res);
     }
   );
