@@ -1,12 +1,6 @@
 var mysql = require("mysql");
 require("dotenv").config({ path: "variables.env" });
 
-var PRODUCTION_DB = "app_prod_database",
-  TEST_DB = "app_test_database";
-
-exports.MODE_TEST = "mode_test";
-exports.MODE_PRODUCTION = "mode_production";
-
 var state = {
   pool: null
 };
