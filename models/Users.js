@@ -34,3 +34,20 @@ exports.insert = async function({ email, password, displayName }, cb) {
     cb(null, result.insertId);
   });
 };
+
+exports.getAll = function(cb) {
+  db.get().query("SELECT * FROM comments", function(err, rows) {
+    if (err) return cb(err);
+    cb(null, rows);
+  });
+};
+
+exports.getAllByUser = function(userId, cb) {
+  db.get().query("SELECT * FROM comments WHERE user_id = ?", userId, function(
+    err,
+    rows
+  ) {
+    if (err) return cb(err);
+    cb(null, rows);
+  });
+};
