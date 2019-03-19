@@ -62,14 +62,22 @@ exports.getAllByUser = function(userId, cb) {
     });
 };
 
-exports.AuthenticateUser = function({ email, password }, cb) {
-  console.log(email, password);
-  db.get().getConnection(function(err, connection) {
-    console.log(err);
-    connection.query("SELECT * FROM Users", function(err, rows) {
+exports.AuthenticateUser = async function({ email, password }, cb) {
+  // Insert is too fast sometimes, need to slow down for record to appear
+  // TODO find alternative to this
+  function sleep(ms) {
+    return new Promise(resolve => {
+      setTimeout(resolve, ms);
+    });
+  }
+  await sleep(1000);
+
+  db
+    .get()
+    .query("SELECT * FROM Users WHERE Email = ?", [email], function(err, rows) {
       console.log(err, rows);
     });
-  });
+
   // Find user by email
   // this.findOne({ email: username }, function(err, user) {
   //   // If error occured, get out
