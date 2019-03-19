@@ -1,4 +1,4 @@
-var db = require("../db.js");
+var db = require("../db/db.js");
 const bcrypt = require("bcrypt");
 
 // Constants
@@ -6,7 +6,7 @@ const MAX_LOGIN_ATTEMPTS = 5;
 const LOCK_TIME = 1000 * 60 * 60 * 2; // 2 hour lock
 const SALT_WORK_FACTOR = 10;
 
-export const UserTableStructure = `CREATE TABLE IF NOT EXISTS Users (
+exports.UserTableStructure = `CREATE TABLE IF NOT EXISTS Users (
   UserID int NOT NULL AUTO_INCREMENT,
   Email varchar(50) NOT NULL UNIQUE,
   Password varchar(100) NOT NULL,
@@ -19,7 +19,7 @@ export const UserTableStructure = `CREATE TABLE IF NOT EXISTS Users (
   PRIMARY KEY (UserID)
   );`;
 
-export const UserTableRemove = "DROP TABLE Users";
+exports.UserTableRemove = "DROP TABLE Users";
 
 exports.insert = async function({ email, password, displayName }, cb) {
   // Create salt
@@ -43,11 +43,13 @@ exports.getAll = function(cb) {
 };
 
 exports.getAllByUser = function(userId, cb) {
-  db.get().query("SELECT * FROM comments WHERE user_id = ?", userId, function(
-    err,
-    rows
-  ) {
-    if (err) return cb(err);
-    cb(null, rows);
-  });
+  db
+    .get()
+    .query("SELECT * FROM comments WHERE user_id = ?", userId, function(
+      err,
+      rows
+    ) {
+      if (err) return cb(err);
+      cb(null, rows);
+    });
 };
