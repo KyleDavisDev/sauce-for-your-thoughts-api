@@ -29,21 +29,11 @@ var db = require("./db/db.js");
 db.connect(async function(err) {
   if (err) throw err;
   console.log("You are now connected...");
-  await Users.insert(
-    {
-      email: "test@gmail",
-      password: "123123123",
-      displayName: "Test Guy"
-    },
-    function(err, res) {
-      if (err) throw err;
-      console.log(err, res);
-    }
-  );
-  // // Start the app
-  // const app = require("./app.js");
-  // app.set("port", process.env.PORT || 8080);
-  // const server = app.listen(app.get("port"), () => {
-  //   console.log(`Express running on PORT ${server.address().port}`);
-  // });
+
+  // Start the app
+  const app = require("./app.js");
+  app.set("port", process.env.PORT || 8080);
+  const server = app.listen(app.get("port"), () => {
+    console.log(`Express running on PORT ${server.address().port}`);
+  });
 });
