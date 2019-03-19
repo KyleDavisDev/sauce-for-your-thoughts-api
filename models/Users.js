@@ -27,16 +27,24 @@ exports.insert = async function({ email, password, displayName }, cb) {
   // Create hash
   const hash = await bcrypt.hash(password, salt);
 
+  // Create insert object
   const values = { Email: email, Password: hash, DisplayName: displayName };
 
   db.get().query("INSERT INTO Users SET ?", values, function(err, result) {
-    if (err) return cb(err);
-    cb(null, result.insertId);
+    // If callback was passed, use that
+    if (cb !== undefined) {
+      if (err) return cb(err);
+      cb(null, result);
+    }
+
+    // Otherwise return appropriate val
+    if (err) return err;
+    return result;
   });
 };
 
 exports.getAll = function(cb) {
-  db.get().query("SELECT * FROM comments", function(err, rows) {
+  db.get().query("SELECT * FROM Users", function(err, rows) {
     if (err) return cb(err);
     cb(null, rows);
   });
@@ -45,11 +53,81 @@ exports.getAll = function(cb) {
 exports.getAllByUser = function(userId, cb) {
   db
     .get()
-    .query("SELECT * FROM comments WHERE user_id = ?", userId, function(
+    .query("SELECT * FROM Users WHERE user_id = ?", userId, function(
       err,
       rows
     ) {
       if (err) return cb(err);
       cb(null, rows);
     });
+};
+
+exports.AuthenticateUser = function({ email, password }, cb) {
+  console.log(email, password);
+  db.get().getConnection(function(err, connection) {
+    console.log(err);
+    connection.query("SELECT * FROM Users", function(err, rows) {
+      console.log(err, rows);
+    });
+  });
+  // Find user by email
+  // this.findOne({ email: username }, function(err, user) {
+  //   // If error occured, get out
+  //   if (err) return cb(err, null, null);
+
+  //   // If cannot find user, get out
+  //   if (!user) return cb(null, null, null);
+
+  //   // See if account is locked
+  //   // We will skip hashing password and whatnot if it's locked
+  //   if (user.isLocked) {
+  //     // increment login attempts
+  //     return user.incLoginAttempts(function(err) {
+  //       // If error occured, get out
+  //       if (err) return cb(err, null, null);
+
+  //       return cb(
+  //         null,
+  //         null,
+  //         "This account is locked. Please try again in a few hours."
+  //       );
+  //     });
+  //   }
+
+  //   bcrypt.compare(password, user.password, function(err, isMatch) {
+  //     // If error occured, get out
+  //     if (err) return cb(err, null, null);
+
+  //     // Password is good
+  //     if (isMatch) {
+  //       // if there's no lock or failed attempts, just return the user
+  //       if (!user.loginAttempts && !user.lockedUntil)
+  //         return cb(null, user, null);
+
+  //       // reset attempts and remove lockedUntil timer
+  //       var updates = {
+  //         $set: { loginAttempts: 0 }
+  //       };
+
+  //       // remove timer if exists
+  //       if (user.lockedUntil) {
+  //         updates.$unset = { lockedUntil: 1 };
+  //       }
+
+  //       return user.updateOne(updates, function(err) {
+  //         // If error, get out
+  //         if (err) return cb(err, null, null);
+
+  //         // return user
+  //         return cb(null, user, null);
+  //       });
+  //     }
+
+  //     // password is incorrect, so increment login attempts before responding
+  //     user.incLoginAttempts(function(err) {
+  //       if (err) return cb(err);
+  //       return cb(null, null);
+  //     });
+  //   });
+  // });
 };
