@@ -12,7 +12,6 @@ exports.login = (req, res) => {
     return res.status(400).send(data);
   }
 
-  console.log("am i here?");
   User.AuthenticateUser(
     { email: req.body.user.email, password: req.body.user.password },
     function(err, result, msg) {
