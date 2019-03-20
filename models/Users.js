@@ -51,32 +51,48 @@ exports.getAll = function(cb) {
 };
 
 exports.getAllByUser = function(userId, cb) {
-  db
-    .get()
-    .query("SELECT * FROM Users WHERE user_id = ?", userId, function(
-      err,
-      rows
-    ) {
-      if (err) return cb(err);
-      cb(null, rows);
-    });
+  db.get().query("SELECT * FROM Users WHERE user_id = ?", userId, function(
+    err,
+    rows
+  ) {
+    if (err) return cb(err);
+    cb(null, rows);
+  });
 };
 
-exports.AuthenticateUser = async function({ email, password }, cb) {
-  // Insert is too fast sometimes, need to slow down for record to appear
-  // TODO find alternative to this
-  function sleep(ms) {
-    return new Promise(resolve => {
-      setTimeout(resolve, ms);
-    });
-  }
-  await sleep(1000);
+exports.AuthenticateUser = function({ email, password }, cb) {
+  db.get().query("SELECT * FROM Users WHERE Email = ?", [email], function(
+    err,
+    rows
+  ) {
+    // If error occured, get out
+    if (err) return cb(err, null, null);
 
-  db
-    .get()
-    .query("SELECT * FROM Users WHERE Email = ?", [email], function(err, rows) {
-      console.log(err, rows);
-    });
+    // If cannot find user, get out
+    if (!rows[0]) return cb(null, null, null);
+
+    // assign for easier use
+    const user = rows[0];
+
+    // See if account is locked so we can possibly skipping creating JWT
+    // lockedUntil time will be larger if acc locked
+    if (user.lockedUntil > Date.now()) {
+      // acc locked if here
+
+      // incriment login attempts
+      module.exports.IncLoginAttempts({ UserID: user.UserID }, function(err) {
+        // If error occured, get out
+        if (err) return cb(err, null, null);
+
+        // Value has been incrimented, return message
+        return cb(
+          null,
+          null,
+          "This account is locked. Please try again in a few hours."
+        );
+      });
+    }
+  });
 
   // Find user by email
   // this.findOne({ email: username }, function(err, user) {
@@ -138,4 +154,16 @@ exports.AuthenticateUser = async function({ email, password }, cb) {
   //     });
   //   });
   // });
+};
+
+exports.IncLoginAttempts = function({ UserID }, cb) {
+  db.get().query(
+    "Update Users SET LoginAttempts = LoginAttempts + 1 WHERE UserID = ?",
+    { UserID },
+    function(err, result) {
+      if (err) return cb(err);
+
+      return result;
+    }
+  );
 };
