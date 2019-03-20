@@ -78,11 +78,11 @@ exports.register = async (req, res, next) => {
       password: req.body.user.password
     };
 
-    await User.insert(record, function(err) {
+    User.insert(record, function(err) {
       if (err) throw err;
-    });
 
-    next(); // go to authController.login
+      next(); // go to authController.login
+    });
   } catch (err) {
     // Will land here if email/name already in use or there was issue hasing password
     const data = {
