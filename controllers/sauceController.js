@@ -1,6 +1,4 @@
-const mongoose = require("mongoose");
-const Sauce = mongoose.model("Sauce");
-const User = mongoose.model("User");
+const Sauces = require("../models/Sauces");
 const slug = require("slugs"); // Hi there! How are you! --> hi-there-how-are-you
 
 // when using FormData, which is needed to upload image, all data gets turned into
@@ -18,6 +16,39 @@ exports.stringToProperType = (req, res, next) => {
 
   // Keep on chuggin'!
   next();
+};
+
+exports.validateInsert = (req, res, next) => {
+  try {
+    const { sauce } = req.body;
+    // Make sure required fields are not empty
+    if (validator.isEmpty(sauce.name)) {
+      throw new Error("You must supply a name");
+    }
+    if (validator.isEmpty(sauce.maker)) {
+      throw new Error("You must supply a maker");
+    }
+    if (validator.isEmpty(sauce.description)) {
+      throw new Error("You must supply a description.");
+    }
+
+    // Trim string insert
+    req.body.sauce = Object.keys(sauce).map(key => {
+      if (typeof sauce[key] === "string") {
+        return sauce[key].trim();
+      }
+      return sauce[key];
+    });
+
+    next();
+  } catch (err) {
+    // Will be here is input failed a validator check
+    const data = {
+      isGood: false,
+      msg: err.message
+    };
+    return res.status(401).send(data);
+  }
 };
 
 /** @description Save a sauce into the database
@@ -44,70 +75,59 @@ exports.addSauce = async (req, res, next) => {
   }
 
   try {
-    // Set location. Only set country value if either a city or state was provided too.
-    const location = {};
-    if (
-      req.body.sauce.location !== undefined &&
-      Object.keys(req.body.sauce.location).length !== 0
-    ) {
-      location.city = req.body.sauce.location.city || "";
-      location.state = req.body.sauce.location.state || "";
-      location.country =
-        location.state.length > 0 || location.city.length > 0
-          ? req.body.sauce.location.country
-          : "";
-    }
-
     // Grab values from req.body.sauce
     const {
-      name,
-      maker,
-      description,
-      ingredients,
-      shu,
-      types
+      name: Name,
+      maker: Maker,
+      description: Description,
+      ingrediants: Ingrediants,
+      shu: SHU,
+      state: State,
+      country: Country,
+      city: City,
+      isPrivate: IsPrivate
     } = req.body.sauce;
 
     // Grab author from req.body.user
-    const author = req.body.user._id;
+    const UserID = req.body.user.UserID;
 
     // Grab photo name if exists
-    let photo = null;
-    if (req.body.photo) photo = req.body.photo;
+    let Photo = null;
+    if (req.body.photo) Photo = req.body.photo;
 
-    // create save query
-    const record = {
-      UserID,
-      name,
-      maker,
-      ingredients,
-      shu,
-      location,
-      description,
-      // types,
-      photo
-    };
+    Sauces.Insert(
+      {
+        UserID,
+        Name,
+        Maker,
+        Description,
+        Ingrediants,
+        SHU,
+        State,
+        Country,
+        City,
+        Photo
+      },
+      function(err, sauce) {
+        if (err) throw err;
+        // make sure something didn't break
+        if (!sauce) {
+          const data = {
+            isGood: false,
+            msg: "Could not add sauce"
+          };
+          return res.status(400).send(data);
+        }
 
-    // add sauce to DB
-    // TODO: Figure out how to populate on save()
-    const sauce = await new Sauce(record).save();
+        // construct return object
+        const data = {
+          isGood: true,
+          sauce: { slug: sauce.slug }
+        };
 
-    // make sure something didn't break
-    if (!sauce) {
-      const data = {
-        isGood: false,
-        msg: "Could not add sauce"
-      };
-      return res.status(400).send(data);
-    }
-
-    // construct return object
-    const data = {
-      isGood: true,
-      sauce: { slug: sauce.slug }
-    };
-
-    return res.status(200).send(data);
+        return res.status(200).send(data);
+      }
+    );
   } catch (err) {
     // TODO log error somewhere so can be referenced later
     const data = {
