@@ -1,9 +1,10 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/Users");
+const Users = require("../models/Users");
 const { encryptDecrypt } = require("../handlers/auth");
 // const mail = require("../handlers/mail.js");
 
 exports.login = (req, res) => {
+  // Quick sanity check
   if (req.body.user === undefined || Object.keys(req.body.user) === 0) {
     const data = {
       isGood: false,
@@ -12,36 +13,44 @@ exports.login = (req, res) => {
     return res.status(400).send(data);
   }
 
-  User.AuthenticateUser(
-    { email: req.body.user.email, password: req.body.user.password },
-    function(err, result, msg) {
-      if (err) {
-        return res.status(401).send(err);
-      }
+  try {
+    Users.AuthenticateUser(
+      { email: req.body.user.email, password: req.body.user.password },
+      function(err, result, msg) {
+        if (err) {
+          return res.status(401).send(err);
+        }
 
-      // Login was bad or user is locked
-      if (!result) {
+        // Login was bad or user is locked
+        if (!result) {
+          const data = {
+            isGood: false,
+            msg: msg || "Invalid username or password."
+          };
+          return res.status(400).send(data);
+        }
+
+        // create JWT token
+        const payload = { sub: result._id };
+        const token = jwt.sign(payload, process.env.SECRET);
+
+        // get name and email
+        const { name, email } = result;
         const data = {
-          isGood: false,
-          msg: msg || "Invalid username or password."
+          isGood: true,
+          msg: "Successfully logged in.",
+          user: { token, name, email }
         };
-        return res.status(400).send(data);
+        return res.status(200).send(data);
       }
-
-      // create JWT token
-      const payload = { sub: result._id };
-      const token = jwt.sign(payload, process.env.SECRET);
-
-      // get name and email
-      const { name, email } = result;
-      const data = {
-        isGood: true,
-        msg: "Successfully logged in.",
-        user: { token, name, email }
-      };
-      return res.status(200).send(data);
-    }
-  );
+    );
+  } catch (err) {
+    const data = {
+      isGood: false,
+      msg: err.message || "Connection error. Please try again"
+    };
+    return res.status(401).send(data);
+  }
 };
 
 exports.isLoggedIn = (req, res, next) => {
