@@ -43,43 +43,39 @@ exports.Insert = function(
   });
   // Need to first determine what the slug will be by
   // finding how many other sauces share same name
-  db
-    .get()
-    .query(
-      "SELECT COUNT(*) AS Count FROM Sauces WHERE Name = ?",
-      [nameToPascalCase],
-      function(err, rows) {
-        // If no other entires, then we can just slugify the name
-        // Otherwise we will concat "-" and add one to count
-        const Slug =
-          rows[0].Count === 0
-            ? slug(nameToPascalCase)
-            : slug(nameToPascalCase) + "-" + (rows[0].Count + 1);
+  db.get().query(
+    "SELECT COUNT(*) AS Count FROM Sauces WHERE Name = ?",
+    [nameToPascalCase],
+    function(err, rows) {
+      // If no other entires, then we can just slugify the name
+      // Otherwise we will concat "-" and add one to count
+      const Slug =
+        rows[0].Count === 0
+          ? slug(nameToPascalCase)
+          : slug(nameToPascalCase) + "-" + (rows[0].Count + 1);
 
-        // Create insert object
-        const values = {
-          UserID,
-          Name: nameToPascalCase,
-          Maker,
-          Description,
-          Ingrediants,
-          SHU,
-          State,
-          Country,
-          City,
-          Photo,
-          IsPrivate,
-          Slug
-        };
+      // Create insert object
+      const values = {
+        UserID,
+        Name: nameToPascalCase,
+        Maker,
+        Description,
+        Ingrediants,
+        SHU,
+        State,
+        Country,
+        City,
+        Photo,
+        IsPrivate,
+        Slug
+      };
 
-        db
-          .get()
-          .query("INSERT INTO Sauces SET ?", values, function(err, result) {
-            // If err, get out
-            if (err) return cb(err);
+      db.get().query("INSERT INTO Sauces SET ?", values, function(err, result) {
+        // If err, get out
+        if (err) return cb(err);
 
-            cb(null, result);
-          });
-      }
-    );
+        cb(null, result);
+      });
+    }
+  );
 };
