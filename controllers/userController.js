@@ -78,7 +78,7 @@ exports.register = async (req, res, next) => {
       password: req.body.user.password
     };
 
-    User.insert(record, function(err) {
+    User.Insert(record, function(err) {
       if (err) throw err;
 
       next(); // go to authController.login
