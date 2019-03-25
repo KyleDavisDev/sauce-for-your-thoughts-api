@@ -16,13 +16,13 @@ exports.login = (req, res) => {
   try {
     Users.AuthenticateUser(
       { email: req.body.user.email, password: req.body.user.password },
-      function(err, result, msg) {
+      function(err, user, msg) {
         if (err) {
           return res.status(401).send(err);
         }
 
         // Login was bad or user is locked
-        if (!result) {
+        if (!user) {
           const data = {
             isGood: false,
             msg: msg || "Invalid username or password."
@@ -31,15 +31,15 @@ exports.login = (req, res) => {
         }
 
         // create JWT token
-        const payload = { sub: result._id };
+        const payload = { sub: user.UserID };
         const token = jwt.sign(payload, process.env.SECRET);
 
         // get name and email
-        const { name, email } = result;
+        const { DisplayName, Email } = user;
         const data = {
           isGood: true,
           msg: "Successfully logged in.",
-          user: { token, name, email }
+          user: { token, DisplayName, Email }
         };
         return res.status(200).send(data);
       }
@@ -68,6 +68,16 @@ exports.isLoggedIn = (req, res, next) => {
       Object.keys(obj).forEach(x => {
         req.body[x] = obj[x];
       });
+
+      // Now make sure we can find a req.body.user.token val
+      if (!req.body.user.token) {
+        const data = {
+          isGood: false,
+          msg:
+            "You are not logged in or your token is invalid. Please try again. If you stringified an object, make sure the string is stored in 'data'."
+        };
+        return res.status(401).send(data);
+      }
     } else {
       const data = {
         isGood: false,
@@ -94,9 +104,9 @@ exports.isLoggedIn = (req, res, next) => {
     const userId = decoded.sub;
 
     // check if a user exists
-    return User.findById(userId, (userErr, user) => {
+    return Users.FindByID({ UserID: userId }, (err, user) => {
       // error or not user
-      if (userErr || !user) {
+      if (err || !user) {
         const data = {
           isGood: false,
           msg:
@@ -104,11 +114,12 @@ exports.isLoggedIn = (req, res, next) => {
         };
         return res.status(401).send(data);
       }
+
       // remove token from user
       delete req.body.user.token;
 
-      // attach person _id to body
-      req.body.user._id = user._id;
+      // attach person UserID to body
+      req.body.user.UserID = user.UserID;
 
       // user is legit
       return next();
