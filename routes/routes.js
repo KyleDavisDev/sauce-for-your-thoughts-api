@@ -2,13 +2,13 @@ const express = require("express");
 const router = express.Router();
 
 // grab controllers
-// const sauceController = require("../controllers/sauceController.js");
+const sauceController = require("../controllers/sauceController.js");
 const userController = require("../controllers/userController.js");
 const authController = require("../controllers/authController.js");
 // const reviewController = require("../controllers/reviewController.js");
 // const pepperController = require("../controllers/pepperController.js");
 // const typeController = require("../controllers/typeController.js");
-// const imageController = require("../controllers/imageController.js");
+const imageController = require("../controllers/imageController.js");
 
 // APIs here -----
 
@@ -24,16 +24,16 @@ const authController = require("../controllers/authController.js");
 // 6. Save sauce to DB
 // 7. Save review to DB
 // 8. Encode _id's
-// router.post(
-//   "/api/sauce/add",
-//   imageController.upload,
-//   authController.isLoggedIn,
-//   // authController.decodeID,
-//   imageController.resize,
-//   sauceController.stringToProperType,
-//   sauceController.addSauce
-//   // authController.encodeID
-// );
+router.post(
+  "/api/sauce/add",
+  imageController.upload,
+  authController.isLoggedIn,
+  // authController.decodeID,
+  imageController.resize,
+  sauceController.stringToProperType,
+  sauceController.addSauce
+  // authController.encodeID
+);
 
 // // 1. Look up a sauce by unique slug
 // // 2. Add reviews to sauce that was found
@@ -88,7 +88,7 @@ router.post(
 );
 
 // // 1. Generate JWT
-// router.post("/api/user/login", authController.login);
+router.post("/api/user/login", authController.login);
 
 // // 1. Validate user
 // // 2. Return modifiable user info
