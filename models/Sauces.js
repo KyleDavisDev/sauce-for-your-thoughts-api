@@ -1,4 +1,5 @@
-var db = require("../db/db.js");
+const db = require("../db/db.js");
+const TypesDB = require("./Types.js");
 const slug = require("slugs"); // Hi there! How are you! --> hi-there-how-are-you
 
 exports.SaucesTableStructure = `CREATE TABLE IF NOT EXISTS Sauces (
@@ -33,7 +34,8 @@ exports.Insert = function(
     Country,
     City,
     Photo,
-    IsPrivate
+    IsPrivate,
+    Types
   },
   cb
 ) {
@@ -70,11 +72,23 @@ exports.Insert = function(
         Slug
       };
 
-      db.get().query("INSERT INTO Sauces SET ?", values, function(err, result) {
+      db.get().query("INSERT INTO Sauces SET ?", values, function(err, res) {
         // If err, get out
         if (err) return cb(err);
 
-        cb(null, result);
+        console.log("res: ", res);
+
+        // Need to insert into Sauces_Types table now too
+        // First need to grab IDs of the TypeIDs
+        TypesDB.FindIDByValues({ Values: Types }, function(err, result) {
+          // If err, get out
+          if (err) return cb(err);
+
+          console.log("result: ", result);
+
+          // Else return results
+          cb(null, result);
+        });
       });
     }
   );
