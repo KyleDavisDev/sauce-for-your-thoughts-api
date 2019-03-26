@@ -1,4 +1,5 @@
-var db = require("../db/db.js");
+const db = require("../db/db.js");
+const DB = new db();
 const bcrypt = require("bcrypt");
 
 // Constants
@@ -21,7 +22,7 @@ exports.UsersTableStructure = `CREATE TABLE IF NOT EXISTS Users (
 
 exports.UsersTableRemove = "DROP TABLE Users";
 
-exports.Insert = async function({ email, password, displayName }, cb) {
+exports.Insert = async function({ email, password, displayName }) {
   // Create salt
   const salt = await bcrypt.genSalt(SALT_WORK_FACTOR);
   // Create hash
@@ -30,17 +31,9 @@ exports.Insert = async function({ email, password, displayName }, cb) {
   // Create insert object
   const values = { Email: email, Password: hash, DisplayName: displayName };
 
-  db.get().query("INSERT INTO Users SET ?", values, function(err, result) {
-    // If callback was passed, use that
-    if (cb !== undefined) {
-      if (err) return cb(err);
-      cb(null, result);
-    }
+  const results = await DB.query("INSERT INTO Users SET ?", values);
 
-    // Otherwise return appropriate val
-    if (err) return err;
-    return result;
-  });
+  return results;
 };
 
 exports.FindByID = function({ UserID }, cb) {
@@ -74,104 +67,62 @@ exports.getAllByUser = function(userId, cb) {
   });
 };
 
-exports.AuthenticateUser = function({ email, password }, cb) {
-  db.get().query("SELECT * FROM Users WHERE Email = ?", [email], function(
-    err,
-    rows
-  ) {
-    // If error occured, get out
-    if (err) return cb(err, null, null);
+exports.AuthenticateUser = async function({ email, password }) {
+  const rows = await DB.query("SELECT * FROM Users WHERE Email = ?", [email]);
 
-    // If cannot find user, get out
-    if (!rows[0]) return cb(null, null, null);
+  // assign for easier use
+  const user = rows[0];
 
-    // assign for easier use
-    const user = rows[0];
+  // See if account is locked so we can possibly skipping creating JWT
+  // LockedUntil time will be larger if acc locked
+  if (user.LockedUntil && user.LockedUntil > Date.now()) {
+    // acc locked if here
 
-    // See if account is locked so we can possibly skipping creating JWT
-    // LockedUntil time will be larger if acc locked
-    if (user.LockedUntil && user.LockedUntil > Date.now()) {
-      // acc locked if here
+    // incriment login attempts
+    return await module.exports.IncLoginAttempts({
+      UserID: user.UserID,
+      LoginAttempts: user.LoginAttempts
+    });
+  }
 
-      // incriment login attempts
-      module.exports.IncLoginAttempts(
-        { UserID: user.UserID, LoginAttempts: user.LoginAttempts },
-        function(err) {
-          // If error occured, get out
-          if (err) return cb(err, null, null);
+  // Check if password is good
+  const isMatch = await bcrypt.compare(password, user.Password);
 
-          // Value has been incrimented, return message
-          return cb(
-            null,
-            null,
-            "This account is locked. Please try again in a few hours."
-          );
-        }
-      );
+  // Password is good
+  if (isMatch) {
+    // if there's no lock or failed attempts, just return the user
+    if (user.LoginAttempts === 0 && !user.LockedUntil) {
+      return user;
     }
 
-    // Check if password is good
-    bcrypt.compare(password, user.Password, function(err, isMatch) {
-      // If error occured, get out
-      if (err) return cb(err, null, null);
-
-      // Password is good
-      if (isMatch) {
-        // if there's no lock or failed attempts, just return the user
-        if (user.LoginAttempts === 0 && !user.LockedUntil) {
-          return cb(null, user, null);
-        }
-
-        // reset attempts and lockedUntil timer
-        return db
-          .get()
-          .query(
-            "UPDATE Users SET LoginAttempts = ?, LockedUntil = ? WHERE  UserID = ?",
-            [0, null, user.UserID],
-            function(err) {
-              // If error occured, get out
-              if (err) return cb(err, null, null);
-
-              // return user
-              return cb(null, user, null);
-            }
-          );
-      }
-
-      // password is bad, so increment login attempts before responding
-      module.exports.IncLoginAttempts(
-        { UserID: user.UserID, LoginAttempts: user.LoginAttempts },
-        function(err) {
-          if (err) return cb(err);
-          return cb(null, null);
-        }
-      );
+    // reset attempts and lockedUntil timer
+    var test = await DB.query(
+      "UPDATE Users SET LoginAttempts = ?, LockedUntil = ? WHERE  UserID = ?",
+      [0, null, user.UserID]
+    );
+    console.log(test);
+    return test;
+  } else {
+    // password is bad, so increment login attempts before responding
+    return await module.exports.IncLoginAttempts({
+      UserID: user.UserID,
+      LoginAttempts: user.LoginAttempts
     });
-  });
+  }
 };
 
-exports.IncLoginAttempts = function({ UserID, LoginAttempts }, cb) {
+exports.IncLoginAttempts = async function({ UserID, LoginAttempts }) {
   // Check if we need to lock the account or not
   if (LoginAttempts + 1 === MAX_LOGIN_ATTEMPTS) {
-    db.get().query(
+    return await DB.query(
       "Update Users SET LoginAttempts = ?, LockedUntil = ? WHERE UserID = ?",
-      [MAX_LOGIN_ATTEMPTS, Date.now() + LOCK_TIME, UserID],
-      function(err, result) {
-        if (err) return cb(err);
-
-        return result;
-      }
+      [MAX_LOGIN_ATTEMPTS, Date.now() + LOCK_TIME, UserID]
     );
   }
 
   // Increase login attempts only
-  db.get().query(
+  return await DB.query(
     "Update Users SET LoginAttempts = LoginAttempts + 1 WHERE UserID = ?",
-    [UserID],
-    function(err, result) {
-      if (err) return cb(err);
-
-      return result;
-    }
+    [UserID]
   );
 };
