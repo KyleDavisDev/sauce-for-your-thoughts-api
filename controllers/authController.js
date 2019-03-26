@@ -3,7 +3,7 @@ const Users = require("../models/Users");
 const { encryptDecrypt } = require("../handlers/auth");
 // const mail = require("../handlers/mail.js");
 
-exports.login = (req, res) => {
+exports.login = async (req, res) => {
   // Quick sanity check
   if (req.body.user === undefined || Object.keys(req.body.user) === 0) {
     const data = {
@@ -14,36 +14,32 @@ exports.login = (req, res) => {
   }
 
   try {
-    Users.AuthenticateUser(
-      { email: req.body.user.email, password: req.body.user.password },
-      function(err, user, msg) {
-        if (err) {
-          return res.status(401).send(err);
-        }
+    const user = await Users.AuthenticateUser({
+      email: req.body.user.email,
+      password: req.body.user.password
+    });
 
-        // Login was bad or user is locked
-        if (!user) {
-          const data = {
-            isGood: false,
-            msg: msg || "Invalid username or password."
-          };
-          return res.status(400).send(data);
-        }
+    // Login was bad or user is locked
+    if (!user) {
+      const data = {
+        isGood: false,
+        msg: msg || "Invalid username or password."
+      };
+      return res.status(400).send(data);
+    }
 
-        // create JWT token
-        const payload = { sub: user.UserID };
-        const token = jwt.sign(payload, process.env.SECRET);
+    // create JWT token
+    const payload = { sub: user.UserID };
+    const token = jwt.sign(payload, process.env.SECRET);
 
-        // get name and email
-        const { DisplayName, Email } = user;
-        const data = {
-          isGood: true,
-          msg: "Successfully logged in.",
-          user: { token, DisplayName, Email }
-        };
-        return res.status(200).send(data);
-      }
-    );
+    // get name and email
+    const { DisplayName, Email } = user;
+    const data = {
+      isGood: true,
+      msg: "Successfully logged in.",
+      user: { token, DisplayName, Email }
+    };
+    return res.status(200).send(data);
   } catch (err) {
     const data = {
       isGood: false,
