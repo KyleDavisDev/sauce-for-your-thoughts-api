@@ -109,7 +109,9 @@ exports.addSauce = async (req, res, next) => {
         Photo
       },
       function(err, sauce) {
+        // If error, get out
         if (err) throw err;
+
         // make sure something didn't break
         if (!sauce) {
           const data = {
