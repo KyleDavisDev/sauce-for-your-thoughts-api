@@ -22,11 +22,12 @@ require("dotenv").config({ path: "variables.env" });
 // require("./models/Review.js");
 // require("./models/Pepper.js");
 // require("./models/Type.js");
-const Users = require("./models/Users");
+// const Users = require("./models/Users");
 
 var db = require("./db/db.js");
+var DB = new db();
 
-db.connect(function(err) {
+DB.connect(function(err) {
   if (err) throw err;
   console.log("You are now connected...");
 
