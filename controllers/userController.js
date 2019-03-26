@@ -71,23 +71,29 @@ exports.validateRegister = (req, res, next) => {
 
 exports.register = async (req, res, next) => {
   try {
-    // These should have already been checked via validateRegister method
+    // These will have already been checked via userController.validateRegister method
     const record = {
       email: req.body.user.email,
       displayName: req.body.user.displayName,
       password: req.body.user.password
     };
 
-    User.Insert(record, function(err) {
-      if (err) throw err;
+    // Insert into DB
+    await User.Insert(record);
 
-      next(); // go to authController.login
-    });
+    // go to authController.login
+    next();
   } catch (err) {
+    let msg;
+    if (err.code === "ER_DUP_ENTRY") {
+      msg =
+        "An account with the provided email address or display name already exists.";
+    }
+
     // Will land here if email/name already in use or there was issue hasing password
     const data = {
       isGood: false,
-      msg: err.message || "Connection error. Please try again"
+      msg: msg || "Connection error. Please try again"
     };
     return res.status(401).send(data);
   }
