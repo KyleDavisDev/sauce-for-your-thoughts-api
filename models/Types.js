@@ -1,4 +1,4 @@
-var db = require("../db/db.js");
+var DB = require("../db/db.js");
 
 exports.TypesTableStructure = `CREATE TABLE IF NOT EXISTS Types (
   TypeID int NOT NULL AUTO_INCREMENT,
@@ -7,20 +7,11 @@ exports.TypesTableStructure = `CREATE TABLE IF NOT EXISTS Types (
   PRIMARY KEY (TypeID)
   );`;
 
-exports.FindIDByValues = function({ Values }, cb) {
-  const returnIDs = [];
+// Returns array of TypeIDs
+exports.FindIDByValues = async function({ Values }) {
+  const rows = await DB.query("SELECT TypeID FROM Types WHERE Value IN ?", [
+    [Values]
+  ]);
 
-  // Values.forEach(val => {
-  db.get().query(
-    "SELECT TypeID FROM Types WHERE IsActive = 1 AND Value IN ?",
-    [Values],
-    function(err, results) {
-      if (err) return cb(err);
-
-      console.log(results);
-
-      return cb(null, results);
-    }
-  );
-  // });
+  return rows.map(row => row.TypeID);
 };
