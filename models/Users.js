@@ -1,5 +1,4 @@
-const db = require("../db/db.js");
-const DB = new db();
+const DB = require("../db/db.js");
 const bcrypt = require("bcrypt");
 
 // Constants
@@ -37,17 +36,19 @@ exports.Insert = async function({ email, password, displayName }) {
 };
 
 exports.FindByID = function({ UserID }, cb) {
-  db.get().query(
-    "SELECT Email, DisplayName, UserID FROM Users WHERE UserID = ?",
-    [UserID],
-    function(err, rows) {
-      // If error, get out
-      if (err) return cb(err);
+  db
+    .get()
+    .query(
+      "SELECT Email, DisplayName, UserID FROM Users WHERE UserID = ?",
+      [UserID],
+      function(err, rows) {
+        // If error, get out
+        if (err) return cb(err);
 
-      // return result
-      cb(null, rows[0]);
-    }
-  );
+        // return result
+        cb(null, rows[0]);
+      }
+    );
 };
 
 exports.getAll = function(cb) {
@@ -58,13 +59,15 @@ exports.getAll = function(cb) {
 };
 
 exports.getAllByUser = function(userId, cb) {
-  db.get().query("SELECT * FROM Users WHERE user_id = ?", userId, function(
-    err,
-    rows
-  ) {
-    if (err) return cb(err);
-    cb(null, rows);
-  });
+  db
+    .get()
+    .query("SELECT * FROM Users WHERE user_id = ?", userId, function(
+      err,
+      rows
+    ) {
+      if (err) return cb(err);
+      cb(null, rows);
+    });
 };
 
 exports.AuthenticateUser = async function({ email, password }) {

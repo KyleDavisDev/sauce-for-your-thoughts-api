@@ -24,8 +24,7 @@ require("dotenv").config({ path: "variables.env" });
 // require("./models/Type.js");
 // const Users = require("./models/Users");
 
-var db = require("./db/db.js");
-var DB = new db();
+var DB = require("./db/db.js");
 
 DB.connect(function(err) {
   if (err) throw err;

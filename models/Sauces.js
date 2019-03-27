@@ -1,4 +1,4 @@
-const db = require("../db/db.js");
+const DB = require("../db/db.js");
 const TypesDB = require("./Types.js");
 const slug = require("slugs"); // Hi there! How are you! --> hi-there-how-are-you
 
@@ -45,7 +45,7 @@ exports.Insert = function(
   });
   // Need to first determine what the slug will be by
   // finding how many other sauces share same name
-  db.get().query(
+  DB.query(
     "SELECT COUNT(*) AS Count FROM Sauces WHERE Name = ?",
     [nameToPascalCase],
     function(err, rows) {
@@ -72,7 +72,7 @@ exports.Insert = function(
         Slug
       };
 
-      db.get().query("INSERT INTO Sauces SET ?", values, function(err, res) {
+      DB.get().query("INSERT INTO Sauces SET ?", values, function(err, res) {
         // If err, get out
         if (err) return cb(err);
 

@@ -1,12 +1,6 @@
 var mysql = require("mysql");
 require("dotenv").config({ path: "variables.env" });
 
-// TODO: figure out how to move pool between middleware
-// new db() resets this.pool so moving pool outside of class
-var state = {
-  pool: null
-};
-
 class db {
   constructor() {
     // this.pool = null;
@@ -34,7 +28,7 @@ class db {
     }
 
     // Create pool so don't have to reinitialize connection each time
-    state.pool = mysql.createPool({
+    this.pool = mysql.createPool({
       host,
       user,
       password,
@@ -47,7 +41,7 @@ class db {
   }
 
   get() {
-    return state.pool;
+    return this.pool;
   }
 
   query(sql, args) {
@@ -72,4 +66,5 @@ class db {
   }
 }
 
-module.exports = db;
+const DB = new db();
+module.exports = DB;
