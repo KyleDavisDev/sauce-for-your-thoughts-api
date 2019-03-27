@@ -21,6 +21,7 @@ exports.UsersTableStructure = `CREATE TABLE IF NOT EXISTS Users (
 
 exports.UsersTableRemove = "DROP TABLE Users";
 
+// Return insert results
 exports.Insert = async function({ email, password, displayName }) {
   // Create salt
   const salt = await bcrypt.genSalt(SALT_WORK_FACTOR);
@@ -35,20 +36,15 @@ exports.Insert = async function({ email, password, displayName }) {
   return results;
 };
 
-exports.FindByID = function({ UserID }, cb) {
-  db
-    .get()
-    .query(
-      "SELECT Email, DisplayName, UserID FROM Users WHERE UserID = ?",
-      [UserID],
-      function(err, rows) {
-        // If error, get out
-        if (err) return cb(err);
+// Returns user
+exports.FindByID = async function({ UserID }) {
+  const rows = await DB.query(
+    "SELECT Email, DisplayName, UserID FROM Users WHERE UserID = ?",
+    [UserID]
+  );
 
-        // return result
-        cb(null, rows[0]);
-      }
-    );
+  // Return user
+  return rows[0];
 };
 
 exports.getAll = function(cb) {
