@@ -87,22 +87,46 @@ exports.isLoggedIn = async (req, res, next) => {
   // get token from post
   const { token } = req.body.user;
 
-  // decode the token using a secret key-phrase
-  const decoded = await jwt.verify(token, process.env.SECRET);
+  try {
+    // decode the token using a secret key-phrase
+    const decoded = await jwt.verify(token, process.env.SECRET);
+    if (!decoded) {
+      const data = {
+        isGood: false,
+        msg: "Could not verify your account or your account is disabled."
+      };
+      return res.status(400).send(data);
+    }
 
-  const userId = decoded.sub;
+    // grab UserID
+    const userId = decoded.sub;
 
-  // check if a user exists
-  const user = await Users.FindByID({ UserID: userId });
+    // check if a user exists
+    const user = await Users.FindByID({ UserID: userId });
 
-  // remove token from user
-  delete req.body.user.token;
+    if (!user) {
+      const data = {
+        isGood: false,
+        msg: "Could not find your account or your account is disabled."
+      };
+      return res.status(400).send(data);
+    }
 
-  // attach person UserID to body
-  req.body.user.UserID = user.UserID;
+    // remove token from user
+    delete req.body.user.token;
 
-  // user is legit
-  return next();
+    // attach person UserID to body
+    req.body.user.UserID = user.UserID;
+
+    // user is legit
+    return next();
+  } catch (err) {
+    const data = {
+      isGood: false,
+      msg: err.message || "Connection error. Please try again"
+    };
+    return res.status(401).send(data);
+  }
 };
 
 exports.forgot = async (req, res) => {
