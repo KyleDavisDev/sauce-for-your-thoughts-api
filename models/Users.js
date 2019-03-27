@@ -9,6 +9,7 @@ const SALT_WORK_FACTOR = 10;
 exports.UsersTableStructure = `CREATE TABLE IF NOT EXISTS Users (
   UserID int NOT NULL AUTO_INCREMENT,
   Email varchar(50) NOT NULL UNIQUE,
+  IsActive BOOLEAN DEFAULT '1',
   Password varchar(100) NOT NULL,
   DisplayName varchar(50) NOT NULL,
   Created DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -39,7 +40,7 @@ exports.Insert = async function({ email, password, displayName }) {
 // Returns user
 exports.FindByID = async function({ UserID }) {
   const rows = await DB.query(
-    "SELECT Email, DisplayName, UserID FROM Users WHERE UserID = ?",
+    "SELECT Email, DisplayName, UserID FROM Users WHERE UserID = ? AND IsActive = 1",
     [UserID]
   );
 
@@ -55,15 +56,13 @@ exports.getAll = function(cb) {
 };
 
 exports.getAllByUser = function(userId, cb) {
-  db
-    .get()
-    .query("SELECT * FROM Users WHERE user_id = ?", userId, function(
-      err,
-      rows
-    ) {
-      if (err) return cb(err);
-      cb(null, rows);
-    });
+  db.get().query("SELECT * FROM Users WHERE user_id = ?", userId, function(
+    err,
+    rows
+  ) {
+    if (err) return cb(err);
+    cb(null, rows);
+  });
 };
 
 exports.AuthenticateUser = async function({ email, password }) {
