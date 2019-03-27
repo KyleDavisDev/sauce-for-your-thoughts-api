@@ -77,13 +77,15 @@ exports.Insert = async function({
   const result = await DB.query("INSERT INTO Sauces SET ?", values);
   const SauceID = result.insertId;
 
-  // Need to insert into Sauces_Types table now too
-  // First need to grab IDs of the TypeIDs
-  const TypeIDs = await TypesDB.FindIDByValues({ Values: Types });
+  // Check if we need to insert into Sauces_Types table now too
+  if (Types && Types.length > 0) {
+    // First need to grab IDs of the TypeIDs
+    const TypeIDs = await TypesDB.FindIDByValues({ Values: Types });
 
-  const record = TypeIDs.map(TypeID => [SauceID, TypeID]);
-  console.log(record);
+    const record = TypeIDs.map(TypeID => [SauceID, TypeID]);
+    await Sauces_Types.Insert({ record });
+  }
 
-  await Sauces_Types.Insert({ record });
+  // return Slug
   return Slug;
 };
