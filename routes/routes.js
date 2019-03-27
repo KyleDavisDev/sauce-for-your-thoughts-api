@@ -28,11 +28,9 @@ router.post(
   "/api/sauce/add",
   imageController.upload,
   authController.isLoggedIn,
-  // authController.decodeID,
   imageController.resize,
   sauceController.stringToProperType,
   sauceController.addSauce
-  // authController.encodeID
 );
 
 // // 1. Look up a sauce by unique slug
