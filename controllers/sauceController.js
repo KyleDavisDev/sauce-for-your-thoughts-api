@@ -1,5 +1,4 @@
 const Sauces = require("../models/Sauces");
-const slug = require("slugs"); // Hi there! How are you! --> hi-there-how-are-you
 
 // when using FormData, which is needed to upload image, all data gets turned into
 // string so we need to reformat to match model
@@ -85,7 +84,8 @@ exports.addSauce = async (req, res, next) => {
       state: State,
       country: Country,
       city: City,
-      isPrivate: IsPrivate
+      isPrivate: IsPrivate,
+      types: Types
     } = req.body.sauce;
 
     // Grab author from req.body.user
@@ -95,41 +95,29 @@ exports.addSauce = async (req, res, next) => {
     let Photo = null;
     if (req.body.photo) Photo = req.body.photo;
 
-    Sauces.Insert(
-      {
-        UserID,
-        Name,
-        Maker,
-        Description,
-        Ingrediants,
-        SHU,
-        State,
-        Country,
-        City,
-        Photo
-      },
-      function(err, sauce) {
-        // If error, get out
-        if (err) throw err;
+    // Insert sauce
+    const slug = await Sauces.Insert({
+      UserID,
+      Name,
+      Maker,
+      Description,
+      Ingrediants,
+      SHU,
+      State,
+      Country,
+      City,
+      Photo,
+      IsPrivate,
+      Types
+    });
 
-        // make sure something didn't break
-        if (!sauce) {
-          const data = {
-            isGood: false,
-            msg: "Could not add sauce"
-          };
-          return res.status(400).send(data);
-        }
+    // construct return object
+    const data = {
+      isGood: true,
+      sauce: { slug }
+    };
 
-        // construct return object
-        const data = {
-          isGood: true,
-          sauce: { slug: sauce.slug }
-        };
-
-        return res.status(200).send(data);
-      }
-    );
+    return res.status(200).send(data);
   } catch (err) {
     // TODO log error somewhere so can be referenced later
     const data = {
