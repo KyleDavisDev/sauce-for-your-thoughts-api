@@ -1,4 +1,4 @@
-var db = require("../db/db.js");
+var DB = require("../db/db.js");
 
 exports.SaucesTypesTableStructure = `CREATE TABLE IF NOT EXISTS Sauces_Types (
   SauceID int,
@@ -8,6 +8,18 @@ exports.SaucesTypesTableStructure = `CREATE TABLE IF NOT EXISTS Sauces_Types (
   FOREIGN KEY (TypeID) REFERENCES Types(TypeID)
   );`;
 
-// exports.Insert = function({ Types }, cb) {
-//   db.get().query("")
-// };
+exports.Insert = async function({ SauceID, TypeID, record }) {
+  // If full record is sent, use this
+  if (record && record.length > 0) {
+    return await DB.query(
+      "INSERT INTO Sauces_Types (SauceID, TypeID) VALUES ?",
+      [record]
+    );
+  }
+
+  return DB.query(
+    "INSERT INTO Sauces_Types (SauceID, TypeID) VALUES (?, ?)"[
+      (SauceID, TypeID)
+    ]
+  );
+};
