@@ -1,5 +1,6 @@
 const DB = require("../db/db.js");
 const TypesDB = require("./Types.js");
+const Sauces_Types = require("./Sauces_Types.js");
 const slug = require("slugs"); // Hi there! How are you! --> hi-there-how-are-you
 
 exports.SaucesTableStructure = `CREATE TABLE IF NOT EXISTS Sauces (
@@ -22,10 +23,44 @@ exports.SaucesTableStructure = `CREATE TABLE IF NOT EXISTS Sauces (
   FOREIGN KEY (UserID) REFERENCES Users(UserID)
   );`;
 
-exports.Insert = function(
-  {
+exports.Insert = async function({
+  UserID,
+  Name,
+  Maker,
+  Description,
+  Ingrediants,
+  SHU,
+  State,
+  Country,
+  City,
+  Photo,
+  IsPrivate,
+  Types
+}) {
+  // Make every first letter of name upper and rest lower
+  const nameToPascalCase = Name.replace(/\b\w+/g, function(s) {
+    return s.charAt(0).toUpperCase() + s.substr(1).toLowerCase();
+  });
+
+  // Need to first determine what the slug will be by
+  // finding how many other sauces share same name
+  const rows = await DB.query(
+    "SELECT COUNT(*) AS Count FROM Sauces WHERE Name = ?",
+    [nameToPascalCase]
+  );
+
+  // If no other entires, then we can just slugify the name
+  // Otherwise we will concat "-" and add one to count
+  // This will make each slug unique
+  const Slug =
+    rows[0].Count === 0
+      ? slug(nameToPascalCase)
+      : slug(nameToPascalCase) + "-" + (rows[0].Count + 1);
+
+  // Finally create insert object
+  const values = {
     UserID,
-    Name,
+    Name: nameToPascalCase,
     Maker,
     Description,
     Ingrediants,
@@ -35,61 +70,20 @@ exports.Insert = function(
     City,
     Photo,
     IsPrivate,
-    Types
-  },
-  cb
-) {
-  // Make every first letter of name upper and rest lower
-  const nameToPascalCase = Name.replace(/\b\w+/g, function(s) {
-    return s.charAt(0).toUpperCase() + s.substr(1).toLowerCase();
-  });
-  // Need to first determine what the slug will be by
-  // finding how many other sauces share same name
-  DB.query(
-    "SELECT COUNT(*) AS Count FROM Sauces WHERE Name = ?",
-    [nameToPascalCase],
-    function(err, rows) {
-      // If no other entires, then we can just slugify the name
-      // Otherwise we will concat "-" and add one to count
-      const Slug =
-        rows[0].Count === 0
-          ? slug(nameToPascalCase)
-          : slug(nameToPascalCase) + "-" + (rows[0].Count + 1);
+    Slug
+  };
 
-      // Create insert object
-      const values = {
-        UserID,
-        Name: nameToPascalCase,
-        Maker,
-        Description,
-        Ingrediants,
-        SHU,
-        State,
-        Country,
-        City,
-        Photo,
-        IsPrivate,
-        Slug
-      };
+  // Finally insert complete record into DB
+  const result = await DB.query("INSERT INTO Sauces SET ?", values);
+  const SauceID = result.insertId;
 
-      DB.get().query("INSERT INTO Sauces SET ?", values, function(err, res) {
-        // If err, get out
-        if (err) return cb(err);
+  // Need to insert into Sauces_Types table now too
+  // First need to grab IDs of the TypeIDs
+  const TypeIDs = await TypesDB.FindIDByValues({ Values: Types });
 
-        console.log("res: ", res);
+  const record = TypeIDs.map(TypeID => [SauceID, TypeID]);
+  console.log(record);
 
-        // Need to insert into Sauces_Types table now too
-        // First need to grab IDs of the TypeIDs
-        TypesDB.FindIDByValues({ Values: Types }, function(err, result) {
-          // If err, get out
-          if (err) return cb(err);
-
-          console.log("result: ", result);
-
-          // Else return results
-          cb(null, result);
-        });
-      });
-    }
-  );
+  await Sauces_Types.Insert({ record });
+  return Slug;
 };
