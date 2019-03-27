@@ -49,7 +49,7 @@ exports.login = async (req, res) => {
   }
 };
 
-exports.isLoggedIn = (req, res, next) => {
+exports.isLoggedIn = async (req, res, next) => {
   // confirm that we are passed a user.token to parse
   if (!req.body.user || !req.body.user.token) {
     // One last check: maybe we were passed a stringified object
@@ -88,39 +88,21 @@ exports.isLoggedIn = (req, res, next) => {
   const { token } = req.body.user;
 
   // decode the token using a secret key-phrase
-  return jwt.verify(token, process.env.SECRET, (err, decoded) => {
-    if (err) {
-      const data = {
-        isGood: false,
-        msg: "You are not logged in or your token is invalid. Please try again."
-      };
-      return res.status(401).send(data);
-    }
+  const decoded = await jwt.verify(token, process.env.SECRET);
 
-    const userId = decoded.sub;
+  const userId = decoded.sub;
 
-    // check if a user exists
-    return Users.FindByID({ UserID: userId }, (err, user) => {
-      // error or not user
-      if (err || !user) {
-        const data = {
-          isGood: false,
-          msg:
-            "You are not logged in or your token is invalid. Please try again."
-        };
-        return res.status(401).send(data);
-      }
+  // check if a user exists
+  const user = await Users.FindByID({ UserID: userId });
 
-      // remove token from user
-      delete req.body.user.token;
+  // remove token from user
+  delete req.body.user.token;
 
-      // attach person UserID to body
-      req.body.user.UserID = user.UserID;
+  // attach person UserID to body
+  req.body.user.UserID = user.UserID;
 
-      // user is legit
-      return next();
-    });
-  });
+  // user is legit
+  return next();
 };
 
 exports.forgot = async (req, res) => {
