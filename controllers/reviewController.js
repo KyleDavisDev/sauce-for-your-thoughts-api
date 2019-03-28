@@ -110,7 +110,7 @@ exports.validateReview = (req, res, next) => {
 /** @description Add review to DB
  *  @extends req.response attaches review to req.response.sauce OR req.response if sauce doesn't exist
  *  @param {String} req.body.user.UserID - unique user string
- *  @param {String} req.body.sauce.Slug - unique sauce string
+ *  @param {String} req.body.sauce.slug - unique sauce string
  *  @param {Object} req.body.review.taste - taste object
  *    @param {String} req.body.review.taste.txt - txt of the taste
  *    @param {Number} req.body.review.taste.rating - 1-10 value
@@ -135,7 +135,7 @@ exports.addReview = async (req, res, next) => {
     const { review } = req.body;
     const record = {};
     record.author = req.body.user.UserID;
-    record.sauce = await Sauces.FindIDBySlug({ Slug: req.body.sauce.Slug });
+    record.sauce = await Sauces.FindIDBySlug({ Slug: req.body.sauce.slug });
     record.LabelRating = review.label.rating;
     record.LabelDescription = review.label.txt;
     record.AromaRating = review.aroma.rating;
