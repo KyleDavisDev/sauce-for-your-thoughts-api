@@ -75,21 +75,7 @@ exports.addSauce = async (req, res, next) => {
 
   try {
     // Grab values from req.body.sauce
-    const {
-      name: Name,
-      maker: Maker,
-      description: Description,
-      ingrediants: Ingrediants,
-      shu: SHU,
-      state: State,
-      country: Country,
-      city: City,
-      isPrivate: IsPrivate,
-      types: Types
-    } = req.body.sauce;
-
-    // Grab author from req.body.user
-    const UserID = req.body.user.UserID;
+    const { sauce, user } = req.body;
 
     // Grab photo name if exists
     let Photo = null;
@@ -97,19 +83,29 @@ exports.addSauce = async (req, res, next) => {
 
     // Insert sauce
     const slug = await Sauces.Insert({
-      UserID,
-      Name,
-      Maker,
-      Description,
-      Ingrediants,
-      SHU,
-      State,
-      Country,
-      City,
-      Photo,
-      IsPrivate,
-      Types
+      UserID: user.UserID,
+      Name: sauce.name,
+      Maker: sauce.maker,
+      Description: sauce.description,
+      Ingrediants: sauce.ingrediants,
+      SHU: sauce.shu,
+      State: sauce.state,
+      Country: sauce.country,
+      City: sauce.city,
+      IsPrivate: sauce.isPrivate,
+      Types: sauce.types,
+      Photo
     });
+
+    // Safety check
+    if (!slug) {
+      const data = {
+        isGood: false,
+        msg:
+          "We could not add your sauce. Please verify everything is set appropriately and try agian."
+      };
+      return res.status(400).send(data);
+    }
 
     // construct return object
     const data = {
