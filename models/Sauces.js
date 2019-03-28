@@ -103,9 +103,16 @@ exports.FindSauceBySlug = async function({ Slug }) {
 
 // Return single SauceID
 exports.FindIDBySlug = async function({ Slug }) {
-  const rows = await DB.query("SELECT SauceID from Sauces WHERE Slug = ?", [
-    Slug
-  ]);
+  const rows = await DB.query(
+    "SELECT SauceID from Sauces WHERE Slug = ? AND IsActive = 1",
+    [Slug]
+  );
+
+  if (!rows) {
+    throw new Error(
+      "Could not find the appropriate information for this sauce. Please try again"
+    );
+  }
 
   return rows[0].SauceID;
 };
