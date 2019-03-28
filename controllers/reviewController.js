@@ -1,4 +1,5 @@
 const Reviews = require("../models/Reviews.js");
+const Sauces = require("../models/Sauces.js");
 const validator = require("validator");
 
 const MAXLENGTH = 300;
@@ -108,8 +109,8 @@ exports.validateReview = (req, res, next) => {
 // TODO: Better error handling/logging
 /** @description Add review to DB
  *  @extends req.response attaches review to req.response.sauce OR req.response if sauce doesn't exist
- *  @param {String} req.body.user._id - unique user string
- *  @param {String} req.body.sauce.slug - unique sauce string
+ *  @param {String} req.body.user.UserID - unique user string
+ *  @param {String} req.body.sauce.Slug - unique sauce string
  *  @param {Object} req.body.review.taste - taste object
  *    @param {String} req.body.review.taste.txt - txt of the taste
  *    @param {Number} req.body.review.taste.rating - 1-10 value
@@ -130,19 +131,25 @@ exports.validateReview = (req, res, next) => {
  */
 exports.addReview = async (req, res, next) => {
   try {
-    // Grab from review
-    const record = Object.assign({}, req.body.review);
-    record.author = req.body.user._id;
-    record.sauce = req.body.sauce._id;
-    delete record.created; // Will be created by DB
-
-    // Make sure there isn't an _id already on object
-    if (record._id !== undefined) delete record._id;
-
-    console.log(record);
+    // Construct record object -- Bit messy since req.body has nested info and SQL obj is flat
+    const { review } = req.body;
+    const record = {};
+    record.author = req.body.user.UserID;
+    record.sauce = await Sauces.FindIDBySlug({ Slug: req.body.sauce.Slug });
+    record.LabelRating = review.label.rating;
+    record.LabelDescription = review.label.txt;
+    record.AromaRating = review.aroma.rating;
+    record.AromaDescription = review.aroma.txt;
+    record.TasteRating = review.taste.rating;
+    record.TasteDescription = review.taste.txt;
+    record.HeatRating = review.heat.rating;
+    record.HeatDescription = review.heat.txt;
+    record.OverallRating = review.overall.rating;
+    record.OverallDescription = review.overall.txt;
+    record.Note = review.note;
 
     // save into DB
-    const results = await Review.insert(record).save();
+    const results = await Reviews.Insert(...record);
 
     // make sure record is good
     if (!results) {
@@ -270,7 +277,7 @@ exports.getOnlyReviewIDsBySauceID = async (req, res, next) => {
     req.response.sauces = await Promise.all(
       req.response.sauces.map(async sauce => {
         // find reviews by sauce._id
-        // do not populate sauce since we already have that information from previous middleware (sauceControll.getSauceById/getSauces)
+        // do not populate sauce since we already have that information from previous middleware (sauceControll.getSauceById/getUsers)
         const reviews = await Review.find(
           {
             sauce: sauce._id
