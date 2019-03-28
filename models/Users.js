@@ -1,5 +1,6 @@
 const DB = require("../db/db.js");
 const bcrypt = require("bcrypt");
+const moment = require("moment");
 
 // Constants
 const MAX_LOGIN_ATTEMPTS = 5;
@@ -66,10 +67,18 @@ exports.getAllByUser = function(userId, cb) {
 };
 
 exports.AuthenticateUser = async function({ email, password }) {
-  const rows = await DB.query("SELECT * FROM Users WHERE Email = ?", [email]);
+  const rows = await DB.query(
+    "SELECT * FROM Users WHERE Email = ? AND IsActive = 1",
+    [email]
+  );
 
   // assign for easier use
   const user = rows[0];
+  if (!rows || !user) {
+    throw new Error(
+      "Could not verify your login. Please make sure your email and password are correct."
+    );
+  }
 
   // See if account is locked so we can possibly skipping creating JWT
   // LockedUntil time will be larger if acc locked
@@ -94,27 +103,35 @@ exports.AuthenticateUser = async function({ email, password }) {
     }
 
     // reset attempts and lockedUntil timer
-    var test = await DB.query(
+    var results = await DB.query(
       "UPDATE Users SET LoginAttempts = ?, LockedUntil = ? WHERE  UserID = ?",
       [0, null, user.UserID]
     );
-    console.log(test);
-    return test;
+    console.log("results: ", results);
+    return results;
   } else {
     // password is bad, so increment login attempts before responding
-    return await module.exports.IncLoginAttempts({
+    await module.exports.IncLoginAttempts({
       UserID: user.UserID,
       LoginAttempts: user.LoginAttempts
     });
+
+    // Return false;
+    return false;
   }
 };
 
 exports.IncLoginAttempts = async function({ UserID, LoginAttempts }) {
   // Check if we need to lock the account or not
   if (LoginAttempts + 1 === MAX_LOGIN_ATTEMPTS) {
+    // Create a MySQL-friendly datetime w/ added lockout period
+    const date = moment()
+      .add(LOCK_TIME, "hours")
+      .format("YYYY-MM-DD HH:mm:ss");
+
     return await DB.query(
       "Update Users SET LoginAttempts = ?, LockedUntil = ? WHERE UserID = ?",
-      [MAX_LOGIN_ATTEMPTS, Date.now() + LOCK_TIME, UserID]
+      [MAX_LOGIN_ATTEMPTS, date, UserID]
     );
   }
 
