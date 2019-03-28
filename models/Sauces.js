@@ -100,3 +100,12 @@ exports.FindSauceBySlug = async function({ Slug }) {
   // Return Sauce
   return rows[0];
 };
+
+// Return single SauceID
+exports.FindIDBySlug = async function({ Slug }) {
+  const rows = await DB.query("SELECT SauceID from Sauces WHERE Slug = ?", [
+    Slug
+  ]);
+
+  return rows[0].SauceID;
+};
