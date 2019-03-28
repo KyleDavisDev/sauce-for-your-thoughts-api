@@ -137,15 +137,13 @@ router.post("/api/user/login", authController.login);
 // // 2. Decode all .id's if applicable
 // // 3. Add review to DB
 // // 4. Encode all .id's
-// router.post(
-//   "/api/review/add",
-//   authController.isLoggedIn,
-//   // authController.decodeID,
-//   reviewController.validateReview,
-//   sauceController.getSauceBySlug,
-//   reviewController.addReview
-//   // authController.encodeID
-// );
+router.post(
+  "/api/review/add",
+  authController.isLoggedIn,
+  reviewController.validateReview,
+  sauceController.getSauceBySlug,
+  reviewController.addReview
+);
 
 // // 1. Find user by email, send email if email is legit or not otherwise, set key and timer for person in DB
 // router.post("/account/forgot", authController.forgot);
