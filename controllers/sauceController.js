@@ -129,60 +129,42 @@ exports.addSauce = async (req, res, next) => {
  *  @param {String?} req.parms.slug - unique sauce string
  *  @param {String?} req.body.sauce.slug - unique sauce string
  */
-// exports.getSauceBySlug = async (req, res, next) => {
-//   try {
-//     // Make sure slug is in right place
-//     if (!req.body.sauce || !req.body.sauce.slug) {
-//       const data = {
-//         isGood: false,
-//         msg: "Make sure you are providing a slug with your sauce."
-//       };
-//       return res.status(300).send(data);
-//     }
+exports.getSauceBySlug = async (req, res, next) => {
+  try {
+    // Make sure slug is in right place
+    if (!req.body.sauce || !req.body.sauce.slug) {
+      const data = {
+        isGood: false,
+        msg: "Make sure you are providing a slug with your sauce."
+      };
+      return res.status(300).send(data);
+    }
 
-//     const sauce = await Sauce.findOne(
-//       {
-//         slug: req.body.sauce.slug, //by slug
-//         isPrivate: false, // make sure publicly available
-//         isActive: true // make sure active
-//       },
-//       {
-//         photo: 1,
-//         types: 1,
-//         name: 1,
-//         maker: 1,
-//         shu: 1,
-//         location: 1,
-//         description: 1,
-//         created: 1,
-//         slug: 1
-//         // author: 1
-//       }
-//     ).populate("author", { _id: 0, name: 1, created: 1 });
-//     console.log(sauce);
+    const Slug = req.body.sauce.slug;
+    const sauce = await Sauces.FindSauceBySlug({ Slug });
 
-//     // Make sure we found the sauce or else throw error
-//     if (!sauce) {
-//       throw new Error(
-//         "Could not find a sauce associated with this slug. Please make sure your slug is correct and try agian."
-//       );
-//     }
+    // Make sure we found the sauce or else throw error
+    if (!sauce) {
+      throw new Error(
+        "Could not find a sauce associated with this slug. Please make sure your slug is correct and try agian."
+      );
+    }
 
-//     // reassign sauce
-//     req.body.sauce = sauce;
+    // reassign sauce
+    req.body.sauce = sauce;
 
-//     // keep going
-//     next();
-//   } catch (err) {
-//     console.log(err);
-//     // Will be here is input failed a validator check
-//     const data = {
-//       isGood: false,
-//       msg: err.message
-//     };
-//     return res.status(401).send(data);
-//   }
-// };
+    // keep going
+    next();
+  } catch (err) {
+    // Will be here is input failed a validator check
+    const data = {
+      isGood: false,
+      msg:
+        "There was an issue finding this sauce. Please verify the provided slug is valid."
+    };
+    return res.status(401).send(data);
+  }
+};
 
 // TODO Sanitize sauce _id before search DB for it.
 // exports.getSauceById = async (req, res, next) => {
