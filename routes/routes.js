@@ -141,7 +141,6 @@ router.post(
   "/api/review/add",
   authController.isLoggedIn,
   reviewController.validateReview,
-  sauceController.getSauceBySlug,
   reviewController.addReview
 );
 
