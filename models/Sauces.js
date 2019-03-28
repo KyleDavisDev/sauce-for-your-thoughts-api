@@ -89,3 +89,14 @@ exports.Insert = async function({
   // return Slug
   return Slug;
 };
+
+// Returns Sauce object
+exports.FindSauceBySlug = async function({ Slug }) {
+  const rows = await DB.query(
+    "SELECT Photo, Name, Maker, SHU, Country, City, State, Description, Created, Slug FROM Sauces WHERE Slug = ?",
+    [Slug]
+  );
+
+  // Return Sauce
+  return rows[0];
+};
