@@ -1,5 +1,4 @@
-const mongoose = require("mongoose");
-const Review = mongoose.model("Review");
+const Reviews = require("../models/Reviews.js");
 const validator = require("validator");
 
 const MAXLENGTH = 300;
@@ -140,11 +139,13 @@ exports.addReview = async (req, res, next) => {
     // Make sure there isn't an _id already on object
     if (record._id !== undefined) delete record._id;
 
+    console.log(record);
+
     // save into DB
-    const review = await new Review(record).save();
+    const results = await Review.insert(record).save();
 
     // make sure record is good
-    if (!review) {
+    if (!results) {
       const data = {
         isGood: false,
         msg:
