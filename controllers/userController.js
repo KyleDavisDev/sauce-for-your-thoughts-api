@@ -73,9 +73,9 @@ exports.register = async (req, res, next) => {
   try {
     // These will have already been checked via userController.validateRegister method
     const record = {
-      email: req.body.user.email,
-      displayName: req.body.user.displayName,
-      password: req.body.user.password
+      Email: req.body.user.email,
+      DisplayName: req.body.user.displayName,
+      Password: req.body.user.password
     };
 
     // Insert into DB
