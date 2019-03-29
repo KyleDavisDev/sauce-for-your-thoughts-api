@@ -27,18 +27,18 @@ exports.UsersTableRemove = `ALTER TABLE Sauces DROP FOREIGN KEY Sauces_Users_Use
   DROP TABLE Users;`;
 
 // Return insert results
-exports.Insert = async function({ email, password, displayName }) {
+exports.Insert = async function({ Email, Password, DisplayName }) {
   // Create salt
   const salt = await bcrypt.genSalt(SALT_WORK_FACTOR);
   // Create hash
-  const hash = await bcrypt.hash(password, salt);
+  const hash = await bcrypt.hash(Password, salt);
 
   // Create insert object
   const values = {
-    Email: email,
+    Email,
     Password: hash,
-    DisplayName: displayName,
-    Created: moment.unix()
+    DisplayName,
+    Created: moment().unix()
   };
 
   const results = await DB.query("INSERT INTO Users SET ?", values);
