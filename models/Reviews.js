@@ -1,10 +1,12 @@
+const moment = require("moment");
+
 const DB = require("../db/db.js");
 
 exports.ReviewsTableStructure = `CREATE TABLE IF NOT EXISTS Reviews (
   ReviewID int NOT NULL AUTO_INCREMENT,
   SauceID int NOT NULL,
   UserID int NOT NULL,
-  Created DATETIME DEFAULT CURRENT_TIMESTAMP,
+  Created bigint(20) unsigned DEFAULT NULL,
   LabelRating int NOT NULL CHECK (LabelRating > -1 AND LabelRating < 6),
   LabelDescription varchar(300),
   AromaRating int NOT NULL CHECK (AromaRating > -1 AND AromaRating < 6),
@@ -17,8 +19,8 @@ exports.ReviewsTableStructure = `CREATE TABLE IF NOT EXISTS Reviews (
   OverallDescription varchar(300) NOT NULL,
   Note varchar(300),
   PRIMARY KEY (ReviewID),
-  FOREIGN KEY (SauceID) REFERENCES Sauces(SauceID),
-  FOREIGN KEY (USERID) REFERENCES Users(UserID)
+  CONSTRAINT Reviews_Sauces_SauceID FOREIGN KEY (SauceID) REFERENCES Sauces(SauceID),
+  CONSTRAINT Reviews_Users_UserID FOREIGN KEY (USERID) REFERENCES Users(UserID)
   );`;
 
 exports.Insert = async function({

@@ -1,6 +1,7 @@
-const DB = require("../db/db.js");
 const bcrypt = require("bcrypt");
 const moment = require("moment");
+
+const DB = require("../db/db.js");
 
 // Constants
 const MAX_LOGIN_ATTEMPTS = 5;
@@ -21,7 +22,9 @@ exports.UsersTableStructure = `CREATE TABLE IF NOT EXISTS Users (
   PRIMARY KEY (UserID)
   ) ENGINE=InnoDB DEFAULT CHARSET=latin1;`;
 
-exports.UsersTableRemove = "DROP TABLE Users";
+exports.UsersTableRemove = `ALTER TABLE Sauces DROP FOREIGN KEY Sauces_Users_UserID;
+  ALTER TABLE Reviews DROP FOREIGN KEY Reviews_Users_UserID;
+  DROP TABLE Users;`;
 
 // Return insert results
 exports.Insert = async function({ email, password, displayName }) {

@@ -1,7 +1,9 @@
+const moment = require("moment");
+const slug = require("slugs"); // Hi there! How are you! --> hi-there-how-are-you
+
 const DB = require("../db/db.js");
 const TypesDB = require("./Types.js");
 const Sauces_Types = require("./Sauces_Types.js");
-const slug = require("slugs"); // Hi there! How are you! --> hi-there-how-are-you
 
 exports.SaucesTableStructure = `CREATE TABLE IF NOT EXISTS Sauces (
   SauceID int NOT NULL AUTO_INCREMENT,
@@ -10,7 +12,7 @@ exports.SaucesTableStructure = `CREATE TABLE IF NOT EXISTS Sauces (
   Maker varchar(100) NOT NULL,
   Slug varchar(150) NOT NULL,
   Description varchar(300) NOT NULL,
-  Created DATETIME DEFAULT CURRENT_TIMESTAMP,
+  Created bigint(20) unsigned DEFAULT NULL,
   Photo varchar(100),
   Country varchar(100),
   State varchar(100),
@@ -20,8 +22,13 @@ exports.SaucesTableStructure = `CREATE TABLE IF NOT EXISTS Sauces (
   IsActive boolean DEFAULT '1',
   IsPrivate boolean DEFAULT '0',
   PRIMARY KEY (SauceID),
-  FOREIGN KEY (UserID) REFERENCES Users(UserID)
+  CONSTRAINT Sauces_Users_UserID FOREIGN KEY (UserID) REFERENCES Users(UserID)
   );`;
+
+exports.SaucesDrop = `ALTER TABLE Reviews DROP FOREIGN KEY Reviews_Sauces_SauceID;
+  ALTER TABLE Sauces_Types DROP FOREIGN KEY Sauces_Types_Sauces_SauceID; 
+  ALTER TABLE Sauces DROP FOREIGN KEY Sauces_Users_UserID;
+  DROP TABLE Sauces;`;
 
 exports.Insert = async function({
   UserID,
@@ -70,7 +77,8 @@ exports.Insert = async function({
     City,
     Photo,
     IsPrivate,
-    Slug
+    Slug,
+    Created: moment().unix()
   };
 
   // Finally insert complete record into DB
