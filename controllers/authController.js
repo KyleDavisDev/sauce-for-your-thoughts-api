@@ -19,15 +19,6 @@ exports.login = async (req, res) => {
       password: req.body.user.password
     });
 
-    // Login was bad or user is locked
-    if (!user) {
-      const data = {
-        isGood: false,
-        msg: msg || "Invalid username or password."
-      };
-      return res.status(400).send(data);
-    }
-
     // create JWT token
     const payload = { sub: user.UserID };
     const token = jwt.sign(payload, process.env.SECRET);
