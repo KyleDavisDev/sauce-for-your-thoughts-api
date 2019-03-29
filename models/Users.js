@@ -4,7 +4,7 @@ const moment = require("moment");
 
 // Constants
 const MAX_LOGIN_ATTEMPTS = 5;
-const LOCK_TIME = 1000 * 60 * 60 * 2; // 2 hour lock
+const LOCK_TIME = 2 * 60 * 60; // 2 hour lock time in seconds
 const SALT_WORK_FACTOR = 10;
 
 exports.UsersTableStructure = `CREATE TABLE IF NOT EXISTS Users (
@@ -13,13 +13,13 @@ exports.UsersTableStructure = `CREATE TABLE IF NOT EXISTS Users (
   IsActive BOOLEAN DEFAULT '1',
   Password varchar(100) NOT NULL,
   DisplayName varchar(50) NOT NULL,
-  Created DATETIME DEFAULT CURRENT_TIMESTAMP,
+  Created bigint(20) unsigned DEFAULT NULL,
   ResetPasswordToken varchar(300),
-  ResetPasswordExpires DATETIME,
+  ResetPasswordExpires bigint(20) unsigned DEFAULT NULL,
   LoginAttempts int DEFAULT 0,
-  LockedUntil DATETIME,
+  LockedUntil bigint(20) unsigned DEFAULT NULL,
   PRIMARY KEY (UserID)
-  );`;
+  ) ENGINE=InnoDB DEFAULT CHARSET=latin1;`;
 
 exports.UsersTableRemove = "DROP TABLE Users";
 
@@ -31,7 +31,12 @@ exports.Insert = async function({ email, password, displayName }) {
   const hash = await bcrypt.hash(password, salt);
 
   // Create insert object
-  const values = { Email: email, Password: hash, DisplayName: displayName };
+  const values = {
+    Email: email,
+    Password: hash,
+    DisplayName: displayName,
+    Created: moment.unix()
+  };
 
   const results = await DB.query("INSERT INTO Users SET ?", values);
 
@@ -75,21 +80,24 @@ exports.AuthenticateUser = async function({ email, password }) {
   // assign for easier use
   const user = rows[0];
   if (!rows || !user) {
-    throw new Error(
-      "Could not verify your login. Please make sure your email and password are correct."
-    );
+    throw new Error("Invalid username or password.");
   }
 
   // See if account is locked so we can possibly skipping creating JWT
   // LockedUntil time will be larger if acc locked
-  if (user.LockedUntil && user.LockedUntil > Date.now()) {
+  const date = moment().unix();
+  if (user.LockedUntil && user.LockedUntil > date) {
     // acc locked if here
-
     // incriment login attempts
-    return await module.exports.IncLoginAttempts({
+    await module.exports.IncLoginAttempts({
       UserID: user.UserID,
       LoginAttempts: user.LoginAttempts
     });
+
+    // Finally throw error w/ vague message
+    throw new Error(
+      "This account has been locked. Please try again in a few hours."
+    );
   }
 
   // Check if password is good
@@ -103,12 +111,12 @@ exports.AuthenticateUser = async function({ email, password }) {
     }
 
     // reset attempts and lockedUntil timer
-    var results = await DB.query(
+    await DB.query(
       "UPDATE Users SET LoginAttempts = ?, LockedUntil = ? WHERE  UserID = ?",
       [0, null, user.UserID]
     );
-    console.log("results: ", results);
-    return results;
+
+    return user;
   } else {
     // password is bad, so increment login attempts before responding
     await module.exports.IncLoginAttempts({
@@ -116,18 +124,16 @@ exports.AuthenticateUser = async function({ email, password }) {
       LoginAttempts: user.LoginAttempts
     });
 
-    // Return false;
-    return false;
+    // Finally throw error w/ vague message
+    throw new Error("Invalid username or password.");
   }
 };
 
 exports.IncLoginAttempts = async function({ UserID, LoginAttempts }) {
   // Check if we need to lock the account or not
   if (LoginAttempts + 1 === MAX_LOGIN_ATTEMPTS) {
-    // Create a MySQL-friendly datetime w/ added lockout period
-    const date = moment()
-      .add(LOCK_TIME, "hours")
-      .format("YYYY-MM-DD HH:mm:ss");
+    // Create Unix Epoch time in seconds
+    const date = moment().unix() + LOCK_TIME;
 
     return await DB.query(
       "Update Users SET LoginAttempts = ?, LockedUntil = ? WHERE UserID = ?",
