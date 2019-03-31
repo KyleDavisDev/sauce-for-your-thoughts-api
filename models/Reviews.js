@@ -23,11 +23,10 @@ exports.ReviewsTableStructure = `CREATE TABLE IF NOT EXISTS Reviews (
   CONSTRAINT Reviews_Users_UserID FOREIGN KEY (USERID) REFERENCES Users(UserID)
   );`;
 
+// Returns insert results
 exports.Insert = async function({
-  ReviewID,
-  SauceID,
   UserID,
-  Created,
+  SauceID,
   LabelRating,
   LabelDescription,
   AromaRating,
@@ -40,6 +39,29 @@ exports.Insert = async function({
   OverallDescription,
   Note
 }) {
-  console.log("I am arguemnets: ", arguments);
-  return null;
+  // Finally create insert object
+  const values = {
+    UserID,
+    SauceID,
+    LabelRating,
+    LabelDescription,
+    AromaRating,
+    AromaDescription,
+    TasteRating,
+    TasteDescription,
+    HeatRating,
+    HeatDescription,
+    OverallRating,
+    OverallDescription,
+    Note,
+    Created: moment().unix()
+  };
+
+  const results = await DB.query("INSERT INTO Reviews Set ?", values);
+
+  if (!results) {
+    throw new Error("Error saving review. Please try again.");
+  }
+
+  return results;
 };
