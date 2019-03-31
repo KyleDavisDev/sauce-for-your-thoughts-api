@@ -87,7 +87,7 @@ exports.addSauce = async (req, res, next) => {
       Name: sauce.name,
       Maker: sauce.maker,
       Description: sauce.description,
-      Ingrediants: sauce.ingrediants,
+      Ingredients: sauce.ingredients,
       SHU: sauce.shu,
       State: sauce.state,
       Country: sauce.country,
@@ -118,8 +118,7 @@ exports.addSauce = async (req, res, next) => {
     // TODO log error somewhere so can be referenced later
     const data = {
       isGood: false,
-      msg: "There was an issue saving your sauce. Try again",
-      err
+      msg: "There was an issue saving your sauce. Try again"
     };
     res.status(400).send(data);
   }
