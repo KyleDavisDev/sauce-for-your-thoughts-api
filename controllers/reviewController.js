@@ -133,30 +133,29 @@ exports.addReview = async (req, res, next) => {
   try {
     // Construct record object -- Bit messy since req.body has nested info and SQL obj is flat
     const { review } = req.body;
-    const record = {};
-    record.author = req.body.user.UserID;
-    record.sauce = await Sauces.FindIDBySlug({ Slug: req.body.sauce.slug });
-    record.LabelRating = review.label.rating;
-    record.LabelDescription = review.label.txt;
-    record.AromaRating = review.aroma.rating;
-    record.AromaDescription = review.aroma.txt;
-    record.TasteRating = review.taste.rating;
-    record.TasteDescription = review.taste.txt;
-    record.HeatRating = review.heat.rating;
-    record.HeatDescription = review.heat.txt;
-    record.OverallRating = review.overall.rating;
-    record.OverallDescription = review.overall.txt;
-    record.Note = review.note;
 
     // save into DB
-    const results = await Reviews.Insert(...record);
+    const results = await Reviews.Insert({
+      UserID: req.body.user.UserID,
+      SauceID: await Sauces.FindIDBySlug({ Slug: req.body.sauce.slug }),
+      LabelRating: review.label.rating,
+      LabelDescription: review.label.txt,
+      AromaRating: review.aroma.rating,
+      AromaDescription: review.aroma.txt,
+      TasteRating: review.taste.rating,
+      TasteDescription: review.taste.txt,
+      HeatRating: review.heat.rating,
+      HeatDescription: review.heat.txt,
+      OverallRating: review.overall.rating,
+      OverallDescription: review.overall.txt,
+      Note: review.note.txt
+    });
 
     // make sure record is good
     if (!results) {
       const data = {
         isGood: false,
-        msg:
-          "Could save sauce to the database. Please be sure your sauce slug is correct."
+        msg: "Could save your review to the database."
       };
       return res.status(400).send(data);
     }
@@ -173,7 +172,7 @@ exports.addReview = async (req, res, next) => {
     const data = {
       isGood: false,
       msg:
-        "Could not add sauce. Make sure all fields are filled and try again.",
+        "Could not save review. Make sure all fields are filled and try again.",
       err
     };
     return res.status(400).send(data);
