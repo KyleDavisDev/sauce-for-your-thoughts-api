@@ -43,6 +43,11 @@ exports.Insert = async function({ Email, Password, DisplayName }) {
 
   const results = await DB.query("INSERT INTO Users SET ?", values);
 
+  // Make sure we could save user
+  if (!results) {
+    throw new Error("Error trying to save user. Please try again.");
+  }
+
   return results;
 };
 
