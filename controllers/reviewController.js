@@ -106,7 +106,6 @@ exports.validateReview = (req, res, next) => {
   }
 };
 
-// TODO: Better error handling/logging
 /** @description Add review to DB
  *  @extends req.response attaches review to req.response.sauce OR req.response if sauce doesn't exist
  *  @param {String} req.body.user.UserID - unique user string
@@ -213,40 +212,40 @@ exports.findReviewByUserAndSauce = async (req, res) => {
 };
 
 /** @description Get all reviews related to specific sauce _id
- *  @param {Object[]} req.response.sauces[] - array of sauce objects
- *  @param {String[]} req.response.sauces[]._id - unique sauce string
+ *  @param {Object[]} req.body.sauce - sauce object
+ *  @param {String[]} req.body.sauce.Slug - unique sauce string
  *  @return array of reviews attached to each req.response.sauces[] object
  */
-exports.getReviewsBySauceID = async (req, res, next) => {
-  // Make sure _id is in right place
-  if (!req.body.sauce || !req.body.sauce._id) {
+exports.getReviewsBySauceSlug = async (req, res, next) => {
+  // Make sure Slug is in right place
+  if (!req.body.sauce || !req.body.sauce.Slug) {
     const data = {
       isGood: false,
       msg:
-        "We couldn't find an id to look up the reviews. Make sure it's in the right place"
+        "We couldn't find a slug to look up the reviews. Make sure it's in the right place"
     };
     return res.status(300).send(data);
   }
 
   try {
-    const { _id } = req.body.sauce;
-    const reviews = await Review.find(
-      {
-        sauce: _id
-      },
-      {
-        sauce: 0,
-        _id: 0
-      }
-    ).populate("author", { _id: 0, name: 1, created: 1 });
-    console.log(reviews);
+    // Grab slug from body
+    const { Slug } = req.body.sauce;
+    // Find SauceID from Slug
+    const SauceID = await Sauces.FindIDBySlug({ Slug });
+    // Find all reviews w/ SauceID
+    const reviews = await Reviews.FindReviewsBySauceID({ SauceID });
 
     // All is good if we made it here.
-    // Go to authController.removeIDs
-    res.status(200).send({ isGood: true });
+    res.status(200).send({ isGood: true, reviews });
   } catch (err) {
     console.log(err);
-    res.status(400).send(err);
+    const data = {
+      isGood: false,
+      msg:
+        "Error finding reviews. Make sure you have passed a legitimate slug and try again.",
+      err
+    };
+    return res.status(400).send(data);
   }
 };
 
