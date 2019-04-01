@@ -125,8 +125,7 @@ exports.addSauce = async (req, res, next) => {
 };
 
 /** @description look up a specific sauce by the sauce's slug
- *  @param {String?} req.parms.slug - unique sauce string
- *  @param {String?} req.body.sauce.slug - unique sauce string
+ *  @param {String} req.body.sauce.slug - unique sauce string
  */
 exports.getSauceBySlug = async (req, res, next) => {
   try {
@@ -134,7 +133,7 @@ exports.getSauceBySlug = async (req, res, next) => {
     if (!req.body.sauce || !req.body.sauce.slug) {
       const data = {
         isGood: false,
-        msg: "Make sure you are providing a slug with your sauce."
+        msg: "Unable find your sauce. Please verify slug is in proper place."
       };
       return res.status(300).send(data);
     }
