@@ -18,6 +18,7 @@ exports.ReviewsTableStructure = `CREATE TABLE IF NOT EXISTS Reviews (
   OverallRating int NOT NULL CHECK (OverallRating > -1 AND OverallRating < 6),
   OverallDescription varchar(300) NOT NULL,
   Note varchar(300),
+  IsActive boolean DEFAULT '1',
   PRIMARY KEY (ReviewID),
   CONSTRAINT Reviews_Sauces_SauceID FOREIGN KEY (SauceID) REFERENCES Sauces(SauceID),
   CONSTRAINT Reviews_Users_UserID FOREIGN KEY (USERID) REFERENCES Users(UserID)
@@ -64,4 +65,29 @@ exports.Insert = async function({
   }
 
   return results;
+};
+
+// Returns array of reviews w/ Users DisplayName
+exports.FindReviewsBySauceID = async function({ SauceID }) {
+  const rows = await DB.query(
+    `SELECT Reviews.LabelRating, Reviews.LabelDescription,
+      Reviews.AromaRating, Reviews.AromaDescription,
+      Reviews.TasteRating, Reviews.TasteDescription,
+      Reviews.HeatRating, Reviews.HeatDescription,
+      Reviews.OverallRating, Reviews.OverallDescription,
+      Reviews.Note, Reviews.Created,
+      Users.DisplayName
+      FROM Reviews
+      JOIN Users ON Reviews.UserID = Users.UserID
+      WHERE Reviews.IsActive = 1 AND Reviews.SauceID = ?`,
+    [SauceID]
+  );
+
+  if (!rows) {
+    throw new Error(
+      "Could not find any reviews for this sauce. Be the first to submit one!"
+    );
+  }
+
+  return rows;
 };
