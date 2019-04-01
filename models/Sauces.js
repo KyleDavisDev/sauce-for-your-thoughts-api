@@ -98,13 +98,23 @@ exports.Insert = async function({
   return Slug;
 };
 
-// Returns Sauce object
+// Returns Sauce object w/ Users DisplayName
 exports.FindSauceBySlug = async function({ Slug }) {
   const rows = await DB.query(
-    `SELECT Photo, Name, Maker, SHU, Country, City, State,
-     Description, Created, Slug FROM Sauces WHERE Slug = ?`,
+    `SELECT Sauces.Photo, Sauces.Name,
+    Sauces.Maker, Sauces.SHU, Sauces.Country,
+    Sauces.City, Sauces.State, Sauces.Description,
+    Sauces.Created, Sauces.Slug,
+    Users.DisplayName
+    FROM Sauces
+    JOIN Users ON Users.UserID = Sauces.UserID
+    WHERE Slug = ?`,
     [Slug]
   );
+
+  if (!rows) {
+    throw new Error("Error finding your sauce through it's slug.");
+  }
 
   // Return Sauce
   return rows[0];
