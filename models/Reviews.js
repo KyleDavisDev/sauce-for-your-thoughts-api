@@ -1,4 +1,5 @@
 const moment = require("moment");
+const Hashids = require("hashids");
 
 const DB = require("../db/db.js");
 
@@ -19,6 +20,7 @@ exports.ReviewsTableStructure = `CREATE TABLE IF NOT EXISTS Reviews (
   OverallDescription varchar(300) NOT NULL,
   Note varchar(300),
   IsActive boolean DEFAULT '1',
+  HashID varchar(10),
   PRIMARY KEY (ReviewID),
   CONSTRAINT Reviews_Sauces_SauceID FOREIGN KEY (SauceID) REFERENCES Sauces(SauceID),
   CONSTRAINT Reviews_Users_UserID FOREIGN KEY (USERID) REFERENCES Users(UserID)
@@ -58,7 +60,25 @@ exports.Insert = async function({
     Created: moment().unix()
   };
 
-  const results = await DB.query("INSERT INTO Reviews Set ?", values);
+  const res = await DB.query("INSERT INTO Reviews Set ?", values);
+
+  // Create HashID and update record
+  // Will use just-inserted review to get properties to create a unique salt
+  const review = await DB.query(
+    "SELECT Created, ReviewID FROM Reviews Where ReviewID = ?",
+    [res.insertId]
+  );
+  if (!review) {
+    throw new Error("Error trying to save review. Please try again.");
+  }
+  const hashids = new Hashids("" + review.Created + "." + review.ReviewID);
+  console.log(review.ReviewID);
+  const HashID = hashids.encode(review.ReviewID);
+  console.log(HashID);
+  const results = await DB.query(
+    "UPDATE Reviews Set HashID = ? WHERE ReviewID = ?",
+    [HashID, review.ReviewID]
+  );
 
   if (!results) {
     throw new Error("Error saving review. Please try again.");
