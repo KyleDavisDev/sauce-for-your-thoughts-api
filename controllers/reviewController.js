@@ -228,15 +228,21 @@ exports.getReviewsBySauceSlug = async (req, res, next) => {
   }
 
   try {
-    // Grab slug from body
-    const { Slug } = req.body.sauce;
+    // Grab sauce from body
+    const { sauce } = req.body;
+    // Grab slug from sauce
+    const { Slug } = sauce;
     // Find SauceID from Slug
     const SauceID = await Sauces.FindIDBySlug({ Slug });
     // Find all reviews w/ SauceID
     const reviews = await Reviews.FindReviewsBySauceID({ SauceID });
 
+    // Attach reviews to sauce obj
+    sauce.reviews = [];
+    sauce.reviews = reviews;
+
     // All is good if we made it here.
-    res.status(200).send({ isGood: true, reviews });
+    res.status(200).send({ isGood: true, sauce });
   } catch (err) {
     console.log(err);
     const data = {
