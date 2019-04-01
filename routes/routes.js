@@ -35,12 +35,11 @@ router.post(
 
 // // 1. Look up a sauce by unique slug
 // // 2. Add reviews to sauce that was found
-// router.post(
-//   "/api/sauce/get/by/slug",
-//   sauceController.getSauceBySlug,
-//   reviewController.getReviewsBySauceID
-//   // authController.encodeID
-// );
+router.post(
+  "/api/sauce/get/by/slug",
+  sauceController.getSauceBySlug,
+  reviewController.getReviewsBySauceSlug
+);
 
 // // 1. Check mimetype of image and set req.body
 // // 2. Verify if user is valid
