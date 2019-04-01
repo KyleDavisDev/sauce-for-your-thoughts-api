@@ -3,6 +3,9 @@ const Hashids = require("hashids");
 
 const DB = require("../db/db.js");
 
+// constants
+const HASH_LENGTH = 10;
+
 exports.ReviewsTableStructure = `CREATE TABLE IF NOT EXISTS Reviews (
   ReviewID int NOT NULL AUTO_INCREMENT,
   SauceID int NOT NULL,
@@ -62,19 +65,29 @@ exports.Insert = async function({
 
   const res = await DB.query("INSERT INTO Reviews Set ?", values);
 
-  // Create HashID and update record
+  // Need to set a HashID to help obfuscate the ReviewID and for better front-end managment (use HashID in URLs)
   // Will use just-inserted review to get properties to create a unique salt
-  const review = await DB.query(
+  const rows = await DB.query(
     "SELECT Created, ReviewID FROM Reviews Where ReviewID = ?",
     [res.insertId]
   );
-  if (!review) {
+
+  // Make sure we can find the review
+  if (!rows[0]) {
     throw new Error("Error trying to save review. Please try again.");
   }
-  const hashids = new Hashids("" + review.Created + "." + review.ReviewID);
-  console.log(review.ReviewID);
+
+  // Grab review
+  const review = rows[0];
+
+  // Create unique salt
+  const salt = "" + review.Created + "." + review.ReviewID + "." + UserID;
+  // Generate algo w/ salt and set min length
+  const hashids = new Hashids(salt, HASH_LENGTH);
+  // Generate hash
   const HashID = hashids.encode(review.ReviewID);
-  console.log(HashID);
+
+  // Update record
   const results = await DB.query(
     "UPDATE Reviews Set HashID = ? WHERE ReviewID = ?",
     [HashID, review.ReviewID]
@@ -90,7 +103,8 @@ exports.Insert = async function({
 // Returns array of reviews w/ Users DisplayName
 exports.FindReviewsBySauceID = async function({ SauceID }) {
   const rows = await DB.query(
-    `SELECT Reviews.LabelRating, Reviews.LabelDescription,
+    `SELECT Reviews.HashID
+      Reviews.LabelRating, Reviews.LabelDescription,
       Reviews.AromaRating, Reviews.AromaDescription,
       Reviews.TasteRating, Reviews.TasteDescription,
       Reviews.HeatRating, Reviews.HeatDescription,
