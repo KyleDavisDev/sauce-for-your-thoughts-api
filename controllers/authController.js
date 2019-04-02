@@ -1,7 +1,5 @@
 const jwt = require("jsonwebtoken");
 const Users = require("../models/Users");
-const { encryptDecrypt } = require("../handlers/auth");
-// const mail = require("../handlers/mail.js");
 
 exports.login = async (req, res) => {
   // Quick sanity check
@@ -241,64 +239,4 @@ exports.updatePassword = async (req, res, next) => {
 exports.validateToken = (req, res) => {
   const data = { isGood: true, msg: "Found user." };
   return res.status(200).send(data);
-};
-
-/** @description Search through return data object for any mongoose _id's and encodes them.
- *  @extends req.response - semi 'global' object between middleware
- *  @param {Object} req.response - expects something to be here
- */
-exports.encodeID = (req, res) => {
-  // Simple guard clause
-  if (!req.response || Object.keys(req.response).length === 0) {
-    const data = {
-      isGood: false,
-      msg: "response object failed to be created. Please try again",
-      data: {}
-    };
-    res.status(400).send(data);
-  }
-
-  try {
-    // We need to search through sauces/users/reviews in req.response for
-    // any _id properties and convert it to a hashed value.
-    req.response = encryptDecrypt(req.response, "encode");
-
-    // construct our final return object
-    const data = {
-      isGood: true,
-      data: req.response
-    };
-
-    return res.status(200).send(data);
-  } catch (err) {
-    console.log(err);
-    res.status(400).send(err);
-  }
-};
-
-/** @description Decode any _id found and go to next middleware
- *  @param {Object} req.body - expects data to be found here to decode
- */
-exports.decodeID = (req, res, next) => {
-  // Simple guard clause
-  if (!req.body || Object.keys(req.body).length === 0) {
-    const data = {
-      isGood: false,
-      msg:
-        "Oops! Looks like nothing was passed to the server. Please ensure you are sending data in a JSON format.",
-      data: {}
-    };
-    res.status(300).send(data);
-  }
-
-  try {
-    // We need to search through sauces/users/reviews in req.response for
-    // any _id properties and convert it to a hashed value.
-    req.body = encryptDecrypt(req.body, "decode");
-
-    next();
-  } catch (err) {
-    console.log(err);
-    res.status(400).send(err);
-  }
 };
