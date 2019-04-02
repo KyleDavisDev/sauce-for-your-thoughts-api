@@ -103,7 +103,7 @@ exports.Insert = async function({
 // Returns array of reviews w/ Users DisplayName
 exports.FindReviewsBySauceID = async function({ SauceID }) {
   const rows = await DB.query(
-    `SELECT Reviews.HashID
+    `SELECT Reviews.HashID,
       Reviews.LabelRating, Reviews.LabelDescription,
       Reviews.AromaRating, Reviews.AromaDescription,
       Reviews.TasteRating, Reviews.TasteDescription,
