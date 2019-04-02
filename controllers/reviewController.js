@@ -248,8 +248,7 @@ exports.getReviewsBySauceSlug = async (req, res, next) => {
     const data = {
       isGood: false,
       msg:
-        "Error finding reviews. Make sure you have passed a legitimate slug and try again.",
-      err
+        "Error finding reviews. Make sure you have passed a legitimate slug and try again."
     };
     return res.status(400).send(data);
   }
