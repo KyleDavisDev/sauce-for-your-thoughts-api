@@ -178,39 +178,6 @@ exports.addReview = async (req, res, next) => {
   }
 };
 
-exports.findReviewByUserAndSauce = async (req, res) => {
-  try {
-    const query = {
-      author: req.body.user._id,
-      sauce: req.body.sauce._id
-    };
-    const review = await Review.findOne(query, { _id: 1, rating: 1 });
-    if (!review) {
-      const data = {
-        isGood: false,
-        msg: "Could not find sauce."
-      };
-      return res.status(400).send(data);
-    }
-
-    const data = {
-      isGood: true,
-      msg: "Successfully found sauce."
-      // data: { sauce: req.data.sauce }
-    };
-    return res.status(200).send(data);
-  } catch (err) {
-    // TODO: Better error handling/loggin
-    console.log(err);
-
-    const data = {
-      isGood: false,
-      msg: "Could not add sauce. Make sure all fields are filled and try again."
-    };
-    return res.status(400).send(data);
-  }
-};
-
 /** @description Get all reviews related to specific sauce _id
  *  @param {Object[]} req.body.sauce - sauce object
  *  @param {String[]} req.body.sauce.Slug - unique sauce string
