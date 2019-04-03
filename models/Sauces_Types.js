@@ -5,7 +5,7 @@ exports.SaucesTypesTableStructure = `CREATE TABLE IF NOT EXISTS Sauces_Types (
   TypeID int,
   PRIMARY KEY (SauceID, TypeID),
   CONSTRAINT Sauces_Types_Sauces_SauceID FOREIGN KEY (SauceID) REFERENCES Sauces(SauceID),
-  CONSTRAINT Sauces_Types_Users_UserID FOREIGN KEY (TypeID) REFERENCES Types(TypeID)
+  CONSTRAINT Sauces_Types_Types_TypeID FOREIGN KEY (TypeID) REFERENCES Types(TypeID)
   ) ENGINE=InnoDB DEFAULT CHARSET=latin1;`;
 
 exports.SaucesTypesDrop = `ALTER TABLE Sauces_Types DROP FOREIGN KEY Sauces_Types_Sauces_SauceID;
