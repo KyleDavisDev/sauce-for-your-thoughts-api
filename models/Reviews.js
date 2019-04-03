@@ -114,5 +114,20 @@ exports.FindReviewsBySauceID = async function({ SauceID }) {
     );
   }
 
-  return rows;
+  // Turn the flat rows into a rows w/ nesting
+  const JSFriendlyArr = rows.map(row => {
+    return {
+      hashID: row.HashID,
+      created: row.Created,
+      author: { displayName: row.displayName },
+      label: { rating: row.LabelRating, txt: row.LabelDescription },
+      aroma: { rating: row.AromaRating, txt: row.AromaDescription },
+      taste: { rating: row.TasteRating, txt: row.TasteDescription },
+      heat: { rating: row.HeatRating, txt: row.HeatDescription },
+      overall: { rating: row.OverallRating, txt: row.OverallDescription },
+      note: { txt: row.Note }
+    };
+  });
+
+  return JSFriendlyArr;
 };
