@@ -119,7 +119,7 @@ exports.FindReviewsBySauceID = async function({ SauceID }) {
     return {
       hashID: row.HashID,
       created: row.Created,
-      author: { displayName: row.displayName },
+      author: { displayName: row.DisplayName },
       label: { rating: row.LabelRating, txt: row.LabelDescription },
       aroma: { rating: row.AromaRating, txt: row.AromaDescription },
       taste: { rating: row.TasteRating, txt: row.TasteDescription },
