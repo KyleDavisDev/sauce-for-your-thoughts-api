@@ -180,12 +180,12 @@ exports.addReview = async (req, res, next) => {
 
 /** @description Get all reviews related to specific sauce _id
  *  @param {Object[]} req.body.sauce - sauce object
- *  @param {String[]} req.body.sauce.Slug - unique sauce string
+ *  @param {String[]} req.body.sauce.slug - unique sauce string
  *  @return array of reviews attached to each req.response.sauces[] object
  */
 exports.getReviewsBySauceSlug = async (req, res, next) => {
   // Make sure Slug is in right place
-  if (!req.body.sauce || !req.body.sauce.Slug) {
+  if (!req.body.sauce || !req.body.sauce.slug) {
     const data = {
       isGood: false,
       msg:
@@ -198,9 +198,9 @@ exports.getReviewsBySauceSlug = async (req, res, next) => {
     // Grab sauce from body
     const { sauce } = req.body;
     // Grab slug from sauce
-    const { Slug } = sauce;
-    // Find SauceID from Slug
-    const SauceID = await Sauces.FindIDBySlug({ Slug });
+    const { slug } = sauce;
+    // Find SauceID from slug
+    const SauceID = await Sauces.FindIDBySlug({ Slug: slug });
     // Find all reviews w/ SauceID
     const reviews = await Reviews.FindReviewsBySauceID({ SauceID });
 
@@ -262,7 +262,7 @@ exports.getOnlyReviewIDsBySauceID = async (req, res, next) => {
         const sauceObj = sauce.toObject();
 
         // assign reviews to sauce
-        sauceObj.reviews = reviews.map(x => x.toObject());
+        sauceObj.reviews = reviews.map(x => {return x.toObject()});
 
         // return sauce
         return sauceObj;
