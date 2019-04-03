@@ -90,7 +90,9 @@ exports.Insert = async function({
     // First need to grab IDs of the TypeIDs
     const TypeIDs = await TypesDB.FindIDByValues({ Values: Types });
 
-    const record = TypeIDs.map(TypeID => [SauceID, TypeID]);
+    const record = TypeIDs.map(TypeID => {
+      return [SauceID, TypeID];
+    });
     await Sauces_Types.Insert({ record });
   }
 
@@ -112,12 +114,27 @@ exports.FindSauceBySlug = async function({ Slug }) {
     [Slug]
   );
 
-  if (!rows) {
+  if (!rows || rows.length > 1) {
     throw new Error("Error finding your sauce through it's slug.");
   }
 
+  // Nest returned user in obj to be more JS-like
+  const sauce = {
+    author: { displayName: rows[0].DisplayName },
+    photo: rows[0].Photo,
+    name: rows[0].Name,
+    maker: rows[0].Maker,
+    shu: rows[0].SHU,
+    country: rows[0].Country,
+    city: rows[0].City,
+    state: rows[0].State,
+    description: rows[0].Description,
+    created: rows[0].Created,
+    slug: rows[0].Slug
+  };
+
   // Return Sauce
-  return rows[0];
+  return sauce;
 };
 
 // Return single SauceID
