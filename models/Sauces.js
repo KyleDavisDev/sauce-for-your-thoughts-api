@@ -103,14 +103,14 @@ exports.Insert = async function({
 // Returns Sauce object w/ Users DisplayName
 exports.FindSauceBySlug = async function({ Slug }) {
   const rows = await DB.query(
-    `SELECT Sauces.Photo, Sauces.Name,
-    Sauces.Maker, Sauces.SHU, Sauces.Country,
-    Sauces.City, Sauces.State, Sauces.Description,
-    Sauces.Created, Sauces.Slug,
-    Users.DisplayName
+    `SELECT Sauces.Photo AS 'Sauces.Photo', Sauces.Name AS 'Sauces.Name',
+    Sauces.Maker AS 'Sauces.Maker', Sauces.SHU AS 'Sauces.SHU', Sauces.Country AS 'Sauces.Country',
+    Sauces.City AS 'Sauces.City', Sauces.State AS 'Sauces.State', Sauces.Description AS 'Sauces.Description',
+    Sauces.Created AS 'Sauces.Created', Sauces.Slug AS 'Sauces.Slug', Sauces.Ingredients AS 'Sauces.Ingredients',
+    Users.DisplayName AS 'Users.DisplayName', Users.Created AS 'Users.Created'
     FROM Sauces
     JOIN Users ON Users.UserID = Sauces.UserID
-    WHERE Slug = ?`,
+    WHERE Sauces.Slug = ?`,
     [Slug]
   );
 
@@ -120,17 +120,21 @@ exports.FindSauceBySlug = async function({ Slug }) {
 
   // Nest returned user in obj to be more JS-like
   const sauce = {
-    author: { displayName: rows[0].DisplayName },
-    photo: rows[0].Photo,
-    name: rows[0].Name,
-    maker: rows[0].Maker,
-    shu: rows[0].SHU,
-    country: rows[0].Country,
-    city: rows[0].City,
-    state: rows[0].State,
-    description: rows[0].Description,
-    created: rows[0].Created,
-    slug: rows[0].Slug
+    author: {
+      displayName: rows[0]["Users.DisplayName"],
+      created: rows[0]["Users.Created"]
+    },
+    ingredients: rows[0]["Sauces.Ingredients"],
+    photo: rows[0]["Sauces.Photo"],
+    name: rows[0]["Sauces.Name"],
+    maker: rows[0]["Sauces.Maker"],
+    shu: rows[0]["Sauces.SHU"],
+    country: rows[0]["Sauces.Country"],
+    city: rows[0]["Sauces.City"],
+    state: rows[0]["Sauces.State"],
+    description: rows[0]["Sauces.Description"],
+    created: rows[0]["Sauces.Created"],
+    slug: rows[0]["Sauces.Slug"]
   };
 
   // Return Sauce
