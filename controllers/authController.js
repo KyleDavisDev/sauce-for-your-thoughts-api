@@ -30,6 +30,9 @@ exports.login = async (req, res) => {
     };
     return res.status(200).send(data);
   } catch (err) {
+    if (err.code === "ECONNREFUSED") {
+      err.message = "Connection error. Please try again";
+    }
     const data = {
       isGood: false,
       msg: err.message || "Connection error. Please try again"
