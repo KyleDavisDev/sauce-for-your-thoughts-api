@@ -261,7 +261,9 @@ exports.getOnlyReviewIDsBySauceID = async (req, res, next) => {
         const sauceObj = sauce.toObject();
 
         // assign reviews to sauce
-        sauceObj.reviews = reviews.map(x => {return x.toObject()});
+        sauceObj.reviews = reviews.map(x => {
+          return x.toObject();
+        });
 
         // return sauce
         return sauceObj;
