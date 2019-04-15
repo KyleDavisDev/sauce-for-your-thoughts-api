@@ -94,14 +94,21 @@ exports.Insert = async function({
 // Returns array of reviews w/ Users DisplayName
 exports.FindReviewsBySauceID = async function({ SauceID }) {
   const rows = await DB.query(
-    `SELECT Reviews.HashID,
-      Reviews.LabelRating, Reviews.LabelDescription,
-      Reviews.AromaRating, Reviews.AromaDescription,
-      Reviews.TasteRating, Reviews.TasteDescription,
-      Reviews.HeatRating, Reviews.HeatDescription,
-      Reviews.OverallRating, Reviews.OverallDescription,
-      Reviews.Note, Reviews.Created,
-      Users.DisplayName
+    `SELECT Reviews.HashID AS "Reviews.HashID",
+      Reviews.LabelRating AS "Reviews.LabelRating",
+      Reviews.LabelDescription AS "Reviews.LabelDescription",
+      Reviews.AromaRating AS "Reviews.AromaRating",
+      Reviews.AromaDescription AS "Reviews.AromaDescription",
+      Reviews.TasteRating AS "Reviews.TasteRating",
+      Reviews.TasteDescription AS "Reviews.TasteDescription",
+      Reviews.HeatRating AS "Reviews.HeatRating",
+      Reviews.HeatDescription AS "Reviews.HeatDescription",
+      Reviews.OverallRating AS "Reviews.OverallRating",
+      Reviews.OverallDescription AS "Reviews.OverallDescription",
+      Reviews.Note AS "Reviews.Note",
+      Reviews.Created AS "Reviews.Created",
+      Users.DisplayName AS "Users.DisplayName",
+      Users.Created AS "Users.Created"
       FROM Reviews
       JOIN Users ON Reviews.UserID = Users.UserID
       WHERE Reviews.IsActive = 1 AND Reviews.SauceID = ?`,
@@ -117,15 +124,33 @@ exports.FindReviewsBySauceID = async function({ SauceID }) {
   // Turn the flat rows into a rows w/ nesting
   const JSFriendlyArr = rows.map(row => {
     return {
-      hashID: row.HashID,
-      created: row.Created,
-      author: { displayName: row.DisplayName },
-      label: { rating: row.LabelRating, txt: row.LabelDescription },
-      aroma: { rating: row.AromaRating, txt: row.AromaDescription },
-      taste: { rating: row.TasteRating, txt: row.TasteDescription },
-      heat: { rating: row.HeatRating, txt: row.HeatDescription },
-      overall: { rating: row.OverallRating, txt: row.OverallDescription },
-      note: { txt: row.Note }
+      hashID: row["Reviews.HashID"],
+      created: row["Reviews.Created"],
+      author: {
+        displayName: row["Users.DisplayName"],
+        created: row["Users.Created"]
+      },
+      label: {
+        rating: row["Reviews.LabelRating"],
+        txt: row["Reviews.LabelDescription"]
+      },
+      aroma: {
+        rating: row["Reviews.AromaRating"],
+        txt: row["Reviews.AromaDescription"]
+      },
+      taste: {
+        rating: row["Reviews.TasteRating"],
+        txt: row["Reviews.TasteDescription"]
+      },
+      heat: {
+        rating: row["Reviews.HeatRating"],
+        txt: row["Reviews.HeatDescription"]
+      },
+      overall: {
+        rating: row["Reviews.OverallRating"],
+        txt: row["Reviews.OverallDescription"]
+      },
+      note: { txt: row["Reviews.Note"] }
     };
   });
 
