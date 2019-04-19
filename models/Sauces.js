@@ -103,14 +103,26 @@ exports.Insert = async function({
 // Returns Sauce object w/ Users DisplayName
 exports.FindSauceBySlug = async function({ Slug }) {
   const rows = await DB.query(
-    `SELECT Sauces.Photo AS 'Sauces.Photo', Sauces.Name AS 'Sauces.Name',
-    Sauces.Maker AS 'Sauces.Maker', Sauces.SHU AS 'Sauces.SHU', Sauces.Country AS 'Sauces.Country',
-    Sauces.City AS 'Sauces.City', Sauces.State AS 'Sauces.State', Sauces.Description AS 'Sauces.Description',
-    Sauces.Created AS 'Sauces.Created', Sauces.Slug AS 'Sauces.Slug', Sauces.Ingredients AS 'Sauces.Ingredients',
-    Users.DisplayName AS 'Users.DisplayName', Users.Created AS 'Users.Created'
+    `SELECT MAX(Sauces.Photo) AS "Sauces.Photo",
+    MAX(Sauces.Name) AS "Sauces.Name",
+    MAX(Sauces.Maker) AS "Sauces.Maker",
+    MAX(Sauces.SHU) AS "Sauces.SHU",
+    MAX(Sauces.Country) AS "Sauces.Country",
+    MAX(Sauces.City) AS "Sauces.City",
+    MAX(Sauces.State) AS "Sauces.State",
+    MAX(Sauces.Description) AS "Sauces.Description",
+    MAX(Sauces.Created) AS "Sauces.Created",
+    MAX(Sauces.Slug) AS "Sauces.Slug",
+    MAX(Sauces.Ingredients) AS "Sauces.Ingredients",
+    MAX(Users.DisplayName) AS "Users.DisplayName",
+    MAX(Users.Created) AS "Users.Created",
+    GROUP_CONCAT('', Types.Value) AS "Sauces.Type"
     FROM Sauces
-    JOIN Users ON Users.UserID = Sauces.UserID
-    WHERE Sauces.Slug = ?`,
+    INNER JOIN Users ON Users.UserID = Sauces.UserID
+    LEFT JOIN Sauces_Types ON Sauces_Types.SauceID = Sauces.SauceID
+    LEFT JOIN Types ON Sauces_Types.TypeID = Types.TypeID
+    WHERE Sauces.Slug = ?
+    GROUP BY Slug`,
     [Slug]
   );
 
@@ -134,7 +146,8 @@ exports.FindSauceBySlug = async function({ Slug }) {
     state: rows[0]["Sauces.State"],
     description: rows[0]["Sauces.Description"],
     created: rows[0]["Sauces.Created"],
-    slug: rows[0]["Sauces.Slug"]
+    slug: rows[0]["Sauces.Slug"],
+    type: rows[0]["Sauces.Type"]
   };
 
   // Return Sauce
