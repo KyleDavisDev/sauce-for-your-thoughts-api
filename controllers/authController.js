@@ -22,11 +22,11 @@ exports.login = async (req, res) => {
     const token = jwt.sign(payload, process.env.SECRET);
 
     // get name and email
-    const { DisplayName, Email } = user;
+    const { DisplayName: displayName, Email: email } = user;
     const data = {
       isGood: true,
       msg: "Successfully logged in.",
-      user: { token, DisplayName, Email }
+      user: { token, displayName, email }
     };
     return res.status(200).send(data);
   } catch (err) {
