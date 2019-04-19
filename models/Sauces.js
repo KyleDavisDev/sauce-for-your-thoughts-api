@@ -116,7 +116,7 @@ exports.FindSauceBySlug = async function({ Slug }) {
     MAX(Sauces.Ingredients) AS "Sauces.Ingredients",
     MAX(Users.DisplayName) AS "Users.DisplayName",
     MAX(Users.Created) AS "Users.Created",
-    GROUP_CONCAT('', Types.Value) AS "Sauces.Type"
+    GROUP_CONCAT('', Types.Value) AS "Sauces.Types"
     FROM Sauces
     INNER JOIN Users ON Users.UserID = Sauces.UserID
     LEFT JOIN Sauces_Types ON Sauces_Types.SauceID = Sauces.SauceID
@@ -147,7 +147,7 @@ exports.FindSauceBySlug = async function({ Slug }) {
     description: rows[0]["Sauces.Description"],
     created: rows[0]["Sauces.Created"],
     slug: rows[0]["Sauces.Slug"],
-    type: rows[0]["Sauces.Type"]
+    types: rows[0]["Sauces.Types"].split(",")
   };
 
   // Return Sauce
