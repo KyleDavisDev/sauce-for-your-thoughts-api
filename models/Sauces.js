@@ -5,6 +5,9 @@ const DB = require("../db/db.js");
 const TypesDB = require("./Types.js");
 const Sauces_Types = require("./Sauces_Types.js");
 
+// Constants
+const MAX_RELATED_COUNT = 5;
+
 exports.SaucesTableStructure = `CREATE TABLE IF NOT EXISTS Sauces (
   SauceID int NOT NULL AUTO_INCREMENT,
   UserID int NOT NULL,
@@ -147,7 +150,7 @@ exports.FindSauceBySlug = async function({ Slug }) {
     description: rows[0]["Sauces.Description"],
     created: rows[0]["Sauces.Created"],
     slug: rows[0]["Sauces.Slug"],
-    types: rows[0]["Sauces.Types"].split(",")
+    types: rows[0]["Sauces.Types"] ? rows[0]["Sauces.Types"].split(",") : null
   };
 
   // Return Sauce
@@ -168,4 +171,25 @@ exports.FindIDBySlug = async function({ Slug }) {
   }
 
   return rows[0].SauceID;
+};
+
+// Return related sauce names and slugs
+exports.FindRelated = async function({ Slug }) {
+  // TODO: Get related to slug but for now choose randomly
+  const rows = await DB.query(
+    `SELECT Name, Slug
+      FROM Sauces
+      WHERE IsActive = 1 AND IsPrivate = 0
+      ORDER BY RAND()
+      LIMIT ?`,
+    [MAX_RELATED_COUNT]
+  );
+
+  if (!rows) {
+    throw new Error(
+      "Could not find the appropriate information for this sauce. Please try again"
+    );
+  }
+
+  return rows;
 };
