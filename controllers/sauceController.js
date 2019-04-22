@@ -164,6 +164,26 @@ exports.getSauceBySlug = async (req, res, next) => {
   }
 };
 
+exports.getRelatedSauces = async (req, res, next) => {
+  try {
+    // Grab sauce
+    const { sauce } = req.body;
+
+    // Get few related sauces
+    const related = await Sauces.FindRelated({ Slug: sauce.slug });
+
+    //return to client
+    res.status(200).send({ isGood: true, sauce, related });
+  } catch (err) {
+    // Will be here is input failed a validator check
+    const data = {
+      isGood: false,
+      msg: "Could not find any related sauces."
+    };
+    return res.status(401).send(data);
+  }
+};
+
 // TODO Sanitize sauce _id before search DB for it.
 // exports.getSauceById = async (req, res, next) => {
 //   // make sure we have a sauce _id in req.body.sauce
