@@ -208,8 +208,8 @@ exports.getReviewsBySauceSlug = async (req, res, next) => {
     sauce.reviews = [];
     sauce.reviews = reviews;
 
-    // All is good if we made it here.
-    res.status(200).send({ isGood: true, sauce });
+    // Keep chuggin'
+    next();
   } catch (err) {
     console.log(err);
     const data = {
