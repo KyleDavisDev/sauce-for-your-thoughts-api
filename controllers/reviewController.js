@@ -178,14 +178,22 @@ exports.addReview = async (req, res, next) => {
   }
 };
 
-/** @description Get all reviews related to specific sauce _id
- *  @param {Object[]} req.body.sauce - sauce object
- *  @param {String[]} req.body.sauce.slug - unique sauce string
- *  @return array of reviews attached to each req.response.sauces[] object
+/** @description Get all reviews related to specific sauce slug.
+ *  @param {Object} req.body.sauce - sauce object
+ *  @param {Object} res.locals.sauce - sauce object
+ *  @return Attaches reviews to sauce.
  */
 exports.getReviewsBySauceSlug = async (req, res, next) => {
-  // Make sure Slug is in right place
-  if (!req.body.sauce || !req.body.sauce.slug) {
+  // Grab sauce from body
+  let { sauce } = req.body;
+
+  // If sauce isn't good, try reassigning.
+  if (!sauce || !sauce.slug) {
+    sauce = res.locals.sauce;
+  }
+
+  // If sauce still not good, send back.
+  if (!sauce || !sauce.slug) {
     const data = {
       isGood: false,
       msg:
@@ -195,8 +203,6 @@ exports.getReviewsBySauceSlug = async (req, res, next) => {
   }
 
   try {
-    // Grab sauce from body
-    const { sauce } = req.body;
     // Grab slug from sauce
     const { slug } = sauce;
     // Find SauceID from slug
@@ -208,8 +214,58 @@ exports.getReviewsBySauceSlug = async (req, res, next) => {
     sauce.reviews = [];
     sauce.reviews = reviews;
 
+    // Attach sauce to res.locals
+    res.locals.sauce = sauce;
+
     // Keep chuggin'
     next();
+  } catch (err) {
+    console.log(err);
+    const data = {
+      isGood: false,
+      msg:
+        "Error finding reviews. Make sure you have passed a legitimate slug and try again."
+    };
+    return res.status(400).send(data);
+  }
+};
+
+/** @description Get all reviews related to specific sauce slug.
+ *  @param {Object} req.body.sauce - sauce object
+ *  @param {Object} res.locals.sauce - sauce object
+ *  @return Attaches reviews to sauce.
+ */
+exports.getNewestReviews = async (req, res, next) => {
+  // Grab sauce from body
+  let { sauce } = req.body;
+
+  // If sauce isn't good, try reassigning.
+  if (!sauce || !sauce.slug) {
+    sauce = res.locals.sauce;
+  }
+
+  // If sauce still not good, send back.
+  if (!sauce || !sauce.slug) {
+    const data = {
+      isGood: false,
+      msg:
+        "We couldn't find a slug to look up the reviews. Make sure it's in the right place"
+    };
+    return res.status(300).send(data);
+  }
+
+  try {
+    // array of newest sauces
+    const newesetReviews = await Reviews.getNewestReviews();
+
+    // Attach newest to res.locals
+    res.locals.newesetReviews = newesetReviews;
+
+    // Keep going if there is another middleware
+    next();
+
+    //return to client
+    res.status(200).send({ isGood: true, sauce, newesetReviews });
   } catch (err) {
     console.log(err);
     const data = {
