@@ -177,7 +177,8 @@ exports.FindIDBySlug = async function({ Slug }) {
 exports.FindRelated = async function({ Slug }) {
   // TODO: Get related to slug but for now choose randomly
   const rows = await DB.query(
-    `SELECT Name, Slug
+    `SELECT Name AS name,
+     Slug AS slug
       FROM Sauces
       WHERE IsActive = 1 AND IsPrivate = 0
       ORDER BY RAND()
