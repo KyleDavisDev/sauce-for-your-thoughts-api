@@ -39,7 +39,8 @@ router.post(
   "/api/sauce/get/by/slug",
   sauceController.getSauceBySlug,
   reviewController.getReviewsBySauceSlug,
-  sauceController.getRelatedSauces
+  sauceController.getRelatedSauces,
+  reviewController.getNewestReviews
 );
 
 // // 1. Check mimetype of image and set req.body
