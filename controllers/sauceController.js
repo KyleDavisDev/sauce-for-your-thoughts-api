@@ -164,16 +164,44 @@ exports.getSauceBySlug = async (req, res, next) => {
   }
 };
 
+/** @description Get sauces related to a sauce.
+ *  @param {Object} req.body.sauce - sauce object
+ *  @param {Object} res.locals.sauce - sauce object
+ *  @return Attaches realted to sauce.
+ */
 exports.getRelatedSauces = async (req, res, next) => {
-  try {
-    // Grab sauce
-    const { sauce } = req.body;
+  // Grab sauce from body
+  let { sauce } = req.body;
 
+  // If sauce isn't good, try reassigning.
+  if (!sauce || !sauce.slug) {
+    sauce = res.locals.sauce;
+  }
+
+  // If sauce still not good, send back.
+  if (!sauce || !sauce.slug) {
+    const data = {
+      isGood: false,
+      msg:
+        "We couldn't find a slug to look up related sauces. Make sure it's in the right place"
+    };
+
+    // Maybe we still return what we found?
+    return res.status(300).send(data);
+  }
+
+  try {
     // Get few related sauces
     const related = await Sauces.FindRelated({ Slug: sauce.slug });
 
+    // Assign related to sauce obj.
+    sauce._related = related;
+
+    // This will take us to next middleware if there is one
+    next();
+
     //return to client
-    res.status(200).send({ isGood: true, sauce, related });
+    res.status(200).send({ isGood: true, sauce });
   } catch (err) {
     // Will be here is input failed a validator check
     const data = {
