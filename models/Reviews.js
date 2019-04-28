@@ -6,6 +6,7 @@ const DB = require("../db/db.js");
 
 // constants
 const HASH_LENGTH = 10;
+const NEWEST_REVIEWS_RETURN_COUNT = 6;
 
 exports.ReviewsTableStructure = `CREATE TABLE IF NOT EXISTS Reviews (
   SauceID int NOT NULL,
@@ -155,4 +156,20 @@ exports.FindReviewsBySauceID = async function({ SauceID }) {
   });
 
   return JSFriendlyArr;
+};
+
+exports.getNewestReviews = async function() {
+  const rows = await DB.query(
+    `SELECT OverallDescription, HashID 
+    FROM Reviews 
+    LIMIT ?`,
+    [NEWEST_REVIEWS_RETURN_COUNT]
+  );
+  console.log(rows);
+
+  if (!rows) {
+    throw new Error(
+      "Could not find any reviews for this sauce. Be the first to submit one!"
+    );
+  }
 };
