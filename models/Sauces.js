@@ -6,7 +6,8 @@ const TypesDB = require("./Types.js");
 const Sauces_Types = require("./Sauces_Types.js");
 
 // Constants
-const MAX_RELATED_COUNT = 5;
+const MAX_RELATED_COUNT = 5; // Number of 'related' sauces to return
+const MAX_NEW_REVIEW_COUNT = 6; // Number of sauces to return that have recently been reviewed
 
 exports.SaucesTableStructure = `CREATE TABLE IF NOT EXISTS Sauces (
   SauceID int NOT NULL AUTO_INCREMENT,
@@ -189,6 +190,27 @@ exports.FindRelated = async function({ Slug }) {
   if (!rows) {
     throw new Error(
       "Could not find the appropriate information for this sauce. Please try again"
+    );
+  }
+
+  return rows;
+};
+
+// Returns array of sauces that have had reviews recently added to them
+exports.getSaucesWithNewestReviews = async function() {
+  const rows = await DB.query(
+    `SELECT Sauces.Name AS name,
+     Sauces.Slug AS slug 
+    FROM Reviews 
+    LEFT JOIN Sauces ON Reviews.SauceID = Sauces.SauceID
+    ORDER BY Reviews.Created DESC
+    LIMIT ?`,
+    [MAX_NEW_REVIEW_COUNT]
+  );
+
+  if (!rows) {
+    throw new Error(
+      "Could not find any reviews for this sauce. Be the first to submit one!"
     );
   }
 
