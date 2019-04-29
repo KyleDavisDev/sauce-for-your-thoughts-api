@@ -197,11 +197,13 @@ exports.getRelatedSauces = async (req, res, next) => {
     // Assign related to sauce obj.
     sauce._related = related;
 
+    console.log("1");
     // This will take us to next middleware if there is one
-    next();
+    return next();
 
+    console.log("2");
     //return to client
-    res.status(200).send({ isGood: true, sauce });
+    return res.status(200).send({ isGood: true, sauce });
   } catch (err) {
     // Will be here is input failed a validator check
     const data = {
@@ -209,6 +211,58 @@ exports.getRelatedSauces = async (req, res, next) => {
       msg: "Could not find any related sauces."
     };
     return res.status(401).send(data);
+  }
+};
+
+/** @description Get all reviews related to specific sauce slug.
+ *  @param {Object} req.body.sauce - sauce object
+ *  @param {Object} res.locals.sauce - sauce object
+ *  @return Attaches reviews to sauce.
+ */
+exports.getSaucesWithNewestReviews = async (req, res, next) => {
+  // Grab sauce from body
+  let { sauce } = req.body;
+
+  // If sauce isn't good, try reassigning.
+  if (!sauce || !sauce.slug) {
+    sauce = res.locals.sauce;
+  }
+
+  // If sauce still not good, send back.
+  if (!sauce || !sauce.slug) {
+    const data = {
+      isGood: false,
+      msg:
+        "We couldn't find a slug to look up the reviews. Make sure it's in the right place"
+    };
+    return res.status(300).send(data);
+  }
+
+  try {
+    // array of newest sauces
+    const saucesWithNewestReviews = await Sauces.getSaucesWithNewestReviews();
+
+    // Attach newest to res.locals
+    res.locals.saucesWithNewestReviews = saucesWithNewestReviews;
+
+    console.log("3");
+    // Keep going if there is another middleware
+    next();
+
+    console.log("4");
+    // Send to client
+    return res
+      .status(200)
+      .send({ isGood: true, sauce, saucesWithNewestReviews });
+    console.log("5");
+  } catch (err) {
+    console.log(err);
+    const data = {
+      isGood: false,
+      msg:
+        "Error finding reviews. Make sure you have passed a legitimate slug and try again."
+    };
+    return res.status(400).send(data);
   }
 };
 
