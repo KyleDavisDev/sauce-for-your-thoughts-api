@@ -169,7 +169,8 @@ exports.getSauceBySlug = async (req, res, next) => {
  *  @param {Object} res.locals.sauce - sauce object
  *  @return Attaches realted to sauce.
  */
-exports.getRelatedSauces = async (req, res, next) => {
+// const getRelatedSauces =
+exports.getRelatedSauces = getRelatedSauces = async (req, res, next) => {
   // Grab sauce from body
   let { sauce } = req.body;
 
@@ -197,13 +198,24 @@ exports.getRelatedSauces = async (req, res, next) => {
     // Assign related to sauce obj.
     sauce._related = related;
 
-    console.log("1");
-    // This will take us to next middleware if there is one
-    return next();
+    // Find out if more middleware or if this is last stop.
+    const stack = req.route.stack;
+    let position = 0;
+    for (let i = 0, len = stack.length; i < len; i++) {
+      const middleware = stack[i];
+      if (middleware.name === "getRelatedSauces") {
+        position = i;
+        break;
+      }
+    }
 
-    console.log("2");
-    //return to client
-    return res.status(200).send({ isGood: true, sauce });
+    // If we are end of stack, go to client
+    if (position + 1 === stack.length) {
+      //return to client
+      return res.status(200).send({ isGood: true, sauce });
+    }
+    // Go to next middleware
+    return next();
   } catch (err) {
     // Will be here is input failed a validator check
     const data = {
@@ -219,7 +231,11 @@ exports.getRelatedSauces = async (req, res, next) => {
  *  @param {Object} res.locals.sauce - sauce object
  *  @return Attaches reviews to sauce.
  */
-exports.getSaucesWithNewestReviews = async (req, res, next) => {
+exports.getSaucesWithNewestReviews = getSaucesWithNewestReviews = async (
+  req,
+  res,
+  next
+) => {
   // Grab sauce from body
   let { sauce } = req.body;
 
@@ -245,16 +261,26 @@ exports.getSaucesWithNewestReviews = async (req, res, next) => {
     // Attach newest to res.locals
     res.locals.saucesWithNewestReviews = saucesWithNewestReviews;
 
-    console.log("3");
-    // Keep going if there is another middleware
-    next();
+    // Find out if more middleware or if this is last stop.
+    const stack = req.route.stack;
+    let position = 0;
+    for (let i = 0, len = stack.length; i < len; i++) {
+      const middleware = stack[i];
+      if (middleware.name === "getSaucesWithNewestReviews") {
+        position = i;
+        break;
+      }
+    }
 
-    console.log("4");
-    // Send to client
-    return res
-      .status(200)
-      .send({ isGood: true, sauce, saucesWithNewestReviews });
-    console.log("5");
+    // If we are end of stack, go to client
+    if (position + 1 === stack.length) {
+      // Send to client
+      return res
+        .status(200)
+        .send({ isGood: true, sauce, saucesWithNewestReviews });
+    }
+    // Go to next middleware
+    return next();
   } catch (err) {
     console.log(err);
     const data = {

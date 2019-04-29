@@ -183,7 +183,11 @@ exports.addReview = async (req, res, next) => {
  *  @param {Object} res.locals.sauce - sauce object
  *  @return Attaches reviews to sauce.
  */
-exports.getReviewsBySauceSlug = async (req, res, next) => {
+exports.getReviewsBySauceSlug = getReviewsBySauceSlug = async (
+  req,
+  res,
+  next
+) => {
   // Grab sauce from body
   let { sauce } = req.body;
 
@@ -217,8 +221,24 @@ exports.getReviewsBySauceSlug = async (req, res, next) => {
     // Attach sauce to res.locals
     res.locals.sauce = sauce;
 
-    // Keep chuggin'
-    next();
+    // Find out if more middleware or if this is last stop.
+    const stack = req.route.stack;
+    let position = 0;
+    for (let i = 0, len = stack.length; i < len; i++) {
+      const middleware = stack[i];
+      if (middleware.name === "getReviewsBySauceSlug") {
+        position = i;
+        break;
+      }
+    }
+
+    // If we are end of stack, go to client
+    if (position + 1 === stack.length) {
+      //return to client
+      return res.status(200).send({ isGood: true, sauce });
+    }
+    // Go to next middleware
+    return next();
   } catch (err) {
     console.log(err);
     const data = {
