@@ -230,53 +230,6 @@ exports.getReviewsBySauceSlug = async (req, res, next) => {
   }
 };
 
-/** @description Get all reviews related to specific sauce slug.
- *  @param {Object} req.body.sauce - sauce object
- *  @param {Object} res.locals.sauce - sauce object
- *  @return Attaches reviews to sauce.
- */
-exports.getNewestReviews = async (req, res, next) => {
-  // Grab sauce from body
-  let { sauce } = req.body;
-
-  // If sauce isn't good, try reassigning.
-  if (!sauce || !sauce.slug) {
-    sauce = res.locals.sauce;
-  }
-
-  // If sauce still not good, send back.
-  if (!sauce || !sauce.slug) {
-    const data = {
-      isGood: false,
-      msg:
-        "We couldn't find a slug to look up the reviews. Make sure it's in the right place"
-    };
-    return res.status(300).send(data);
-  }
-
-  try {
-    // array of newest sauces
-    const newesetReviews = await Reviews.getNewestReviews();
-
-    // Attach newest to res.locals
-    res.locals.newesetReviews = newesetReviews;
-
-    // Keep going if there is another middleware
-    next();
-
-    //return to client
-    res.status(200).send({ isGood: true, sauce, newesetReviews });
-  } catch (err) {
-    console.log(err);
-    const data = {
-      isGood: false,
-      msg:
-        "Error finding reviews. Make sure you have passed a legitimate slug and try again."
-    };
-    return res.status(400).send(data);
-  }
-};
-
 /** @description Get review _id's based on sauces[] _id
  *  @param {Object[]} req.response.sauces[] - array of sauce objects
  *  @param {String[]} req.response.sauces[]._id - unique sauce string
