@@ -1,7 +1,9 @@
 const Reviews = require("../models/Reviews.js");
 const Sauces = require("../models/Sauces.js");
 const validator = require("validator");
+const Utility = require("../utility/utility");
 
+// Constants
 const MAXLENGTH = 300;
 
 exports.validateReview = (req, res, next) => {
@@ -222,23 +224,19 @@ exports.getReviewsBySauceSlug = getReviewsBySauceSlug = async (
     res.locals.sauce = sauce;
 
     // Find out if more middleware or if this is last stop.
-    const stack = req.route.stack;
-    let position = 0;
-    for (let i = 0, len = stack.length; i < len; i++) {
-      const middleware = stack[i];
-      if (middleware.name === "getReviewsBySauceSlug") {
-        position = i;
-        break;
-      }
-    }
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "getReviewsBySauceSlug",
+      stack: req.route.stack
+    });
 
     // If we are end of stack, go to client
-    if (position + 1 === stack.length) {
+    if (isLastMiddlewareInStack) {
       //return to client
       return res.status(200).send({ isGood: true, sauce });
+    } else {
+      // Go to next middleware
+      return next();
     }
-    // Go to next middleware
-    return next();
   } catch (err) {
     console.log(err);
     const data = {
