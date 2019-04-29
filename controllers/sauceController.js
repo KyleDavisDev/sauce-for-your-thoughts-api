@@ -1,4 +1,5 @@
 const Sauces = require("../models/Sauces");
+const Utility = require("../utility/utility");
 
 // when using FormData, which is needed to upload image, all data gets turned into
 // string so we need to reformat to match model
@@ -199,23 +200,19 @@ exports.getRelatedSauces = getRelatedSauces = async (req, res, next) => {
     sauce._related = related;
 
     // Find out if more middleware or if this is last stop.
-    const stack = req.route.stack;
-    let position = 0;
-    for (let i = 0, len = stack.length; i < len; i++) {
-      const middleware = stack[i];
-      if (middleware.name === "getRelatedSauces") {
-        position = i;
-        break;
-      }
-    }
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "getRelatedSauces",
+      stack: req.route.stack
+    });
 
     // If we are end of stack, go to client
-    if (position + 1 === stack.length) {
+    if (isLastMiddlewareInStack) {
       //return to client
       return res.status(200).send({ isGood: true, sauce });
+    } else {
+      // Go to next middleware
+      return next();
     }
-    // Go to next middleware
-    return next();
   } catch (err) {
     // Will be here is input failed a validator check
     const data = {
@@ -262,25 +259,21 @@ exports.getSaucesWithNewestReviews = getSaucesWithNewestReviews = async (
     res.locals.saucesWithNewestReviews = saucesWithNewestReviews;
 
     // Find out if more middleware or if this is last stop.
-    const stack = req.route.stack;
-    let position = 0;
-    for (let i = 0, len = stack.length; i < len; i++) {
-      const middleware = stack[i];
-      if (middleware.name === "getSaucesWithNewestReviews") {
-        position = i;
-        break;
-      }
-    }
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "getSaucesWithNewestReviews",
+      stack: req.route.stack
+    });
 
     // If we are end of stack, go to client
-    if (position + 1 === stack.length) {
+    if (isLastMiddlewareInStack) {
       // Send to client
       return res
         .status(200)
         .send({ isGood: true, sauce, saucesWithNewestReviews });
+    } else {
+      // Go to next middleware
+      return next();
     }
-    // Go to next middleware
-    return next();
   } catch (err) {
     console.log(err);
     const data = {
