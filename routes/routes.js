@@ -59,7 +59,11 @@ router.post(
 
 // 1. Return array of sauce objects
 // (Note: will likely change from method get to method post soon)
-router.get("/api/sauces/getByQuery/?", sauceController.getByQuery);
+router.get(
+  "/api/sauces/getByQuery/?",
+  sauceController.validateQueryParams,
+  sauceController.getByQuery
+);
 
 // // 1. return sauces by specific tag
 // router.post("/api/sauces/get/by/tag/", sauceController.getSauceByTag);
