@@ -80,6 +80,15 @@ exports.validateQueryParams = async (req, res, next) => {
       res.locals.type = params.type.toLowerCase();
     }
 
+    // If order doesn't exist, we will assign
+    if (params.order) {
+      const order = params.order.toLowerCase();
+      // Assign res.locals
+      res.locals.order = order === "asc" || order === "desc" ? order : "asc";
+    } else {
+      res.locals.order = "asc";
+    }
+
     return next();
   } catch (err) {
     // Will be here is input failed a validator check
