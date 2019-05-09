@@ -275,7 +275,6 @@ exports.getSaucesWithNewestReviews = getSaucesWithNewestReviews = async (
       return next();
     }
   } catch (err) {
-    console.log(err);
     const data = {
       isGood: false,
       msg:
@@ -284,59 +283,6 @@ exports.getSaucesWithNewestReviews = getSaucesWithNewestReviews = async (
     return res.status(400).send(data);
   }
 };
-
-// TODO Sanitize sauce _id before search DB for it.
-// exports.getSauceById = async (req, res, next) => {
-//   // make sure we have a sauce _id in req.body.sauce
-//   if (
-//     !req.body.sauce ||
-//     Object.keys(req.body.sauce) === 0 ||
-//     !req.body.sauce._id
-//   ) {
-//     const data = {
-//       isGood: false,
-//       msg: "Requires sauce object. Please try again."
-//     };
-//     return res.status(300).send(data);
-//   }
-
-//   try {
-//     // search for sauce by id
-//     const sauce = await Sauce.findById(req.body.sauce._id, {
-//       _id: 1,
-//       name: 1,
-//       description: 1,
-//       photo: 1,
-//       tags: 1
-//     }).populate("author");
-
-//     // return if sauce isn't found
-//     if (!sauce) {
-//       const data = {
-//         isGood: false,
-//         msg: "This sauce was not found. Please try again."
-//       };
-//       return res.status(300).send(data);
-//     }
-
-//     // init req.response object
-//     if (req.response === undefined) req.response = {};
-
-//     // attach sauce object to our response object
-//     // call .toObject() to get rid of a bunch of mongoose stuff
-//     // array since next middleware expects array
-//     req.response.sauces = [sauce.toObject()];
-
-//     // go to reviewController.findReviewByUserID
-//     next();
-//   } catch (err) {
-//     const data = {
-//       isGood: false,
-//       msg: "Something broke or your sauce was unable to be found, Try again."
-//     };
-//     return res.send(data);
-//   }
-// };
 
 // exports.editSauce = async (req, res) => {
 //   try {
