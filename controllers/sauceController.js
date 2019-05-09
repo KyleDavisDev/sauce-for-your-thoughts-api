@@ -1,4 +1,5 @@
 const Sauces = require("../models/Sauces");
+const Types = require("../models/Types");
 const Utility = require("../utility/utility");
 
 // when using FormData, which is needed to upload image, all data gets turned into
@@ -41,6 +42,45 @@ exports.validateInsert = (req, res, next) => {
     });
 
     next();
+  } catch (err) {
+    // Will be here is input failed a validator check
+    const data = {
+      isGood: false,
+      msg: err.message
+    };
+    return res.status(401).send(data);
+  }
+};
+
+// Validate query params to make sure legit
+// Will assign res.locals as well
+exports.validateQueryParams = async (req, res, next) => {
+  try {
+    // Grab parameters
+    const params = req.query;
+    // Initialize res.locals
+    res.locals = {};
+
+    // If falsy or empty, keep going
+    if (!params || Object.keys(params).length === 0) {
+      return next();
+    }
+
+    // Grab available types and make lowercase
+    const types = await Types.FindTypes().then(result => {
+      return result.map(type => {
+        return type.toLowerCase();
+      });
+    });
+
+    // If param type not in our expected list, we will reassign type
+    if (params.type && !types.includes(params.type.toLowerCase())) {
+      res.locals.type = "all";
+    } else {
+      res.locals.type = params.type.toLowerCase();
+    }
+
+    return next();
   } catch (err) {
     // Will be here is input failed a validator check
     const data = {
@@ -320,50 +360,20 @@ exports.getSaucesWithNewestReviews = getSaucesWithNewestReviews = async (
 /** @description Grabs all available sauces and attaches to req.response.sauces
  *  @extends req.response - extrends/creates onto the custom 'global' object between middleware
  */
-// exports.getSauces = async (req, res, next) => {
-//   try {
-//     // Grab page and limit. Make sure they are numbers.
-//     const page = parseInt(req.query.page, 10);
-//     const limit = parseInt(req.query.limit, 10);
-//     if (Number.isNaN(page) || Number.isNaN(limit)) {
-//       const data = {
-//         isGood: false,
-//         msg: "Your search query was invalid. Try using numbers only."
-//       };
-//       return res.status(400).send(data);
-//     }
+exports.getByQuery = async (req, res, next) => {
+  try {
+    console.log(res.locals);
+    // Grab page and limit. Make sure they are numbers.
+    const page = parseInt(req.query.page, 10);
+    const limit = parseInt(req.query.limit, 10);
 
-//     // get all sauces within the given range (skip, limit)
-//     const sauces = await Sauce.find({ isActive: true }, { isActive: 0 })
-//       .skip(limit * (page - 1))
-//       .limit(limit)
-//       .populate({
-//         path: "author",
-//         select: "_id name"
-//       });
-
-//     // Get the total number of sauces w/o any range
-//     const total = await Sauce.count({ isActive: true });
-
-//     if (!sauces || sauces.length === 0) {
-//       const data = { isGood: false, msg: "Unable to find any sauces" };
-//       return res.status(400).send(data);
-//     }
-
-//     // init req.response if not already exists
-//     if (req.response === undefined) req.response = {};
-
-//     // attach sauces and total to req.response
-//     req.response.sauces = sauces;
-//     req.response.total = total;
-
-//     // go to reviewController.getOnlyReviewIDsBySauceID
-//     next();
-//   } catch (err) {
-//     const data = { isGood: false, msg: "Unable to find any sauces" };
-//     res.status(400).send(data);
-//   }
-// };
+    // return
+    res.status(200).send({ isGood: true });
+  } catch (err) {
+    const data = { isGood: false, msg: "Unable to find any sauces" };
+    res.status(400).send(data);
+  }
+};
 
 // TODO: Filter/sanitize user input
 // exports.searchSauces = async (req, res) => {
