@@ -6,8 +6,7 @@ const Utility = require("../utility/utility");
 const DEFAULT_QUERY_PAGE = 1;
 const DEFAULT_QUERY_LIMIT = 8;
 const DEFAULT_QUERY_TYPE = "all";
-const DEFAULT_QUERY_ORDER = "asc";
-const DEFAULT_QUERY_SORTBY = "newest";
+const DEFAULT_QUERY_ORDER = "newest";
 
 // when using FormData, which is needed to upload image, all data gets turned into
 // string so we need to reformat to match model
@@ -87,24 +86,14 @@ exports.validateQueryParams = async (req, res, next) => {
       res.locals.type = DEFAULT_QUERY_TYPE;
     }
 
-    // If order doesn't exist, we will assign
-    if (params.order) {
-      // grab order
-      const order = params.order.toLowerCase();
-
-      res.locals.order = order === "asc" || order === "desc" ? order : "asc";
+    // Maybe this will come from DB later?
+    // List of known order options
+    const orderOptions = ["name", "newest", "times_reviewed", "avg_rating"];
+    // If Sort By doesn't exist, assign it
+    if (params.order && orderOptions.includes(params.order.toLowerCase())) {
+      res.locals.order = params.order.toLowerCase();
     } else {
       res.locals.order = DEFAULT_QUERY_ORDER;
-    }
-
-    // Maybe this will come from DB later?
-    // List of known sortBy options
-    const sortByOptions = ["name", "newest", "times_reviewed", "avg_rating"];
-    // If Sort By doesn't exist, assign it
-    if (params.sortBy && sortByOptions.includes(params.sortBy.toLowerCase())) {
-      res.locals.sortBy = params.sortBy.toLowerCase();
-    } else {
-      res.locals.sortBy = DEFAULT_QUERY_SORTBY;
     }
 
     // Grab page. Make sure is number and greater than 0.
@@ -406,6 +395,19 @@ exports.getSaucesWithNewestReviews = getSaucesWithNewestReviews = async (
 exports.getByQuery = async (req, res, next) => {
   try {
     console.log(res.locals);
+
+    const params = res.locals;
+
+    // Construct our WHERE clause
+    const where = " ";
+    const orderBy = " ";
+    if (params.type !== "all") {
+      where += `Types.Value = ${params.type} `;
+    }
+
+    if (params.sortBy === "newest") {
+      order += "Sauces.Created ";
+    }
 
     // return
     res.status(200).send({ isGood: true });
