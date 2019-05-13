@@ -2,6 +2,13 @@ const Sauces = require("../models/Sauces");
 const Types = require("../models/Types");
 const Utility = require("../utility/utility");
 
+// constants
+const DEFAULT_QUERY_PAGE = 1;
+const DEFAULT_QUERY_LIMIT = 8;
+const DEFAULT_QUERY_TYPE = "all";
+const DEFAULT_QUERY_ORDER = "asc";
+const DEFAULT_QUERY_SORTBY = "newest";
+
 // when using FormData, which is needed to upload image, all data gets turned into
 // string so we need to reformat to match model
 exports.stringToProperType = (req, res, next) => {
@@ -77,7 +84,7 @@ exports.validateQueryParams = async (req, res, next) => {
     if (params.type && types.includes(params.type.toLowerCase())) {
       res.locals.type = params.type.toLowerCase();
     } else {
-      res.locals.type = "all";
+      res.locals.type = DEFAULT_QUERY_TYPE;
     }
 
     // If order doesn't exist, we will assign
@@ -87,7 +94,7 @@ exports.validateQueryParams = async (req, res, next) => {
 
       res.locals.order = order === "asc" || order === "desc" ? order : "asc";
     } else {
-      res.locals.order = "asc";
+      res.locals.order = DEFAULT_QUERY_ORDER;
     }
 
     // Maybe this will come from DB later?
@@ -97,7 +104,23 @@ exports.validateQueryParams = async (req, res, next) => {
     if (params.sortBy && sortByOptions.includes(params.sortBy.toLowerCase())) {
       res.locals.sortBy = params.sortBy.toLowerCase();
     } else {
-      res.locals.sortBy = "newest";
+      res.locals.sortBy = DEFAULT_QUERY_SORTBY;
+    }
+
+    // Grab page. Make sure is number and greater than 0.
+    const pg = parseInt(req.query.pg, 10);
+    if (pg !== NaN && pg > 0) {
+      res.locals.pg = pg;
+    } else {
+      res.locals.pg = DEFAULT_QUERY_PAGE;
+    }
+
+    // Grab limit. Make sure is number and greater than 0.
+    const lim = parseInt(req.query.lim, 10);
+    if (lim !== NaN && lim > 0) {
+      res.locals.lim = lim;
+    } else {
+      res.locals.lim = DEFAULT_QUERY_LIMIT;
     }
 
     return next();
@@ -383,9 +406,6 @@ exports.getSaucesWithNewestReviews = getSaucesWithNewestReviews = async (
 exports.getByQuery = async (req, res, next) => {
   try {
     console.log(res.locals);
-    // Grab page and limit. Make sure they are numbers.
-    const page = parseInt(req.query.page, 10);
-    const limit = parseInt(req.query.limit, 10);
 
     // return
     res.status(200).send({ isGood: true });
