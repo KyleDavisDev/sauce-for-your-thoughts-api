@@ -27,7 +27,7 @@ exports.validateReview = (req, res, next) => {
     ) {
       throw new Error("You must supply a complete overall review");
     }
-    if (!review.sauce || validator.isEmpty(review.sauce.slug)) {
+    if (!review.sauce || validator.isEmpty(review.sauce)) {
       throw new Error("You must tell us which sauce this is a review for");
     }
 
@@ -94,7 +94,7 @@ exports.validateReview = (req, res, next) => {
 
     // Push slug into req.body.sauce
     req.body.sauce = {};
-    req.body.sauce.slug = review.sauce.slug;
+    req.body.sauce.slug = review.sauce;
 
     // Keep goin!
     next();
