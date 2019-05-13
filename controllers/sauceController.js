@@ -73,20 +73,31 @@ exports.validateQueryParams = async (req, res, next) => {
       });
     });
 
-    // If param type not in our expected list, we will reassign type
-    if (params.type && !types.includes(params.type.toLowerCase())) {
-      res.locals.type = "all";
-    } else {
+    // If param type exists and is a known type
+    if (params.type && types.includes(params.type.toLowerCase())) {
       res.locals.type = params.type.toLowerCase();
+    } else {
+      res.locals.type = "all";
     }
 
     // If order doesn't exist, we will assign
     if (params.order) {
+      // grab order
       const order = params.order.toLowerCase();
-      // Assign res.locals
+
       res.locals.order = order === "asc" || order === "desc" ? order : "asc";
     } else {
       res.locals.order = "asc";
+    }
+
+    // Maybe this will come from DB later?
+    // List of known sortBy options
+    const sortByOptions = ["name", "newest", "times_reviewed", "avg_rating"];
+    // If Sort By doesn't exist, assign it
+    if (params.sortBy && sortByOptions.includes(params.sortBy.toLowerCase())) {
+      res.locals.sortBy = params.sortBy.toLowerCase();
+    } else {
+      res.locals.sortBy = "newest";
     }
 
     return next();
