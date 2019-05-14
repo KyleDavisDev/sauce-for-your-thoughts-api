@@ -240,6 +240,14 @@ exports.FindSaucesByQuery = async function({ params }) {
 
   query.limit = params.lim;
 
+  // Find the number of Sauce records
+  const numRecords = await DB.query("Select 1 FROM Sauces").then(res => {
+    return res.length;
+  });
+
+  // Get offset
+  query.offset = (Math.ceil(numRecords / params.lim) - 1) * params.pg;
+
   const rows = await DB.query(
     `SELECT DISTINCT Sauces.SauceID,
 		Sauces.Name,
@@ -254,8 +262,9 @@ exports.FindSaucesByQuery = async function({ params }) {
     WHERE ? AND Sauces.IsActive = 1
     GROUP BY Sauces.SauceID, Sauces.Name, Sauces.Description, Sauces.Maker, Sauces.Slug
     ORDER BY ?
-    LIMIT ?`,
-    [query.where, query.order, query.limit]
+    LIMIT ?
+    OFFSET ?`,
+    [query.where, query.order, query.limit, query.offset]
   );
 
   if (!rows) {
