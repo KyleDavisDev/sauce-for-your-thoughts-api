@@ -389,25 +389,16 @@ exports.getSaucesWithNewestReviews = getSaucesWithNewestReviews = async (
 //   }
 // };
 
-/** @description Grabs all available sauces and attaches to req.response.sauces
- *  @extends req.response - extrends/creates onto the custom 'global' object between middleware
+/** @description Get sauces by a query params
+ *  @param {Object} res.locals - local object to each request
+ *  @param {String} res.locals.type - type of sauce interested in
+ *  @param {String} res.locals.order - Which order to list the sauces
+ *  @param {Number} res.locals.pg - How many we should offset
+ *  @param {Number} res.locals.lim - sauce per page
  */
 exports.getByQuery = async (req, res, next) => {
   try {
-    console.log(res.locals);
-
-    const params = res.locals;
-
-    // Construct our WHERE clause
-    const where = " ";
-    const orderBy = " ";
-    if (params.type !== "all") {
-      where += `Types.Value = ${params.type} `;
-    }
-
-    if (params.sortBy === "newest") {
-      order += "Sauces.Created ";
-    }
+    const sauces = await Sauces.FindSaucesByQuery({ params: res.locals });
 
     // return
     res.status(200).send({ isGood: true });
