@@ -216,3 +216,53 @@ exports.getSaucesWithNewestReviews = async function() {
 
   return rows;
 };
+
+exports.FindSaucesByQuery = async function({ params }) {
+  // Init query obj
+  const query = {};
+  if (params.type === "all") {
+    query.where = "1=1";
+  } else {
+    query.where = `Types.Value LIKE '${params.type}'`;
+  }
+
+  switch (params.order) {
+    case "newest":
+      query.order += "Sauces.Created DESC";
+      break;
+    case "name":
+      query.order += "Sauces.Name ASC";
+      break;
+    case "times_reviewed":
+      query.order += "Sauces.Name ASC";
+      break;
+  }
+
+  query.limit = params.lim;
+
+  const rows = await DB.query(
+    `SELECT DISTINCT Sauces.SauceID,
+		Sauces.Name,
+    COUNT(Sauces.SauceID) as NumberOfReviews,
+	  Sauces.Description,
+    Sauces.Maker,
+    Sauces.Slug
+    FROM Sauces 
+    LEFT JOIN Sauces_Types ON Sauces_Types.SauceID = Sauces.SauceID
+    LEFT JOIN Types ON Sauces_Types.TypeID = Types.TypeID
+    LEFT JOIN Reviews ON Reviews.SauceID = Sauces.SauceID
+    WHERE ? AND Sauces.IsActive = 1
+    GROUP BY Sauces.SauceID, Sauces.Name, Sauces.Description, Sauces.Maker, Sauces.Slug
+    ORDER BY ?
+    LIMIT ?`,
+    [query.where, query.order, query.limit]
+  );
+
+  if (!rows) {
+    throw new Error(
+      "Could not find the appropriate information for this sauce. Please try again"
+    );
+  }
+
+  return rows[0].SauceID;
+};
