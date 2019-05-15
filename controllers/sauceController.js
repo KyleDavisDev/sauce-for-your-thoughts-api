@@ -99,17 +99,17 @@ exports.validateQueryParams = async (req, res, next) => {
     // Grab page. Make sure is number and greater than 0.
     const pg = parseInt(req.query.pg, 10);
     if (pg !== NaN && pg > 0) {
-      res.locals.pg = pg;
+      res.locals.page = pg;
     } else {
-      res.locals.pg = DEFAULT_QUERY_PAGE;
+      res.locals.page = DEFAULT_QUERY_PAGE;
     }
 
     // Grab limit. Make sure is number and greater than 0.
     const lim = parseInt(req.query.lim, 10);
     if (lim !== NaN && lim > 0) {
-      res.locals.lim = lim;
+      res.locals.limit = lim;
     } else {
-      res.locals.lim = DEFAULT_QUERY_LIMIT;
+      res.locals.limit = DEFAULT_QUERY_LIMIT;
     }
 
     return next();
@@ -403,6 +403,7 @@ exports.getByQuery = async (req, res, next) => {
     // return
     res.status(200).send({ isGood: true });
   } catch (err) {
+    console.log(err);
     const data = { isGood: false, msg: "Unable to find any sauces" };
     res.status(400).send(data);
   }
