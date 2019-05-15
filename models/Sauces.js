@@ -217,6 +217,16 @@ exports.getSaucesWithNewestReviews = async function() {
   return rows;
 };
 
+/** @description Grab set of sauces from DB
+ *  @param {Object} [params] - Object of possible params
+ *  @param {String} [params.type] - type of sauce to filter by
+ *  @param {String} [params.order] - How to order the returned array
+ *  @param {Object} [params.limit] - Object of possible params
+ *  @returns {Promise} Promise object that returns array of sauces
+ *  @resolves {Object[]} sauce - array of sauce objects w/ basic info
+ *
+ *  @reject {String} error message
+ */
 exports.FindSaucesByQuery = async function({ params }) {
   // Init query obj
   const query = {};
@@ -227,45 +237,63 @@ exports.FindSaucesByQuery = async function({ params }) {
   }
 
   switch (params.order) {
-    case "newest":
-      query.order += "Sauces.Created DESC";
-      break;
     case "name":
       query.order += "Sauces.Name ASC";
       break;
     case "times_reviewed":
-      query.order += "Sauces.Name ASC";
+      query.order += "NumberOfReviews DESC";
+      break;
+    case "newest":
+
+    default:
+      query.order += "Sauces.Created DESC";
       break;
   }
 
-  query.limit = params.lim;
+  // Number of records per page
+  query.limit = params.limit > 0 ? params.limit : 8;
 
   // Find the number of Sauce records
-  const numRecords = await DB.query("Select 1 FROM Sauces").then(res => {
+  const numRecords = await DB.query("Select COUNT(*) FROM Sauces").then(res => {
     return res.length;
   });
 
   // Get offset
   query.offset = (Math.ceil(numRecords / params.lim) - 1) * params.pg;
 
-  const rows = await DB.query(
-    `SELECT DISTINCT Sauces.SauceID,
-		Sauces.Name,
-    COUNT(Sauces.SauceID) as NumberOfReviews,
-	  Sauces.Description,
-    Sauces.Maker,
-    Sauces.Slug
-    FROM Sauces 
-    LEFT JOIN Sauces_Types ON Sauces_Types.SauceID = Sauces.SauceID
-    LEFT JOIN Types ON Sauces_Types.TypeID = Types.TypeID
-    LEFT JOIN Reviews ON Reviews.SauceID = Sauces.SauceID
-    WHERE ? AND Sauces.IsActive = 1
-    GROUP BY Sauces.SauceID, Sauces.Name, Sauces.Description, Sauces.Maker, Sauces.Slug
-    ORDER BY ?
-    LIMIT ?
-    OFFSET ?`,
-    [query.where, query.order, query.limit, query.offset]
-  );
+  // Abstract query out since we may need to use it a second time
+  query.query = `SELECT DISTINCT Sauces.SauceID,
+  Sauces.Name,
+  COUNT(Sauces.SauceID) as NumberOfReviews,
+  Sauces.Description,
+  Sauces.Maker,
+  Sauces.Slug
+  FROM Sauces 
+  LEFT JOIN Sauces_Types ON Sauces_Types.SauceID = Sauces.SauceID
+  LEFT JOIN Types ON Sauces_Types.TypeID = Types.TypeID
+  LEFT JOIN Reviews ON Reviews.SauceID = Sauces.SauceID
+  WHERE ? AND Sauces.IsActive = 1
+  GROUP BY Sauces.SauceID, Sauces.Name, Sauces.Description, Sauces.Maker, Sauces.Slug
+  ORDER BY ?
+  LIMIT ?
+  OFFSET ?`;
+
+  let rows = await DB.query(query.query, [
+    query.where,
+    query.order,
+    query.limit,
+    query.offset
+  ]);
+
+  // If nothing found, we will simply not offset and return from the 'beginning'
+  if (rows.length === 0) {
+    rows = await DB.query(query.query, [
+      query.where,
+      query.order,
+      query.limit,
+      0
+    ]);
+  }
 
   if (!rows) {
     throw new Error(
@@ -273,5 +301,5 @@ exports.FindSaucesByQuery = async function({ params }) {
     );
   }
 
-  return rows[0].SauceID;
+  return rows;
 };
