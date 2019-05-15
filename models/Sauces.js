@@ -259,7 +259,7 @@ exports.FindSaucesByQuery = async function({ params }) {
   });
 
   // Get offset
-  query.offset = (Math.ceil(numRecords / params.lim) - 1) * params.pg;
+  query.offset = (Math.ceil(numRecords / params.limit) - 1) * params.page;
 
   // Abstract query out since we may need to use it a second time
   query.query = `SELECT DISTINCT Sauces.SauceID,
