@@ -396,14 +396,27 @@ exports.getSaucesWithNewestReviews = getSaucesWithNewestReviews = async (
  *  @param {Number} res.locals.pg - How many we should offset
  *  @param {Number} res.locals.lim - sauce per page
  */
-exports.getByQuery = async (req, res, next) => {
+exports.getByQuery = getByQuery = async (req, res, next) => {
   try {
     const sauces = await Sauces.FindSaucesByQuery({ params: res.locals });
 
-    // return
-    res.status(200).send({ isGood: true });
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "getByQuery",
+      stack: req.route.stack
+    });
+
+    // If we are end of stack, go to client
+    if (isLastMiddlewareInStack) {
+      //return to client
+      return res.status(200).send({ isGood: true, sauces });
+    } else {
+      // Attach newest to res.locals
+      res.locals.sauces = sauces;
+      // Go to next middleware
+      return next();
+    }
   } catch (err) {
-    console.log(err);
     const data = { isGood: false, msg: "Unable to find any sauces" };
     res.status(400).send(data);
   }
