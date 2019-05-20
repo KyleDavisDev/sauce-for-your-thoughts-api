@@ -67,11 +67,6 @@ exports.validateQueryParams = async (req, res, next) => {
     // Initialize res.locals
     res.locals = {};
 
-    // If falsy or empty, keep going
-    if (!params || Object.keys(params).length === 0) {
-      return next();
-    }
-
     // Grab available types and make lowercase
     const types = await Types.FindTypes().then(result => {
       return result.map(type => {
@@ -417,6 +412,7 @@ exports.getByQuery = getByQuery = async (req, res, next) => {
       return next();
     }
   } catch (err) {
+    console.log(err);
     const data = { isGood: false, msg: "Unable to find any sauces" };
     res.status(400).send(data);
   }
