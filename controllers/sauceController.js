@@ -92,17 +92,17 @@ exports.validateQueryParams = async (req, res, next) => {
     }
 
     // Grab page. Make sure is number and greater than 0.
-    const pg = parseInt(req.query.pg, 10);
-    if (pg !== NaN && pg > 0) {
-      res.locals.page = pg;
+    const page = parseInt(req.query.page, 10);
+    if (page !== NaN && page > 0) {
+      res.locals.page = page;
     } else {
       res.locals.page = DEFAULT_QUERY_PAGE;
     }
 
     // Grab limit. Make sure is number and greater than 0.
-    const lim = parseInt(req.query.lim, 10);
-    if (lim !== NaN && lim > 0) {
-      res.locals.limit = lim;
+    const limit = parseInt(req.query.limit, 10);
+    if (limit !== NaN && limit > 0) {
+      res.locals.limit = limit;
     } else {
       res.locals.limit = DEFAULT_QUERY_LIMIT;
     }
@@ -388,8 +388,8 @@ exports.getSaucesWithNewestReviews = getSaucesWithNewestReviews = async (
  *  @param {Object} res.locals - local object to each request
  *  @param {String} res.locals.type - type of sauce interested in
  *  @param {String} res.locals.order - Which order to list the sauces
- *  @param {Number} res.locals.pg - How many we should offset
- *  @param {Number} res.locals.lim - sauce per page
+ *  @param {Number} res.locals.page - How many we should offset
+ *  @param {Number} res.locals.limit - sauce per page
  */
 exports.getByQuery = getByQuery = async (req, res, next) => {
   try {
