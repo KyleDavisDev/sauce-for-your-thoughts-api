@@ -262,12 +262,13 @@ exports.FindSaucesByQuery = async function({ params }) {
   query.offset = (Math.ceil(numRecords / params.limit) - 1) * params.page;
 
   // Abstract query out since we may need to use it a second time
-  query.query = `SELECT DISTINCT Sauces.SauceID,
-  Sauces.Name,
-  COUNT(Sauces.SauceID) as NumberOfReviews,
-  Sauces.Description,
-  Sauces.Maker,
-  Sauces.Slug
+  query.query = `SELECT DISTINCT Sauces.SauceID as sauceID,
+  Sauces.Name as name,
+  COUNT(Sauces.SauceID) as numberOfReviews,
+  Sauces.Description as description,
+  Sauces.Maker as maker,  
+  Sauces.Slug as slug,
+  Sauces.Photo as photo
   FROM Sauces 
   LEFT JOIN Sauces_Types ON Sauces_Types.SauceID = Sauces.SauceID
   LEFT JOIN Types ON Sauces_Types.TypeID = Types.TypeID
