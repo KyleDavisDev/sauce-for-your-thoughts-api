@@ -35,8 +35,9 @@ router.post(
 
 // // 1. Look up a sauce by unique slug
 // // 2. Add reviews to sauce that was found
-router.post(
-  "/api/sauce/get/by/slug",
+router.get(
+  "/api/sauce/get/by/slug/?",
+  sauceController.validateSlugParam,
   sauceController.getSauceBySlug,
   reviewController.getReviewsBySauceSlug,
   sauceController.getRelatedSauces,
