@@ -5,7 +5,7 @@ const validator = require("validator");
 
 // constants
 const DEFAULT_QUERY_PAGE = 1;
-const DEFAULT_QUERY_LIMIT = 8;
+const DEFAULT_QUERY_LIMIT = 12;
 const DEFAULT_QUERY_TYPE = "all";
 const DEFAULT_QUERY_ORDER = "newest";
 
