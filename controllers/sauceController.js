@@ -1,6 +1,7 @@
 const Sauces = require("../models/Sauces");
 const Types = require("../models/Types");
 const Utility = require("../utility/utility");
+const validator = require("validator");
 
 // constants
 const DEFAULT_QUERY_PAGE = 1;
@@ -48,6 +49,31 @@ exports.validateInsert = (req, res, next) => {
     });
 
     next();
+  } catch (err) {
+    // Will be here is input failed a validator check
+    const data = {
+      isGood: false,
+      msg: err.message
+    };
+    return res.status(401).send(data);
+  }
+};
+
+// Validate Slug param to make sure legit
+// Will assign res.locals as well
+exports.validateSlugParam = async (req, res, next) => {
+  try {
+    // Grab parameters
+    const params = req.query;
+    // Initialize res.locals
+    res.locals = {};
+
+    if (validator.isEmpty(params.s)) {
+      throw new Error("You must supply a sauce to look up.");
+    }
+    res.locals.slug = params.s;
+
+    return next();
   } catch (err) {
     // Will be here is input failed a validator check
     const data = {
@@ -193,20 +219,21 @@ exports.addSauce = async (req, res, next) => {
 };
 
 /** @description look up a specific sauce by the sauce's slug
- *  @param {String} req.body.sauce.slug - unique sauce string
+ *  @param {String} res.locals.slug - unique sauce string
  */
 exports.getSauceBySlug = async (req, res, next) => {
   try {
+    const { slug } = res.locals;
     // Make sure slug is in right place
-    if (!req.body.sauce || !req.body.sauce.slug) {
+    if (!slug || slug.length === 0) {
       const data = {
         isGood: false,
-        msg: "Unable find your sauce. Please verify slug is in proper place."
+        msg: "Unable find your sauce. Please verify you provided a slug."
       };
       return res.status(300).send(data);
     }
 
-    const Slug = req.body.sauce.slug;
+    const Slug = slug;
     const sauce = await Sauces.FindSauceBySlug({ Slug });
 
     // Make sure we found the sauce or else throw error
