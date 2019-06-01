@@ -262,9 +262,8 @@ exports.getSauceBySlug = async (req, res, next) => {
 /** @description Get sauces related to a sauce.
  *  @param {Object} req.body.sauce - sauce object
  *  @param {Object} res.locals.sauce - sauce object
- *  @return Attaches realted to sauce.
+ *  @return Attaches realated to sauce OR Returns res.locals w/ sauce
  */
-// const getRelatedSauces =
 exports.getRelatedSauces = getRelatedSauces = async (req, res, next) => {
   // Grab sauce from body
   let { sauce } = req.body;
@@ -302,7 +301,9 @@ exports.getRelatedSauces = getRelatedSauces = async (req, res, next) => {
     // If we are end of stack, go to client
     if (isLastMiddlewareInStack) {
       //return to client
-      return res.status(200).send({ isGood: true, sauce });
+      return res
+        .status(200)
+        .send(Object.assign({}, res.locals, { isGood: true, sauces }));
     } else {
       // Go to next middleware
       return next();
@@ -417,6 +418,7 @@ exports.getSaucesWithNewestReviews = getSaucesWithNewestReviews = async (
  *  @param {String} res.locals.order - Which order to list the sauces
  *  @param {Number} res.locals.page - How many we should offset
  *  @param {Number} res.locals.limit - sauce per page
+ *  @returns Attaches sauces to res.locals OR returns sauces w/ res.locals
  */
 exports.getByQuery = getByQuery = async (req, res, next) => {
   try {
@@ -431,10 +433,44 @@ exports.getByQuery = getByQuery = async (req, res, next) => {
     // If we are end of stack, go to client
     if (isLastMiddlewareInStack) {
       //return to client
-      return res.status(200).send({ isGood: true, sauces });
+      return res
+        .status(200)
+        .send(Object.assign({}, res.locals, { isGood: true, sauces }));
     } else {
       // Attach newest to res.locals
       res.locals.sauces = sauces;
+      // Go to next middleware
+      return next();
+    }
+  } catch (err) {
+    console.log(err);
+    const data = { isGood: false, msg: "Unable to find any sauces" };
+    res.status(400).send(data);
+  }
+};
+
+/** @description Get total count of sauces. Append to res.locals if middle
+ *  @returns Attaches count to res.locals OR returns count w/ res.locals
+ */
+exports.getTotal = getTotal = async (req, res, next) => {
+  try {
+    const count = await Sauces.FindTotal();
+
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "getTotal",
+      stack: req.route.stack
+    });
+
+    // If we are end of stack, go to client
+    if (isLastMiddlewareInStack) {
+      //return to client
+      return res
+        .status(200)
+        .send(Object.assign({}, res.locals, { isGood: true, count }));
+    } else {
+      // Attach newest to res.locals
+      res.locals.count = count;
       // Go to next middleware
       return next();
     }
