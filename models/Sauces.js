@@ -304,3 +304,23 @@ exports.FindSaucesByQuery = async function({ params }) {
 
   return rows;
 };
+
+// Returns array of sauces that have had reviews recently added to them
+exports.FindTotal = async function() {
+  const rows = await DB.query(
+    `SELECT COUNT(*) AS Count
+   FROM Sauces
+   WHERE IsActive=1 && IsPrivate = 0`,
+    [MAX_NEW_REVIEW_COUNT]
+  );
+  console.log(rows);
+
+  if (!rows) {
+    throw new Error(
+      "Could not find any sauce to count or something went wrong!"
+    );
+  }
+
+  // Return count or zero
+  return rows[0].Count ? rows[0].Count : 0;
+};
