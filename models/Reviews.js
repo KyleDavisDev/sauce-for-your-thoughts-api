@@ -156,3 +156,41 @@ exports.FindReviewsBySauceID = async function({ SauceID }) {
 
   return JSFriendlyArr;
 };
+
+exports.FindSingleReview = async function({ SauceID, UserID }) {
+  const row = await DB.query(
+    `SELECT Reviews.HashID AS "Reviews.HashID",
+  Reviews.LabelRating AS "Reviews.LabelRating",
+  Reviews.LabelDescription AS "Reviews.LabelDescription",
+  Reviews.AromaRating AS "Reviews.AromaRating",
+  Reviews.AromaDescription AS "Reviews.AromaDescription",
+  Reviews.TasteRating AS "Reviews.TasteRating",
+  Reviews.TasteDescription AS "Reviews.TasteDescription",
+  Reviews.HeatRating AS "Reviews.HeatRating",
+  Reviews.HeatDescription AS "Reviews.HeatDescription",
+  Reviews.OverallRating AS "Reviews.OverallRating",
+  Reviews.OverallDescription AS "Reviews.OverallDescription",
+  Reviews.Note AS "Reviews.Note",
+  Reviews.Created AS "Reviews.Created",
+  Users.DisplayName AS "Users.DisplayName",
+  Users.Created AS "Users.Created"
+  FROM Reviews
+  LEFT JOIN Users ON Reviews.UserID = Users.UserID
+  LEFT JOIN Sauces ON Reviews.SauceID = Sauces.SauceID
+  WHERE Reviews.IsActive = 1
+   AND Sauces.IsActive = 1
+   AND Sauces.IsPrivate = 0
+   AND Reviews.SauceID = ?
+   AND Reviews.UserID = ?`,
+    [SauceID, UserID]
+  );
+  console.log(row);
+
+  if (!row) {
+    throw new Error(
+      "Could not find any reviews for this sauce. Be the first to submit one!"
+    );
+  }
+
+  return row[0];
+};
