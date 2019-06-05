@@ -304,3 +304,67 @@ exports.getOnlyReviewIDsBySauceID = async (req, res, next) => {
     res.status(400).send(err);
   }
 };
+
+/** @description Check if user is eligible to add review or not
+ *  @extends res.locals attaches canUserSubmit to res.locals or returns with that message
+ *  @param {String} req.body.user.UserID - unique user string
+ *  @param {String} req.body.sauce.slug - unique sauce string
+ *
+ *  @return Attaches canUserSubmit to res.locals OR Returns res.locals w/ canUserSubmit
+ */
+exports.canUserSubmit = canUserSubmit = async (req, res, next) => {
+  try {
+    // get UserID and Slug
+    const { UserID } = req.body.user;
+    const { slug } = req.body.sauce;
+
+    // Find sauceID
+    const SauceID = await Sauces.FindIDBySlug({ Slug: slug });
+
+    // Find Review
+    const results = await Reviews.FindSingleReview({
+      SauceID,
+      UserID
+    });
+
+    console.log(results);
+
+    // make sure record is good
+    if (!results) {
+      const data = {
+        isGood: false,
+        msg: "Could save your review to the database."
+      };
+      return res.status(400).send(data);
+    }
+
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "canUserSubmit",
+      stack: req.route.stack
+    });
+
+    // If we are end of stack, go to client
+    if (isLastMiddlewareInStack) {
+      //return to client
+      return res.status(200).send(
+        Object.assign({}, res.locals, {
+          isGood: true,
+          canUserSubmit: results.length === 1
+        })
+      );
+    } else {
+      // Go to next middleware
+      return next();
+    }
+  } catch (err) {
+    console.log(err);
+    const data = {
+      isGood: false,
+      msg:
+        "There was an error in determing if the user can submit a review to this sauce. Make sure your query parameters are correct and try again.",
+      err
+    };
+    return res.status(400).send(data);
+  }
+};
