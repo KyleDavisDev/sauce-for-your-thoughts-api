@@ -135,15 +135,22 @@ router.post("/api/user/login", authController.login);
 //   authController.encodeID
 // );
 
-// // 1. Check if user.token is legit, place user's _id onto user
-// // 2. Decode all .id's if applicable
-// // 3. Add review to DB
-// // 4. Encode all .id's
+// 1. Check if user.token is legit, place user's _id onto user
+// 2. Make sure review has legit data
+// 3. Add review to DB
 router.post(
   "/api/review/add",
   authController.isLoggedIn,
   reviewController.validateReview,
   reviewController.addReview
+);
+
+// 1. Check if user.token is legit, place user's _id onto user
+// 2. Check if user can submit a specific review
+router.post(
+  "/api/review/canusersubmit",
+  authController.isLoggedIn,
+  reviewController.canUserSubmit
 );
 
 // // 1. Find user by email, send email if email is legit or not otherwise, set key and timer for person in DB
