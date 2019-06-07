@@ -141,6 +141,7 @@ router.post("/api/user/login", authController.login);
 router.post(
   "/api/review/add",
   authController.isLoggedIn,
+  reviewController.canUserSubmit,
   reviewController.validateReview,
   reviewController.addReview
 );
