@@ -134,11 +134,12 @@ exports.addReview = async (req, res, next) => {
   try {
     // Construct record object -- Bit messy since req.body has nested info and SQL obj is flat
     const { review } = req.body;
+    const { slug } = req.body.sauce;
 
     // save into DB
     const results = await Reviews.Insert({
       UserID: req.body.user.UserID,
-      SauceID: await Sauces.FindIDBySlug({ Slug: req.body.sauce.slug }),
+      SauceID: await Sauces.FindIDBySlug({ Slug: slug }),
       LabelRating: review.label.rating,
       LabelDescription: review.label.txt,
       AromaRating: review.aroma.rating,
@@ -314,9 +315,24 @@ exports.getOnlyReviewIDsBySauceID = async (req, res, next) => {
  */
 exports.canUserSubmit = canUserSubmit = async (req, res, next) => {
   try {
+    // console.log(req.body);
     // get UserID and Slug
     const { UserID } = req.body.user;
-    const { slug } = req.body.sauce;
+    let { slug } = req.body.sauce;
+    // If couldn't find slug on sauce, lets try in review
+    if (!slug) {
+      slug = req.body.review.slug;
+    }
+
+    // If still cant find a slug, end here.
+    if (!slug) {
+      const data = {
+        isGood: false,
+        msg:
+          "Could not find a slug withing your parameters, please make sure one is provided."
+      };
+      return res.status(400).send(data);
+    }
 
     // Find sauceID
     const SauceID = await Sauces.FindIDBySlug({ Slug: slug });
@@ -327,13 +343,11 @@ exports.canUserSubmit = canUserSubmit = async (req, res, next) => {
       UserID
     });
 
-    console.log(results);
-
     // make sure record is good
     if (!results) {
       const data = {
         isGood: false,
-        msg: "Could save your review to the database."
+        msg: "Could find your review."
       };
       return res.status(400).send(data);
     }
@@ -350,11 +364,16 @@ exports.canUserSubmit = canUserSubmit = async (req, res, next) => {
       return res.status(200).send(
         Object.assign({}, res.locals, {
           isGood: true,
-          canUserSubmit: results.length === 1
+          canUserSubmit: results.length === 1,
+          msg:
+            results.length === 1
+              ? "User can submit review."
+              : "Looks like you've already submitted a review for this sauce! Try editing your current review instead"
         })
       );
     } else {
       // Go to next middleware
+      res.locals.canUserSubmit = results.length === 1;
       return next();
     }
   } catch (err) {
