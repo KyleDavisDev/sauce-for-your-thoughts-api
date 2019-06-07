@@ -5,7 +5,7 @@ exports.SaucesTableStructure = `CREATE TABLE IF NOT EXISTS SauceMeta (
   SauceID int NOT NULL,
   MetaKey varchar(255) NOT NULL,
   MetaValue varchar(500),
-  PRIMARY KEY (SauceID),
+  PRIMARY KEY (MetaID),
   CONSTRAINT SaucesMeta_Sauces_SauceID FOREIGN KEY (SauceID) REFERENCES Sauces(SauceID)
   );`;
 
