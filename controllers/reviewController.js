@@ -343,15 +343,6 @@ exports.canUserSubmit = canUserSubmit = async (req, res, next) => {
       UserID
     });
 
-    // make sure record is good
-    if (!results) {
-      const data = {
-        isGood: false,
-        msg: "Could find your review."
-      };
-      return res.status(400).send(data);
-    }
-
     // Find out if more middleware or if this is last stop.
     const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
       name: "canUserSubmit",
@@ -364,16 +355,15 @@ exports.canUserSubmit = canUserSubmit = async (req, res, next) => {
       return res.status(200).send(
         Object.assign({}, res.locals, {
           isGood: true,
-          canUserSubmit: results.length === 1,
-          msg:
-            results.length === 1
-              ? "User can submit review."
-              : "Looks like you've already submitted a review for this sauce! Try editing your current review instead"
+          canUserSubmit: !!results,
+          msg: !!results
+            ? "User can submit review."
+            : "Looks like you've already submitted a review for this sauce! Try editing your current review instead"
         })
       );
     } else {
       // Go to next middleware
-      res.locals.canUserSubmit = results.length === 1;
+      res.locals.canUserSubmit = !!results;
       return next();
     }
   } catch (err) {
