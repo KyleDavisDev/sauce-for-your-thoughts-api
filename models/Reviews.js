@@ -3,6 +3,7 @@ const Hashids = require("hashids");
 require("dotenv").config({ path: "variables.env" });
 
 const DB = require("../db/db.js");
+const Sauces = require("../models/Sauces");
 
 // constants
 const HASH_LENGTH = 10;
@@ -87,6 +88,10 @@ exports.Insert = async function({
   if (!results) {
     throw new Error("Error saving review. Please try again.");
   }
+
+  // Increase sauce review count
+  const Slug = await Sauces.FindSlugByID({ SauceID });
+  await Sauces.ToggleReviewCount({ Slug, inc: true });
 
   return results;
 };
@@ -184,7 +189,6 @@ exports.FindSingleReview = async function({ SauceID, UserID }) {
    AND Reviews.UserID = ?`,
     [SauceID, UserID]
   );
-  console.log(row);
 
   if (!row) {
     throw new Error(
