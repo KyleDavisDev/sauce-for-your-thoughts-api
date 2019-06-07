@@ -172,7 +172,7 @@ exports.FindIDBySlug = async function({ Slug }) {
     );
   }
 
-  return rows[0].SauceID;
+  return rows[0] ? rows[0].SauceID : undefined;
 };
 
 // Return single Slug
@@ -330,7 +330,6 @@ exports.FindTotal = async function() {
    WHERE IsActive=1 && IsPrivate = 0`,
     [MAX_NEW_REVIEW_COUNT]
   );
-  console.log(rows);
 
   if (!rows) {
     throw new Error(
@@ -360,8 +359,6 @@ exports.ToggleReviewCount = async function({ Slug, inc }) {
       [Slug]
     );
   }
-
-  console.log(rows);
 
   if (!rows) {
     throw new Error(
