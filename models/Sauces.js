@@ -175,6 +175,22 @@ exports.FindIDBySlug = async function({ Slug }) {
   return rows[0].SauceID;
 };
 
+// Return single Slug
+exports.FindSlugByID = async function({ SauceID }) {
+  const rows = await DB.query(
+    "SELECT Slug from Sauces WHERE SauceID = ? AND IsActive = 1",
+    [SauceID]
+  );
+
+  if (!rows) {
+    throw new Error(
+      "Could not find the appropriate information for this sauce. Please try again"
+    );
+  }
+
+  return rows[0].Slug;
+};
+
 // Return related sauce names and slugs
 exports.FindRelated = async function({ Slug }) {
   // TODO: Get related to slug but for now choose randomly
@@ -324,4 +340,35 @@ exports.FindTotal = async function() {
 
   // Return count or zero
   return rows[0].Count ? rows[0].Count : 0;
+};
+
+// Inc or Dec review count
+exports.ToggleReviewCount = async function({ Slug, inc }) {
+  let rows;
+  if (inc) {
+    rows = await DB.query(
+      `UPDATE Sauces 
+     SET ReviewCount = ReviewCount + 1
+     WHERE Slug = ?`,
+      [Slug]
+    );
+  } else {
+    rows = await DB.query(
+      `UPDATE Sauces 
+     SET ReviewCount = ReviewCount - 1
+     WHERE Slug = ?`,
+      [Slug]
+    );
+  }
+
+  console.log(rows);
+
+  if (!rows) {
+    throw new Error(
+      "Could not find any sauce to count or something went wrong!"
+    );
+  }
+
+  // Return success
+  return true;
 };
