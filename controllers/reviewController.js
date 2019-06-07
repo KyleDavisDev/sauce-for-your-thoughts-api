@@ -337,6 +337,16 @@ exports.canUserSubmit = canUserSubmit = async (req, res, next) => {
     // Find sauceID
     const SauceID = await Sauces.FindIDBySlug({ Slug: slug });
 
+    // If still cant the SauceID, user has a bad slug
+    if (!slug) {
+      const data = {
+        isGood: false,
+        msg:
+          "Could not find any sauces with that slug, please make sure it's a valid slug and try again."
+      };
+      return res.status(400).send(data);
+    }
+
     // Find Review
     const results = await Reviews.FindSingleReview({
       SauceID,
@@ -355,15 +365,15 @@ exports.canUserSubmit = canUserSubmit = async (req, res, next) => {
       return res.status(200).send(
         Object.assign({}, res.locals, {
           isGood: true,
-          canUserSubmit: !!results,
-          msg: !!results
+          canUserSubmit: !results,
+          msg: !results
             ? "User can submit review."
             : "Looks like you've already submitted a review for this sauce! Try editing your current review instead"
         })
       );
     } else {
       // Go to next middleware
-      res.locals.canUserSubmit = !!results;
+      res.locals.canUserSubmit = !results;
       return next();
     }
   } catch (err) {
