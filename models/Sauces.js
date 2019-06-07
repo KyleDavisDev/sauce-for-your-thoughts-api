@@ -9,25 +9,26 @@ const Sauces_Types = require("./Sauces_Types.js");
 const MAX_RELATED_COUNT = 5; // Number of 'related' sauces to return
 const MAX_NEW_REVIEW_COUNT = 6; // Number of sauces to return that have recently been reviewed
 
-exports.SaucesTableStructure = `CREATE TABLE IF NOT EXISTS Sauces (
-  SauceID int NOT NULL AUTO_INCREMENT,
-  UserID int NOT NULL,
+exports.SaucesTableStructure = `CREATE TABLE Sauces (
+  SauceID int(11) NOT NULL AUTO_INCREMENT,
+  UserID int(11) NOT NULL,
   Name varchar(100) NOT NULL,
   Maker varchar(100) NOT NULL,
   Slug varchar(150) NOT NULL,
   Description varchar(300) NOT NULL,
   Created bigint(20) unsigned DEFAULT NULL,
-  Photo varchar(100),
-  Country varchar(100),
-  State varchar(100),
-  City varchar(100),
-  SHU varchar(20),
-  Ingredients varchar(300),
-  IsActive boolean DEFAULT '1',
-  IsPrivate boolean DEFAULT '0',
+  Photo varchar(100) DEFAULT NULL,
+  Country varchar(100) DEFAULT NULL,
+  State varchar(100) DEFAULT NULL,
+  City varchar(100) DEFAULT NULL,
+  SHU varchar(20) DEFAULT NULL,
+  Ingredients varchar(300) DEFAULT NULL,
+  IsActive tinyint(1) DEFAULT '1',
+  IsPrivate tinyint(1) NOT NULL DEFAULT '0',
+  ReviewCount int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (SauceID),
-  CONSTRAINT Sauces_Users_UserID FOREIGN KEY (UserID) REFERENCES Users(UserID)
-  );`;
+  KEY Sauces_Users_UserID (UserID)
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=latin1;`;
 
 exports.SaucesDrop = `ALTER TABLE Reviews DROP FOREIGN KEY Reviews_Sauces_SauceID;
   ALTER TABLE Sauces_Types DROP FOREIGN KEY Sauces_Types_Sauces_SauceID; 
