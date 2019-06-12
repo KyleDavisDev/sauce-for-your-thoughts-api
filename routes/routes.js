@@ -27,8 +27,9 @@ const imageController = require("../controllers/imageController.js");
 router.post(
   "/api/sauce/add",
   imageController.upload,
+  imageController.saveImage,
   authController.isLoggedIn,
-  imageController.resize,
+  // imageController.resize,
   sauceController.stringToProperType,
   sauceController.addSauce
 );
