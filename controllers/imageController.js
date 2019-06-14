@@ -41,14 +41,22 @@ exports.saveImage = async (req, res, next) => {
     dUri.format(".png", req.file.buffer);
 
     // Upload image
-    cloudinary.uploader.upload(dUri.content, function(err, img) {
-      // assign name to req.body
-      req.body.photo = img.secure_url;
+    cloudinary.uploader
+      .upload(dUri.content)
+      .then(img => {
+        // assign name to req.body
+        req.body.photo = img.secure_url;
 
-      // Keep going!
-      return next();
-    });
-    // console.log(test);
+        // Keep going!
+        return next();
+      })
+      .catch(function(err) {
+        console.log();
+        console.log("** File Upload (Promise)");
+        if (err) {
+          console.warn(err);
+        }
+      });
   } catch (err) {
     console.log(err);
   }
