@@ -33,9 +33,6 @@ exports.saveImage = async (req, res, next) => {
     next(); // go to next middleware
     return;
   }
-  // get file extension and generate unique name
-  const extension = req.file.mimetype.split("/")[1];
-  req.body.photo = `${uuid.v4()}.${extension}`;
 
   // upload photo
   try {
@@ -45,8 +42,11 @@ exports.saveImage = async (req, res, next) => {
 
     // Upload image
     cloudinary.uploader.upload(dUri.content, function(err, img) {
-      console.log("ERR: ", err);
-      console.log("IMG: ", img);
+      // assign name to req.body
+      req.body.photo = img.secure_url;
+
+      // Keep going!
+      return next();
     });
     // console.log(test);
   } catch (err) {
