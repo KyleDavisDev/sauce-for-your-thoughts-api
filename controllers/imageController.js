@@ -27,30 +27,6 @@ const multerOptions = {
 
 exports.upload = multer(multerOptions).single("image");
 
-// exports.resize = async (req, res, next) => {
-//   // check if new file to resize
-//   if (!req.file) {
-//     next(); // go to next middleware
-//     return;
-//   }
-//   // get file extension and generate unique name
-//   const extension = req.file.mimetype.split("/")[1];
-//   req.body.photo = `${uuid.v4()}.${extension}`;
-
-//   // resize photo
-//   try {
-//     const photo = await jimp.read(req.file.buffer);
-//     await photo.resize(800, jimp.AUTO);
-//     const dir = "./public/uploads";
-//     await photo.write(`${dir}/${req.body.photo}`); // Save point
-//     req.body.sauce.photo = req.file;
-//     next();
-//   } catch (err) {
-//     console.log(err);
-//     next({ message: "Image was unable to be saved" }, false);
-//   }
-// };
-
 exports.saveImage = async (req, res, next) => {
   // check if new file to resize
   if (!req.file) {
