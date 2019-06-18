@@ -1,10 +1,7 @@
 require("dotenv").config({ path: "variables.env" });
 const multer = require("multer"); // helps uploading images/files
-const jimp = require("jimp"); // helps with resizing photos
-const uuid = require("uuid"); // generated unique identifiers
-var fs = require("fs"); // file system
-var cloudinary = require("cloudinary").v2;
-const Datauri = require("datauri");
+var cloudinary = require("cloudinary").v2; // image hosting
+const Datauri = require("datauri"); // turn image buffer into something handleable
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
