@@ -379,6 +379,51 @@ exports.getSaucesWithNewestReviews = getSaucesWithNewestReviews = async (
   }
 };
 
+/** @description Find newly-added sauces
+ */
+exports.getSaucesByNewest = getSaucesByNewest = async (req, res, next) => {
+  try {
+    const saucesByNewest = await Sauces.FindSaucesByQuery({
+      params: { type: "all", order: "newest", limit: 6 }
+    });
+
+    // Make sure we found the sauces or else throw error
+    if (!saucesByNewest) {
+      throw new Error(
+        "Could not find any newly-added sauces. This is likely an error on our end. Please try again in a bit."
+      );
+    }
+
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "getSaucesByNewest",
+      stack: req.route.stack
+    });
+
+    // If we are end of stack, go to client
+    if (isLastMiddlewareInStack) {
+      // Send to client
+      return res
+        .status(200)
+        .send(Object.assign({}, res.locals, { isGood: true, saucesByNewest }));
+    } else {
+      // attach to res.locals
+      res.locals.saucesByNewest = saucesByNewest;
+      // Go to next middleware
+      return next();
+    }
+  } catch (err) {
+    console.log(err);
+    // Will be here is input failed a validator check
+    const data = {
+      isGood: false,
+      msg:
+        "There was an issue finding this sauce. Please verify the provided slug is valid."
+    };
+    return res.status(401).send(data);
+  }
+};
+
 // exports.editSauce = async (req, res) => {
 //   try {
 //     // generate new slug
