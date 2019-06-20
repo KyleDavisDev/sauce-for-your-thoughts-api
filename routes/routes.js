@@ -34,8 +34,11 @@ router.post(
   sauceController.addSauce
 );
 
-// // 1. Look up a sauce by unique slug
-// // 2. Add reviews to sauce that was found
+// 1. Make sure slug param is legit
+// 2. Find sauce by unique slug
+// 3. Find reviews related to sauce
+// 4. Find related sauces
+// 5. Find sauces w/ recently-added reviews
 router.get(
   "/api/sauce/get/by/slug/?",
   sauceController.validateSlugParam,
@@ -44,6 +47,9 @@ router.get(
   sauceController.getRelatedSauces,
   sauceController.getSaucesWithNewestReviews
 );
+
+// 1. Find newly-added sauces
+router.get("/api/sauces/get/by/newest", sauceController.getSaucesByNewest);
 
 // // 1. Check mimetype of image and set req.body
 // // 2. Verify if user is valid
