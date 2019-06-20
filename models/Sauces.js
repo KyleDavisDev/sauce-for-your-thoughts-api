@@ -238,7 +238,8 @@ exports.getSaucesWithNewestReviews = async function() {
  *  @param {Object} [params] - Object of possible params
  *  @param {String} [params.type] - type of sauce to filter by
  *  @param {String} [params.order] - How to order the returned array
- *  @param {Object} [params.limit] - Object of possible params
+ *  @param {Number?} [params.limit] - Number per page
+ *  @param {Number?} [params.page] - Which page
  *  @returns {Promise} Promise object that returns array of sauces
  *  @resolves {Object[]} sauce - array of sauce objects w/ basic info
  *
@@ -267,6 +268,16 @@ exports.FindSaucesByQuery = async function({ params }) {
       break;
   }
 
+  // set page if one wasn't passed
+  if (!params.page) {
+    params.page = 1;
+  }
+
+  // Set limit if one wasn't passed
+  if (!params.limit) {
+    params.limit = 8;
+  }
+
   // Number of records per page
   query.limit = params.limit > 0 ? params.limit : 8;
 
@@ -279,7 +290,7 @@ exports.FindSaucesByQuery = async function({ params }) {
   query.offset = (Math.ceil(numRecords / params.limit) - 1) * params.page;
 
   // Abstract query out since we may need to use it a second time
-  query.query = `SELECT DISTINCT Sauces.SauceID as sauceID,
+  query.query = `SELECT DISTINCT 
   Sauces.Name as name,
   COUNT(Sauces.SauceID) as numberOfReviews,
   Sauces.Description as description,
