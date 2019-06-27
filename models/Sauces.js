@@ -8,6 +8,7 @@ const Sauces_Types = require("./Sauces_Types.js");
 // Constants
 const MAX_RELATED_COUNT = 5; // Number of 'related' sauces to return
 const MAX_NEW_REVIEW_COUNT = 6; // Number of sauces to return that have recently been reviewed
+const MAX_FEATURED_COUNT = 10; // Number of 'featured' sauces
 
 exports.SaucesTableStructure = `CREATE TABLE Sauces (
   SauceID int(11) NOT NULL AUTO_INCREMENT,
@@ -198,7 +199,6 @@ exports.FindSlugByID = async function({ SauceID }) {
 /** @description Return related sauce names and slugs
  *
  */
-
 exports.FindRelated = async function({ Slug }) {
   // TODO: Get related to slug but for now choose randomly
   const rows = await DB.query(
@@ -255,6 +255,16 @@ exports.getSaucesWithNewestReviews = async function() {
  *  @reject {String} error message
  */
 exports.FindSaucesByQuery = async function({ params }) {
+  // set page if one wasn't passed
+  if (!params.page) {
+    params.page = 1;
+  }
+
+  // Set limit if one wasn't passed
+  if (!params.limit) {
+    params.limit = 8;
+  }
+
   // Init query obj
   const query = {};
   if (params.type === "all") {
@@ -275,16 +285,6 @@ exports.FindSaucesByQuery = async function({ params }) {
     default:
       query.order += "Sauces.Created DESC";
       break;
-  }
-
-  // set page if one wasn't passed
-  if (!params.page) {
-    params.page = 1;
-  }
-
-  // Set limit if one wasn't passed
-  if (!params.limit) {
-    params.limit = 8;
   }
 
   // Number of records per page
@@ -392,4 +392,36 @@ exports.ToggleReviewCount = async function({ Slug, inc }) {
 
   // Return success
   return true;
+};
+
+/** @description Find featured sauces
+ *
+ */
+exports.FindFeatured = async function() {
+  const rows = await DB.query(
+    `SELECT DISTINCT 
+  Sauces.Name as name,
+  COUNT(Sauces.SauceID) as numberOfReviews,
+  Sauces.Description as description,
+  Sauces.Maker as maker,  
+  Sauces.Slug as slug,
+  Sauces.Photo as photo
+  FROM Sauces 
+  LEFT JOIN Sauces_Types ON Sauces_Types.SauceID = Sauces.SauceID
+  LEFT JOIN Types ON Sauces_Types.TypeID = Types.TypeID
+  LEFT JOIN Reviews ON Reviews.SauceID = Sauces.SauceID
+  WHERE Sauces.IsActive = 1
+  GROUP BY Sauces.SauceID, Sauces.Name, Sauces.Description, Sauces.Maker, Sauces.Slug
+  ORDER BY RAND()
+  LIMIT ?`,
+    [MAX_FEATURED_COUNT]
+  );
+
+  if (!rows) {
+    throw new Error(
+      "Could not find the appropriate information for this sauce. Please try again"
+    );
+  }
+
+  return rows;
 };
