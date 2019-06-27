@@ -51,6 +51,9 @@ router.get(
 // 1. Find newly-added sauces
 router.get("/api/sauces/get/by/newest", sauceController.getSaucesByNewest);
 
+// 1. Find featured sauces
+router.get("/api/sauces/get/by/featured", sauceController.getSaucesByFeatured);
+
 // // 1. Check mimetype of image and set req.body
 // // 2. Verify if user is valid
 // // 3. Resize image and write to server
