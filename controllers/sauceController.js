@@ -379,12 +379,11 @@ exports.getSaucesWithNewestReviews = getSaucesWithNewestReviews = async (
   }
 };
 
-/** @description Find newly-added sauces
- */
+/** @description Find newly-added sauces */
 exports.getSaucesByNewest = getSaucesByNewest = async (req, res, next) => {
   try {
     const saucesByNewest = await Sauces.FindSaucesByQuery({
-      params: { type: "all", order: "newest", limit: 6 }
+      params: { type: "all", order: "newest", limit: 10 }
     });
 
     // Make sure we found the sauces or else throw error
@@ -419,6 +418,51 @@ exports.getSaucesByNewest = getSaucesByNewest = async (req, res, next) => {
       isGood: false,
       msg:
         "There was an issue finding this sauce. Please verify the provided slug is valid."
+    };
+    return res.status(401).send(data);
+  }
+};
+
+/** @description Find featured sauces */
+exports.getSaucesByFeatured = getSaucesByFeatured = async (req, res, next) => {
+  try {
+    const saucesByFeatured = await Sauces.FindSaucesByQuery({
+      params: { type: "all", order: "newest", limit: 10 }
+    });
+
+    // Make sure we found the sauces or else throw error
+    if (!saucesByFeatured) {
+      throw new Error(
+        "Could not find any featured sauces. This is likely an error on our end. Please try again in a bit."
+      );
+    }
+
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "getSaucesByFeatured",
+      stack: req.route.stack
+    });
+
+    // If we are end of stack, go to client
+    if (isLastMiddlewareInStack) {
+      // Send to client
+      return res
+        .status(200)
+        .send(
+          Object.assign({}, res.locals, { isGood: true, saucesByFeatured })
+        );
+    } else {
+      // attach to res.locals
+      res.locals.saucesByFeatured = saucesByFeatured;
+      // Go to next middleware
+      return next();
+    }
+  } catch (err) {
+    console.log(err);
+    // Will be here is input failed a validator check
+    const data = {
+      isGood: false,
+      msg: "There was an issue finding featured sauces."
     };
     return res.status(401).send(data);
   }
