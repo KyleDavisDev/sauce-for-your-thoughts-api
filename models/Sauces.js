@@ -105,7 +105,9 @@ exports.Insert = async function({
   return Slug;
 };
 
-// Returns Sauce object w/ Users DisplayName
+/** @description Returns Sauce object w/ Users DisplayName
+ *
+ */
 exports.FindSauceBySlug = async function({ Slug }) {
   const rows = await DB.query(
     `SELECT MAX(Sauces.Photo) AS "Sauces.Photo",
@@ -159,7 +161,7 @@ exports.FindSauceBySlug = async function({ Slug }) {
   return sauce;
 };
 
-// Return single SauceID
+/** @description Return single SauceID */
 exports.FindIDBySlug = async function({ Slug }) {
   const rows = await DB.query(
     "SELECT SauceID from Sauces WHERE Slug = ? AND IsActive = 1",
@@ -175,7 +177,9 @@ exports.FindIDBySlug = async function({ Slug }) {
   return rows[0] ? rows[0].SauceID : undefined;
 };
 
-// Return single Slug
+/** @description Return single Slug
+ *
+ */
 exports.FindSlugByID = async function({ SauceID }) {
   const rows = await DB.query(
     "SELECT Slug from Sauces WHERE SauceID = ? AND IsActive = 1",
@@ -191,7 +195,10 @@ exports.FindSlugByID = async function({ SauceID }) {
   return rows[0].Slug;
 };
 
-// Return related sauce names and slugs
+/** @description Return related sauce names and slugs
+ *
+ */
+
 exports.FindRelated = async function({ Slug }) {
   // TODO: Get related to slug but for now choose randomly
   const rows = await DB.query(
@@ -213,7 +220,9 @@ exports.FindRelated = async function({ Slug }) {
   return rows;
 };
 
-// Returns array of sauces that have had reviews recently added to them
+/** @description Returns array of sauces that have had reviews recently added to them
+ *
+ */
 exports.getSaucesWithNewestReviews = async function() {
   const rows = await DB.query(
     `SELECT Sauces.Name AS name,
@@ -333,7 +342,9 @@ exports.FindSaucesByQuery = async function({ params }) {
   return rows;
 };
 
-// Returns array of sauces that have had reviews recently added to them
+/** @description Returns array of sauces that have had reviews recently added to them
+ *
+ */
 exports.FindTotal = async function() {
   const rows = await DB.query(
     `SELECT COUNT(*) AS Count
@@ -352,7 +363,9 @@ exports.FindTotal = async function() {
   return rows[0].Count ? rows[0].Count : 0;
 };
 
-// Inc or Dec review count
+/** @description Inc or Dec review count
+ *
+ */
 exports.ToggleReviewCount = async function({ Slug, inc }) {
   let rows;
   if (inc) {
