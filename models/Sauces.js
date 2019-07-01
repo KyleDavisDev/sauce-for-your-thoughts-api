@@ -275,15 +275,15 @@ exports.FindSaucesByQuery = async function({ params }) {
 
   switch (params.order) {
     case "name":
-      query.order += "Sauces.Name ASC";
+      query.order = "Sauces.Name ASC";
       break;
     case "times_reviewed":
-      query.order += "NumberOfReviews DESC";
+      query.order = "NumberOfReviews DESC";
       break;
     case "newest":
 
     default:
-      query.order += "Sauces.Created DESC";
+      query.order = "Sauces.Created DESC";
       break;
   }
 
@@ -305,7 +305,8 @@ exports.FindSaucesByQuery = async function({ params }) {
   Sauces.Description as description,
   Sauces.Maker as maker,  
   Sauces.Slug as slug,
-  Sauces.Photo as photo
+  Sauces.Photo as photo,
+  Sauces.Created as created
   FROM Sauces 
   LEFT JOIN Sauces_Types ON Sauces_Types.SauceID = Sauces.SauceID
   LEFT JOIN Types ON Sauces_Types.TypeID = Types.TypeID
