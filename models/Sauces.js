@@ -301,7 +301,7 @@ exports.FindSaucesByQuery = async function({ params }) {
   // Abstract query out since we may need to use it a second time
   query.query = `SELECT DISTINCT 
   Sauces.Name as name,
-  COUNT(Sauces.SauceID) as numberOfReviews,
+  (select count(*) from Reviews where Reviews.SauceID = Sauces.SauceID) as numberOfReviews,
   Sauces.Description as description,
   Sauces.Maker as maker,  
   Sauces.Slug as slug,
@@ -313,25 +313,19 @@ exports.FindSaucesByQuery = async function({ params }) {
   LEFT JOIN Reviews ON Reviews.SauceID = Sauces.SauceID
   WHERE ? AND Sauces.IsActive = 1
   GROUP BY Sauces.SauceID, Sauces.Name, Sauces.Description, Sauces.Maker, Sauces.Slug
-  ORDER BY ?
+  ORDER BY ${query.order}
   LIMIT ?
   OFFSET ?`;
 
   let rows = await DB.query(query.query, [
     query.where,
-    query.order,
     query.limit,
     query.offset
   ]);
 
   // If nothing found, we will simply not offset and return from the 'beginning'
   if (rows.length === 0) {
-    rows = await DB.query(query.query, [
-      query.where,
-      query.order,
-      query.limit,
-      0
-    ]);
+    rows = await DB.query(query.query, [query.where, query.limit, 0]);
   }
 
   if (!rows) {
