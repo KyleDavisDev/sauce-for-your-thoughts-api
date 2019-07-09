@@ -225,7 +225,7 @@ exports.FindRelated = async function({ Slug }) {
  */
 exports.getSaucesWithNewestReviews = async function() {
   const rows = await DB.query(
-    `SELECT Sauces.Name AS name,
+    `SELECT DISTINCT Sauces.Name AS name,
      Sauces.Slug AS slug 
     FROM Reviews 
     LEFT JOIN Sauces ON Reviews.SauceID = Sauces.SauceID
