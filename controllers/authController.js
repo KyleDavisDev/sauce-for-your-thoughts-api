@@ -43,7 +43,10 @@ exports.login = async (req, res) => {
 
 exports.isLoggedIn = async (req, res, next) => {
   // confirm that we are passed a user.token to parse
-  if (!req.body.user || !req.body.user.token) {
+  if (req.body.user && req.body.user.token) {
+    // We are good and can continue to parse request
+  } else {
+    // Not good. Need to try to find token somewhere else or give error message
     // One last check: maybe we were passed a stringified object
     if (
       req.body.user !== undefined &&
