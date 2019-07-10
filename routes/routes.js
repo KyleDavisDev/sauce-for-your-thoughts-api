@@ -146,14 +146,25 @@ router.post("/api/user/login", authController.login);
 // );
 
 // 1. Check if user.token is legit, place user's _id onto user
-// 2. Make sure review has legit data
-// 3. Add review to DB
+// 2. See if user is eligible to submit review for sauce
+// 3. Make sure review has legit data
+// 4. Add review to DB
 router.post(
   "/api/review/add",
   authController.isLoggedIn,
   reviewController.canUserSubmit,
   reviewController.validateReview,
   reviewController.addReview
+);
+
+// 1. Check if user.token is legit, place user's _id onto user
+// 2. Make sure review has legit data
+// 3. Add review to DB
+router.post(
+  "/api/review/get",
+  authController.isLoggedIn,
+  reviewController.canUserSubmit,
+  reviewController.getReviewsBySauceSlug
 );
 
 // 1. Check if user.token is legit, place user's _id onto user
