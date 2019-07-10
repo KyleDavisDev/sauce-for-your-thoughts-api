@@ -214,8 +214,15 @@ exports.getReviewsBySauceSlug = getReviewsBySauceSlug = async (
     const { slug } = sauce;
     // Find SauceID from slug
     const SauceID = await Sauces.FindIDBySlug({ Slug: slug });
+
     // Find all reviews w/ SauceID
-    const reviews = await Reviews.FindReviewsBySauceID({ SauceID });
+    // If we are getting a single review, pass UserID too.
+    const reviews = await Reviews.FindReviewsBySauceID({
+      SauceID,
+      UserID: req.route.path.includes("/review/get")
+        ? res.locals.UserID
+        : undefined
+    });
 
     // Attach reviews to sauce obj
     sauce.reviews = [];
