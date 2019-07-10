@@ -97,7 +97,9 @@ exports.Insert = async function({
 };
 
 // Returns array of reviews w/ Users DisplayName
-exports.FindReviewsBySauceID = async function({ SauceID }) {
+exports.FindReviewsBySauceID = async function({ SauceID, UserID }) {
+  var matchUserID = UserID ? `User.UserID = ${UserID}` : "1=1";
+
   const rows = await DB.query(
     `SELECT Reviews.HashID AS "Reviews.HashID",
       Reviews.LabelRating AS "Reviews.LabelRating",
@@ -116,8 +118,8 @@ exports.FindReviewsBySauceID = async function({ SauceID }) {
       Users.Created AS "Users.Created"
       FROM Reviews
       JOIN Users ON Reviews.UserID = Users.UserID
-      WHERE Reviews.IsActive = 1 AND Reviews.SauceID = ?`,
-    [SauceID]
+      WHERE Reviews.IsActive = 1 AND Reviews.SauceID = ? AND ?`,
+    [SauceID, matchUserID]
   );
 
   if (!rows) {
