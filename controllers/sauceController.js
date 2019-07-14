@@ -126,7 +126,7 @@ exports.validateQueryParams = async (req, res, next) => {
     }
 
     // Grab limit. Make sure is number and greater than 0.
-    const limit = parseInt(req.query.limit, 10);
+    const limit = parseInt(req.query.lim, 10);
     if (limit !== NaN && limit > 0) {
       res.locals.limit = limit;
     } else {
