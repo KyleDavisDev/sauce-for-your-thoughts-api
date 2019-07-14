@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const Users = require("../models/Users");
+const Utility = require("../utility/utility");
 
 exports.login = async (req, res) => {
   // Quick sanity check
@@ -41,7 +42,7 @@ exports.login = async (req, res) => {
   }
 };
 
-exports.isLoggedIn = async (req, res, next) => {
+exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
   // confirm that we are passed a user.token to parse
   if (req.body.user && req.body.user.token) {
     // We are good and can continue to parse request
@@ -107,14 +108,30 @@ exports.isLoggedIn = async (req, res, next) => {
       return res.status(400).send(data);
     }
 
-    // remove token from user
-    delete req.body.user.token;
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "isLoggedIn",
+      stack: req.route.stack
+    });
 
-    // attach person UserID to body
-    req.body.user.UserID = user.UserID;
+    // If we are end of stack, go to client
+    if (isLastMiddlewareInStack) {
+      //return to client
+      return res
+        .status(200)
+        .send(
+          Object.assign({}, res.locals, { isGood: true, msg: "Found user." })
+        );
+    } else {
+      // remove token from user
+      delete req.body.user.token;
 
-    // user is legit
-    return next();
+      // attach user info onto req.body.user obj
+      req.body.user = { UserID: user.UserID };
+
+      // User is legit, go to next middleware
+      return next();
+    }
   } catch (err) {
     const data = {
       isGood: false,
@@ -242,7 +259,7 @@ exports.updatePassword = async (req, res, next) => {
   }
 };
 
-exports.validateToken = (req, res) => {
-  const data = { isGood: true, msg: "Found user." };
-  return res.status(200).send(data);
-};
+// exports.validateToken = (req, res) => {
+//   const data = { isGood: true, msg: "Found user." };
+//   return res.status(200).send(data);
+// };
