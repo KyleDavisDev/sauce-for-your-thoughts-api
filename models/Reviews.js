@@ -101,7 +101,7 @@ exports.FindReviewsBySauceID = async function({ SauceID, UserID }) {
   var matchUserID = UserID ? `User.UserID = ${UserID}` : "1=1";
 
   const rows = await DB.query(
-    `SELECT Reviews.HashID AS "Reviews.HashID",
+    `SELECT Reviews.HashID AS "Reviews.ReviewID",
       Reviews.LabelRating AS "Reviews.LabelRating",
       Reviews.LabelDescription AS "Reviews.LabelDescription",
       Reviews.AromaRating AS "Reviews.AromaRating",
@@ -131,7 +131,7 @@ exports.FindReviewsBySauceID = async function({ SauceID, UserID }) {
   // Turn the flat rows into a rows w/ nesting
   const JSFriendlyArr = rows.map(row => {
     return {
-      hashID: row["Reviews.HashID"],
+      reviewID: row["Reviews.ReviewID"],
       created: row["Reviews.Created"],
       author: {
         displayName: row["Users.DisplayName"],
@@ -166,7 +166,7 @@ exports.FindReviewsBySauceID = async function({ SauceID, UserID }) {
 
 exports.FindSingleReview = async function({ SauceID, UserID }) {
   const row = await DB.query(
-    `SELECT Reviews.HashID AS "Reviews.HashID",
+    `SELECT Reviews.HashID AS "Reviews.ReviewID",
   Reviews.LabelRating AS "Reviews.LabelRating",
   Reviews.LabelDescription AS "Reviews.LabelDescription",
   Reviews.AromaRating AS "Reviews.AromaRating",
