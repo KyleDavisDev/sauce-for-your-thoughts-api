@@ -56,8 +56,7 @@ exports.Insert = async function({
   // Need to first determine what the slug will be by
   // finding how many other sauces share same name
   const rows = await DB.query(
-    "SELECT COUNT(*) AS Count FROM Sauces WHERE Name LIKE '%?%'",
-    [trimmedName]
+    `SELECT COUNT(*) AS Count FROM Sauces WHERE Name LIKE '%${trimmedName}%'`
   );
 
   // If no other entires, then we can just slugify the name
