@@ -50,16 +50,14 @@ exports.Insert = async function({
   IsPrivate,
   Types
 }) {
-  // Make every first letter of name upper and rest lower
-  const nameToPascalCase = Name.replace(/\b\w+/g, function(s) {
-    return s.charAt(0).toUpperCase() + s.substr(1).toLowerCase();
-  });
+  // trim whitespace from name
+  const trimmedName = Name.trim();
 
   // Need to first determine what the slug will be by
   // finding how many other sauces share same name
   const rows = await DB.query(
-    "SELECT COUNT(*) AS Count FROM Sauces WHERE Name = ?",
-    [nameToPascalCase]
+    "SELECT COUNT(*) AS Count FROM Sauces WHERE Name LIKE '%?%'",
+    [trimmedName]
   );
 
   // If no other entires, then we can just slugify the name
@@ -67,13 +65,13 @@ exports.Insert = async function({
   // This will make each slug unique
   const Slug =
     rows[0].Count === 0
-      ? slug(nameToPascalCase)
-      : slug(nameToPascalCase) + "-" + (rows[0].Count + 1);
+      ? slug(trimmedName)
+      : slug(trimmedName) + "-" + (rows[0].Count + 1);
 
   // Finally create insert object
   const values = {
     UserID,
-    Name: nameToPascalCase,
+    Name: trimmedName,
     Maker,
     Description,
     Ingredients,
