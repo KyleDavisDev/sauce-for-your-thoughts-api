@@ -123,28 +123,6 @@ router.post("/api/user/login", authController.login);
 //   authController.validateToken
 // );
 
-// // 1. Validate user
-// // 2. Find user hearts
-// // 3. Encode _id's
-// router.post(
-//   "/api/user/getHearts",
-//   authController.isLoggedIn,
-//   userController.getHearts,
-//   authController.encodeID
-// );
-
-// // 1. Check is user.token is legit, place user's _id onto user
-// // 2. Decode all ._id's if applicable
-// // 3. Toggle sauce._id in user.hearts
-// // 4. Encode all ._id's
-// router.post(
-//   "/api/user/toggleSauce",
-//   authController.isLoggedIn,
-//   authController.decodeID,
-//   userController.toggleHeart,
-//   authController.encodeID
-// );
-
 // 1. Check if user.token is legit, place user's _id onto user
 // 2. See if user is eligible to submit review for sauce
 // 3. Make sure review has legit data
