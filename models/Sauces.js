@@ -1,5 +1,7 @@
 const moment = require("moment");
 const slug = require("slugs"); // Hi there! How are you! --> hi-there-how-are-you
+const Hashids = require("hashids");
+require("dotenv").config({ path: "variables.env" });
 
 const DB = require("../db/db.js");
 const TypesDB = require("./Types.js");
@@ -9,6 +11,7 @@ const Sauces_Types = require("./Sauces_Types.js");
 const MAX_RELATED_COUNT = 5; // Number of 'related' sauces to return
 const MAX_NEW_REVIEW_COUNT = 6; // Number of sauces to return that have recently been reviewed
 const MAX_FEATURED_COUNT = 10; // Number of 'featured' sauces
+const HASH_LENGTH = 10;
 
 exports.SaucesTableStructure = `CREATE TABLE Sauces (
   SauceID int(11) NOT NULL AUTO_INCREMENT,
@@ -70,20 +73,23 @@ exports.Insert = async function({
       ? slug(trimmedName)
       : slug(trimmedName) + "-" + (rows[0].Count + 1);
 
-  // If we had to do the concatinations above, we should check again to see
-  // if the newly assigned slug is unique
-  if (rows[0].Count === 0) {
-    // good and don't need to do anything
-  } else {
-    // try once more to create unique slug
-    rows = await DB.query(
-      "SELECT COUNT(*) AS Count FROM Sauces WHERE Slug = ?",
-      [Slug]
-    );
+  // Need to make sure that the new slugified value is not already taken
+  rows = await DB.query("SELECT COUNT(*) AS Count FROM Sauces WHERE Slug = ?", [
+    Slug
+  ]);
 
-    // Either keep Slug the same or concat "-" and count
-    // Possible that this too is a duplicate but chances are much lower at this point.
-    Slug = rows[0].Count === 0 ? Slug : Slug + "-" + (rows[0].Count + 1);
+  // Either keep Slug the same or concat "-" and a hashed value
+  if (rows[0].Count === 0) {
+    // We good and don't need to do anything
+  } else {
+    // Create unique salt
+    const salt = Slug + "." + process.env.SECRET;
+    // Generate algo w/ salt and set min length
+    const hashids = new Hashids(salt, HASH_LENGTH);
+    // Generate unique hash
+    const hash = hashids.encode(rows[0].Count);
+    // concat "-" and generated hash value
+    Slug = Slug + "-" + hash;
   }
 
   // Finally create insert object
@@ -199,7 +205,7 @@ exports.FindIDBySlug = async function({ Slug }) {
  */
 exports.FindSlugByID = async function({ SauceID }) {
   const rows = await DB.query(
-    "SELECT Slug from Sauces WHERE SauceID = ? AND IsActive = 1 AND AdminApproved = 1",
+    "SELECT Slug from Sauces WHERE SauceID = ? AND IsActive = 1",
     [SauceID]
   );
 
@@ -317,7 +323,7 @@ exports.FindSaucesByQuery = async function({ params }) {
   // Abstract query out since we may need to use it a second time
   query.query = `SELECT DISTINCT 
   Sauces.Name as name,
-  (select count(*) from Reviews where Reviews.SauceID = Sauces.SauceID) as numberOfReviews,
+  Sauces.ReviewCount as numberOfReviews,
   Sauces.Description as description,
   Sauces.Maker as maker,  
   Sauces.Slug as slug,
