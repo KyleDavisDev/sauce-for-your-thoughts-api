@@ -133,12 +133,29 @@ exports.validateReview = (req, res, next) => {
 exports.addReview = async (req, res, next) => {
   try {
     const { review } = req.body;
-    const { slug } = review;
+    let { slug } = review;
+
+    // if couldn't find slug or slug is bad, look to see if used the sauce verbiage instead
+    if (!slug) {
+      slug = review.sauce;
+
+      // Cannot find anything to work with. Reject call.
+      if (!slug) {
+        const data = {
+          isGood: false,
+          msg: "Could not find a sauce slug to work with. Please try again."
+        };
+        return res.status(400).send(data);
+      }
+    }
+
+    // Find the sauce's ID that we will be working with
+    const SauceID = await Sauces.FindIDBySlug({ Slug: slug });
 
     // save into DB
     const results = await Reviews.Insert({
       UserID: req.body.user.UserID,
-      SauceID: await Sauces.FindIDBySlug({ Slug: slug }),
+      SauceID,
       LabelRating: review.label.rating,
       LabelDescription: review.label.txt,
       AromaRating: review.aroma.rating,
@@ -169,7 +186,7 @@ exports.addReview = async (req, res, next) => {
     // Send back successful submission
     return res.status(200).send(data);
   } catch (err) {
-    console.log(err);
+    // console.log(err);
     const data = {
       isGood: false,
       msg:
