@@ -25,6 +25,7 @@ exports.SaucesTableStructure = `CREATE TABLE Sauces (
   SHU varchar(20) DEFAULT NULL,
   Ingredients varchar(300) DEFAULT NULL,
   IsActive tinyint(1) DEFAULT '1',
+  AdminApproved tinyint(1) DEFAULT '0',
   IsPrivate tinyint(1) NOT NULL DEFAULT '0',
   ReviewCount int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (SauceID),
@@ -55,17 +56,35 @@ exports.Insert = async function({
 
   // Need to first determine what the slug will be by
   // finding how many other sauces share same name
-  const rows = await DB.query(
-    `SELECT COUNT(*) AS Count FROM Sauces WHERE Name LIKE '%${trimmedName}%'`
+  let rows = await DB.query(
+    // `SELECT COUNT(*) AS Count FROM Sauces WHERE Name LIKE '%${trimmedName}%'`
+    "SELECT COUNT(*) AS Count FROM Sauces WHERE Name = ?",
+    [trimmedName]
   );
 
   // If no other entires, then we can just slugify the name
   // Otherwise we will concat "-" and add one to count
   // This will make each slug unique
-  const Slug =
+  let Slug =
     rows[0].Count === 0
       ? slug(trimmedName)
       : slug(trimmedName) + "-" + (rows[0].Count + 1);
+
+  // If we had to do the concatinations above, we should check again to see
+  // if the newly assigned slug is unique
+  if (rows[0].Count === 0) {
+    // good and don't need to do anything
+  } else {
+    // try once more to create unique slug
+    rows = await DB.query(
+      "SELECT COUNT(*) AS Count FROM Sauces WHERE Slug = ?",
+      [Slug]
+    );
+
+    // Either keep Slug the same or concat "-" and count
+    // Possible that this too is a duplicate but chances are much lower at this point.
+    Slug = rows[0].Count === 0 ? Slug : Slug + "-" + (rows[0].Count + 1);
+  }
 
   // Finally create insert object
   const values = {
@@ -180,7 +199,7 @@ exports.FindIDBySlug = async function({ Slug }) {
  */
 exports.FindSlugByID = async function({ SauceID }) {
   const rows = await DB.query(
-    "SELECT Slug from Sauces WHERE SauceID = ? AND IsActive = 1",
+    "SELECT Slug from Sauces WHERE SauceID = ? AND IsActive = 1 AND AdminApproved = 1",
     [SauceID]
   );
 
@@ -202,7 +221,7 @@ exports.FindRelated = async function({ Slug }) {
     `SELECT Name AS name,
      Slug AS slug
       FROM Sauces
-      WHERE IsActive = 1 AND IsPrivate = 0
+      WHERE IsActive = 1 AND AdminApproved = 1 AND IsPrivate = 0
       ORDER BY RAND()
       LIMIT ?`,
     [MAX_RELATED_COUNT]
@@ -308,7 +327,7 @@ exports.FindSaucesByQuery = async function({ params }) {
   LEFT JOIN Sauces_Types ON Sauces_Types.SauceID = Sauces.SauceID
   LEFT JOIN Types ON Sauces_Types.TypeID = Types.TypeID
   LEFT JOIN Reviews ON Reviews.SauceID = Sauces.SauceID
-  WHERE ? AND Sauces.IsActive = 1
+  WHERE ? AND Sauces.IsActive = 1 AND AdminApproved = 1
   GROUP BY Sauces.SauceID, Sauces.Name, Sauces.Description, Sauces.Maker, Sauces.Slug
   ORDER BY ${query.order}
   LIMIT ?
@@ -402,7 +421,7 @@ exports.FindFeatured = async function() {
   LEFT JOIN Sauces_Types ON Sauces_Types.SauceID = Sauces.SauceID
   LEFT JOIN Types ON Sauces_Types.TypeID = Types.TypeID
   LEFT JOIN Reviews ON Reviews.SauceID = Sauces.SauceID
-  WHERE Sauces.IsActive = 1
+  WHERE Sauces.IsActive = 1 AND AdminApproved = 1
   GROUP BY Sauces.SauceID, Sauces.Name, Sauces.Description, Sauces.Maker, Sauces.Slug
   ORDER BY RAND()
   LIMIT ?`,
