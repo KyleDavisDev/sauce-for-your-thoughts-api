@@ -116,12 +116,12 @@ router.post("/api/user/login", authController.login);
 //   userController.updateUser
 // );
 
-// // 1. Check is user.token is legit, place user's _id onto user
-// router.post(
-//   "/api/user/isloggedin",
-//   authController.isLoggedIn,
-//   authController.validateToken
-// );
+// 1. Check is user.token is legit, place user's _id onto user
+router.post(
+  "/api/user/isloggedin",
+  authController.isLoggedIn,
+  authController.validateToken
+);
 
 // 1. Check if user.token is legit, place user's _id onto user
 // 2. See if user is eligible to submit review for sauce
