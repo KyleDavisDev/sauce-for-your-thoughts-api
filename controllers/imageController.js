@@ -25,7 +25,7 @@ const multerOptions = {
 exports.upload = multer(multerOptions).single("image");
 
 exports.saveImage = async (req, res, next) => {
-  // check if new file to resize
+  // check if new file
   if (!req.file) {
     next(); // go to next middleware
     return;
