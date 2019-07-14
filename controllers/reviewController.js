@@ -132,9 +132,8 @@ exports.validateReview = (req, res, next) => {
  */
 exports.addReview = async (req, res, next) => {
   try {
-    // Construct record object -- Bit messy since req.body has nested info and SQL obj is flat
     const { review } = req.body;
-    const { slug } = req.body.sauce;
+    const { slug } = review;
 
     // save into DB
     const results = await Reviews.Insert({
