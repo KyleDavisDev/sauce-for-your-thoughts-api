@@ -322,7 +322,6 @@ exports.getOnlyReviewIDsBySauceID = async (req, res, next) => {
  */
 exports.canUserSubmit = canUserSubmit = async (req, res, next) => {
   try {
-    // console.log(req.body);
     // get UserID
     const { UserID } = req.body.user;
     // Try to grab slug off of sauce
