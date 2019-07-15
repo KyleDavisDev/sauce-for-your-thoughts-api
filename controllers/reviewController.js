@@ -197,6 +197,95 @@ exports.addReview = async (req, res, next) => {
   }
 };
 
+/** @description Edit review in DB
+ *  @extends req.response attaches review to req.response.sauce OR req.response if sauce doesn't exist
+ *  @param {String} req.body.user.UserID - unique user string
+ *  @param {String} req.body.sauce.slug - unique sauce string
+ *  @param {Object} req.body.review.taste - taste object
+ *    @param {String} req.body.review.taste.txt - txt of the taste
+ *    @param {Number} req.body.review.taste.rating - 1-10 value
+ *  @param {Object} req.body.review.aroma - aroma object
+ *    @param {String} req.body.review.aroma.txt - txt of the aroma
+ *    @param {Number} req.body.review.aroma.rating - 1-10 value
+ *  @param {Object} req.body.review.label - label object
+ *    @param {String} req.body.review.label.txt - txt of the label
+ *    @param {Number} req.body.review.label.rating - 1-10 value
+ *  @param {Object} req.body.review.heat - heat object
+ *    @param {String} req.body.review.heat.txt - txt of the heat
+ *    @param {Number} req.body.review.heat.rating - 1-10 value
+ *  @param {Object} req.body.review.overall - overall object
+ *    @param {String} req.body.review.overall.txt - txt of the overall
+ *    @param {Number} req.body.review.overall.rating - 1-10 value
+ *  @param {Object} req.body.review.note - note obj
+ *    @param {Object} req.body.review.note.txt - txt of anything extra
+ */
+exports.editReview = async (req, res, next) => {
+  try {
+    const { review } = req.body;
+    let { slug } = review;
+
+    // if couldn't find slug or slug is bad, look to see if used the sauce verbiage instead
+    if (!slug) {
+      slug = review.sauce;
+
+      // Cannot find anything to work with. Reject call.
+      if (!slug) {
+        const data = {
+          isGood: false,
+          msg: "Could not find a sauce slug to work with. Please try again."
+        };
+        return res.status(400).send(data);
+      }
+    }
+
+    // Find the sauce's ID that we will be working with
+    const SauceID = await Sauces.FindIDBySlug({ Slug: slug });
+
+    // save into DB
+    const results = await Reviews.Update({
+      UserID: req.body.user.UserID,
+      SauceID,
+      LabelRating: review.label.rating,
+      LabelDescription: review.label.txt,
+      AromaRating: review.aroma.rating,
+      AromaDescription: review.aroma.txt,
+      TasteRating: review.taste.rating,
+      TasteDescription: review.taste.txt,
+      HeatRating: review.heat.rating,
+      HeatDescription: review.heat.txt,
+      OverallRating: review.overall.rating,
+      OverallDescription: review.overall.txt,
+      Note: review.note.txt
+    });
+
+    // make sure record is good
+    if (!results) {
+      const data = {
+        isGood: false,
+        msg: "Could save your review to the database."
+      };
+      return res.status(400).send(data);
+    }
+
+    // construct return object
+    const data = {
+      isGood: true
+    };
+
+    // Send back successful submission
+    return res.status(200).send(data);
+  } catch (err) {
+    console.log(err);
+    const data = {
+      isGood: false,
+      msg:
+        "Could not save review. Make sure all fields are filled and try again.",
+      err
+    };
+    return res.status(400).send(data);
+  }
+};
+
 /** @description Get all reviews related to specific sauce slug.
  *  @param {Object} req.body.sauce - sauce object
  *  @param {Object} res.locals.sauce - sauce object
