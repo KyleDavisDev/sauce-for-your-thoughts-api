@@ -142,6 +142,16 @@ router.post(
 );
 
 // 1. Check if user.token is legit, place user's _id onto user
+// 2. Make sure review has legit data
+// 3. Edit an existing review
+router.post(
+  "/api/review/edit",
+  authController.isLoggedIn,
+  reviewController.canUserSubmit,
+  reviewController.editReview
+);
+
+// 1. Check if user.token is legit, place user's _id onto user
 // 2. Check if user can submit a specific review
 router.post(
   "/api/review/canusersubmit",
