@@ -96,6 +96,63 @@ exports.Insert = async function({
   return results;
 };
 
+// Returns insert results
+exports.Update = async function({
+  UserID,
+  SauceID,
+  LabelRating,
+  LabelDescription,
+  AromaRating,
+  AromaDescription,
+  TasteRating,
+  TasteDescription,
+  HeatRating,
+  HeatDescription,
+  OverallRating,
+  OverallDescription,
+  Note
+}) {
+  const res = await DB.query(
+    `UPDATE Reviews
+      SET
+        LabelRating = ?,
+        LabelDescription = ?,
+        AromaRating = ?,
+        AromaDescription = ?,
+        TasteRating = ?,
+        TasteDescription = ?,
+        HeatRating = ?,
+        HeatDescription = ?,
+        OverallRating = ?,
+        OverallDescription = ?,
+        Note = ?
+      WHERE
+        SauceID = ? AND UserID = ?`,
+    [
+      LabelRating,
+      LabelDescription,
+      AromaRating,
+      AromaDescription,
+      TasteRating,
+      TasteDescription,
+      HeatRating,
+      HeatDescription,
+      OverallRating,
+      OverallDescription,
+      Note,
+      SauceID,
+      UserID
+    ]
+  );
+
+  // Make sure review inserted
+  if (!res) {
+    throw new Error("Error saving review. Please try again.");
+  }
+
+  return res;
+};
+
 // Returns array of reviews w/ Users DisplayName
 exports.FindReviewsBySauceID = async function({ SauceID, UserID }) {
   var matchUserID = UserID ? `User.UserID = ${UserID}` : "1=1";
