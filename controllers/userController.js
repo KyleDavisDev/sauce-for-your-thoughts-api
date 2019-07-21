@@ -110,31 +110,13 @@ exports.register = async (req, res, next) => {
  *      @return {String} data.user.email - user email
  *      @return {String} data.user.name - user's name (first last)
  */
-// exports.getUser = async (req, res) => {
-//   try {
-//     // grab user _id
-//     const query = req.body.user._id;
-//     // find user
-//     const user = await User.findById(query, { _id: 1, email: 1, name: 1 });
-//     if (!user) {
-//       const data = {
-//         isGood: false,
-//         msg: "Unable to find user. Please try again."
-//       };
-//       return res.status(401).send(data);
-//     }
-
-//     // construct return object
-//     const data = {
-//       isGood: true,
-//       data: { user: { _id: user._id, name: user.name, email: user.email } },
-//       msg: "Successfully found user."
-//     };
-//     return res.status(200).send(data);
-//   } catch (err) {
-//     console.log(err);
-//   }
-// };
+exports.getInfo = async (req, res) => {
+  try {
+    console.log(req.body);
+  } catch (err) {
+    console.log(err);
+  }
+};
 
 // TODO: Sanity check for params
 /** @description update specifc user with new name and email
