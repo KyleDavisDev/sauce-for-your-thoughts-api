@@ -13,23 +13,19 @@ const imageController = require("../controllers/imageController.js");
 // APIs here -----
 
 // Sauce(s)
+
 // upload must be called first for post that are "multipart/form-data"
 // multer will put data object onto req.body like normal
-
 // 1. Check mimetype of image and set req.body
-// 2. Verify user.token, attach _id to user
-// 3. Decode all _id's if applicable
-// 4. Resize image and save to server
-// 5. Convert req.body data to be proper format for DB
-// 6. Save sauce to DB
-// 7. Save review to DB
-// 8. Encode _id's
+// 2. Save image
+// 3. Verify user.token, attach UserID to user
+// 4. Convert req.body data to be proper format for DB
+// 5. Save sauce to DB
 router.post(
   "/api/sauce/add",
   imageController.upload,
   imageController.saveImage,
   authController.isLoggedIn,
-  // imageController.resize,
   sauceController.stringToProperType,
   sauceController.addSauce
 );
