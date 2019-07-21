@@ -42,6 +42,7 @@ exports.login = async (req, res) => {
   }
 };
 
+// Looks at req.body.user.token first then tries to unstringify res.body.user in search for token
 exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
   // confirm that we are passed a user.token to parse
   if (req.body.user && req.body.user.token) {
