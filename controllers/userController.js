@@ -112,7 +112,20 @@ exports.register = async (req, res, next) => {
  */
 exports.getInfo = async (req, res) => {
   try {
-    console.log(req.body);
+    // Get user's ID and make sure we have something
+    const { UserID } = req.body.user;
+    if (!UserID) {
+      const data = {
+        isGood: false,
+        msg: "Could not verify user as legit. Please log out and try again."
+      };
+      return res.status(400).send(data);
+    }
+    // See who we are looking for specifically. This could be undefinded/null
+    const { displayName } = req.body;
+
+    const users = await User.FindByDisplayName({ displayName, UserID });
+    res.status(200).send({ isGood: true, users });
   } catch (err) {
     console.log(err);
   }
