@@ -55,7 +55,7 @@ exports.Insert = async function({ Email, Password, DisplayName }) {
 exports.DoesUserExist = async function({ UserID }) {
   const rows = await DB.query(
     `SELECT 
-      COUNT(*) AS Exists
+      COUNT(*) AS UserExists
     FROM
       Users
     WHERE
@@ -64,7 +64,7 @@ exports.DoesUserExist = async function({ UserID }) {
   );
 
   // Return boolean if user exists
-  return rows && rows[0] && rows[0].Exists === 1;
+  return rows && rows[0] && rows[0].UserExists === 1;
 };
 
 exports.getAll = function(cb) {
@@ -163,7 +163,7 @@ exports.IncLoginAttempts = async function({ UserID, LoginAttempts }) {
 
 exports.FindByDisplayName = async function({ displayName, UserID }) {
   // First let's see if our UserID is an admin or not
-  const isAdmin = UserID && Users.IsAdmin({ UserID });
+  const isAdmin = UserID && module.exports.IsAdmin({ UserID });
 
   // If admin, allow to search for any displayName or all users
   if (isAdmin) {
