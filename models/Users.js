@@ -155,3 +155,57 @@ exports.IncLoginAttempts = async function({ UserID, LoginAttempts }) {
     [UserID]
   );
 };
+
+exports.FindByDisplayName = async function({ displayName, UserID }) {
+  // First let's see if our UserID is an admin or not
+  const tmp = await DB.query(
+    `SELECT 
+      COUNT(*) as IsAdmin
+      FROM UserRole
+      JOIN Roles
+        ON Roles.RoleID = UserRole.RoleID
+      JOIN Users
+        ON Users.UserID = UserRole.UserID
+     WHERE
+      Roles.Name = 'admin' AND
+      Users.UserID = ?
+    `,
+    [UserID]
+  );
+  const isAdmin = tmp[0] && tmp[0].IsAdmin === 1;
+
+  // If admin, allow to search for any displayName or all users
+  if (isAdmin) {
+    if (displayName) {
+      const rows = await DB.query(
+        "SELECT Email, DisplayName FROM Users where displayName = ?",
+        [displayName]
+      );
+
+      // If error
+      if (!rows || !rows[0]) {
+        throw new Error("Invalid displayName.");
+      }
+
+      // return results
+      return rows[0];
+    } else {
+      // Find all
+      const rows = await DB.query("SELECT Email, DisplayName FROM Users ");
+
+      return rows;
+    }
+  }
+
+  // If not an admin, only return matching UserID
+  const rows = await DB.query(
+    "SELECT Email, DisplayName FROM Users where UserID = ?",
+    [UserID]
+  );
+
+  // If error
+  if (!rows || !rows[0]) {
+    throw new Error("Invalid displayName.");
+  }
+  return rows[0];
+};
