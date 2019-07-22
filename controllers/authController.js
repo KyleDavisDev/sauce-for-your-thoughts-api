@@ -99,7 +99,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
     const userId = decoded.sub;
 
     // check if a user exists
-    const user = await Users.FindByID({ UserID: userId });
+    const user = await Users.DoesUserExist({ UserID: userId });
 
     if (!user) {
       const data = {
@@ -128,7 +128,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
       delete req.body.user.token;
 
       // attach user info onto req.body.user obj
-      req.body.user = { UserID: user.UserID };
+      req.body.user = { UserID: userId };
 
       // User is legit, go to next middleware
       return next();
