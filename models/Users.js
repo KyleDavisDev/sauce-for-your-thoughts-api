@@ -51,15 +51,20 @@ exports.Insert = async function({ Email, Password, DisplayName }) {
   return results;
 };
 
-// Returns user
-exports.FindByID = async function({ UserID }) {
+// Returns bool
+exports.DoesUserExist = async function({ UserID }) {
   const rows = await DB.query(
-    "SELECT Email, DisplayName, UserID FROM Users WHERE UserID = ? AND IsActive = 1",
+    `SELECT 
+      COUNT(*) AS Exists
+    FROM
+      Users
+    WHERE
+      UserID = ? AND IsActive = 1`,
     [UserID]
   );
 
-  // Return user
-  return rows[0];
+  // Return boolean if user exists
+  return rows && rows[0] && rows[0].Exists === 1;
 };
 
 exports.getAll = function(cb) {
@@ -158,21 +163,7 @@ exports.IncLoginAttempts = async function({ UserID, LoginAttempts }) {
 
 exports.FindByDisplayName = async function({ displayName, UserID }) {
   // First let's see if our UserID is an admin or not
-  const tmp = await DB.query(
-    `SELECT 
-      COUNT(*) as IsAdmin
-      FROM UserRole
-      JOIN Roles
-        ON Roles.RoleID = UserRole.RoleID
-      JOIN Users
-        ON Users.UserID = UserRole.UserID
-     WHERE
-      Roles.Name = 'admin' AND
-      Users.UserID = ?
-    `,
-    [UserID]
-  );
-  const isAdmin = tmp[0] && tmp[0].IsAdmin === 1;
+  const isAdmin = UserID && Users.IsAdmin({ UserID });
 
   // If admin, allow to search for any displayName or all users
   if (isAdmin) {
@@ -208,4 +199,23 @@ exports.FindByDisplayName = async function({ displayName, UserID }) {
     throw new Error("Invalid displayName.");
   }
   return rows[0];
+};
+
+exports.IsAdmin = async function({ UserID }) {
+  const tmp = await DB.query(
+    `SELECT 
+      COUNT(*) as IsAdmin
+      FROM UserRole
+      JOIN Roles
+        ON Roles.RoleID = UserRole.RoleID
+      JOIN Users
+        ON Users.UserID = UserRole.UserID
+     WHERE
+      Roles.Name = 'admin' AND
+      Users.UserID = ?
+    `,
+    [UserID]
+  );
+
+  return tmp[0] && tmp[0].IsAdmin === 1;
 };
