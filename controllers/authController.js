@@ -128,7 +128,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
       delete req.body.user.token;
 
       // attach user info onto req.body.user obj
-      req.body.user = { UserID: userId };
+      req.body.user = { ...req.body.user, UserID: userId };
 
       // User is legit, go to next middleware
       return next();
