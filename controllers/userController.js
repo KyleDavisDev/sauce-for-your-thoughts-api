@@ -1,7 +1,6 @@
-// const mongoose = require("mongoose");
-// const User = mongoose.model("User");
 const User = require("../models/Users");
 const validator = require("validator");
+const Utility = require("../utility/utility");
 const Hashids = require("hashids");
 const hashids = new Hashids();
 
@@ -69,6 +68,38 @@ exports.validateRegister = (req, res, next) => {
   }
 };
 
+exports.validateEmailUpdate = async (req, res, next) => {
+  // Make sure emails match
+  if (!validator.equals(req.body.user.email, req.body.user.confirmEmail)) {
+    throw new Error("Emails do not match. Please try again.");
+  }
+
+  // Sanitize user's email
+  req.body.user.email = validator.normalizeEmail(req.body.user.email, {
+    all_lowercase: true,
+    gmail_remove_dots: false,
+    gmail_remove_subaddress: false
+  });
+
+  try {
+    const { email, password, UserID } = req.body.user;
+    // Make sure passed password is good
+    const user = await User.AuthenticateUser({ UserID, password });
+
+    // Keep going
+    return next();
+  } catch (err) {
+    if (err.code === "ECONNREFUSED") {
+      err.message = "Connection error. Please try again";
+    }
+    const data = {
+      isGood: false,
+      msg: err.message || "Connection error. Please try again"
+    };
+    return res.status(401).send(data);
+  }
+};
+
 exports.register = async (req, res, next) => {
   try {
     // These will have already been checked via userController.validateRegister method
@@ -126,6 +157,56 @@ exports.getInfo = async (req, res) => {
 
     const users = await User.FindByDisplayName({ displayName, UserID });
     res.status(200).send({ isGood: true, users });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+/** @description Update a specific user's email address.
+ *  userController.validateEmailUpdate should be called before this.
+ *  @param {String} req.body.user.UserID - unique user identifer
+ *  @param {String} req.body.user.email - new email
+ *  @return Continues on next middleware OR returns isGood value
+ */
+exports.updateEmail = updateEmail = async (req, res) => {
+  try {
+    // Get user's ID and make sure we have something
+    const { UserID } = req.body.user;
+    if (!UserID) {
+      const data = {
+        isGood: false,
+        msg: "Could not verify user as legit. Please log out and try again."
+      };
+      return res.status(400).send(data);
+    }
+    // Grab email and make sure we have soemthing
+    const { email } = req.body.user;
+    if (!email) {
+      const data = {
+        isGood: false,
+        msg: "Could not find a new email to update to."
+      };
+      return res.status(400).send(data);
+    }
+
+    const isGood = await User.UpdateEmail({ UserID, Email: email });
+
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "updateEmail",
+      stack: req.route.stack
+    });
+
+    // If we are end of stack, go to client
+    if (isLastMiddlewareInStack) {
+      //return to client
+      return res.status(200).send(Object.assign({}, { isGood: true }));
+    } else {
+      // Go to next middleware
+      return next();
+    }
+
+    res.status(200).send({ isGood: true });
   } catch (err) {
     console.log(err);
   }
