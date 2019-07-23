@@ -104,6 +104,15 @@ router.post(
   userController.getInfo
 );
 
+// 1. Validate user
+// 2. Return modifiable user info
+router.post(
+  "/api/user/update/email",
+  authController.isLoggedIn,
+  userController.validateEmailUpdate,
+  userController.updateEmail
+);
+
 // // 1. Validate user
 // // 2. Update user info
 // router.post(
