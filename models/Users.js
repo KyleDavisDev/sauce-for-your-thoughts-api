@@ -84,10 +84,16 @@ exports.getAll = function(cb) {
 //   });
 // };
 
-exports.AuthenticateUser = async function({ email, password }) {
+exports.AuthenticateUser = async function({ email, password, UserID }) {
   const rows = await DB.query(
-    "SELECT * FROM Users WHERE Email = ? AND IsActive = 1",
-    [email]
+    `SELECT
+      UserID, LockedUntil, LoginAttempts, DisplayName, Email, Password
+    FROM
+      Users
+    WHERE
+      ( Email = ? OR UserID = ? ) AND IsActive = 1
+    LIMIT 1`,
+    [email, UserID]
   );
 
   // assign for easier use
@@ -115,6 +121,9 @@ exports.AuthenticateUser = async function({ email, password }) {
 
   // Check if password is good
   const isMatch = await bcrypt.compare(password, user.Password);
+
+  // delete password from user
+  delete user.Password;
 
   // Password is good
   if (isMatch) {
@@ -201,6 +210,7 @@ exports.FindByDisplayName = async function({ displayName, UserID }) {
   return rows[0];
 };
 
+// Returns boolean
 exports.IsAdmin = async function({ UserID }) {
   const tmp = await DB.query(
     `SELECT 
@@ -218,4 +228,27 @@ exports.IsAdmin = async function({ UserID }) {
   );
 
   return tmp[0] && tmp[0].IsAdmin === 1;
+};
+
+/** @description Update a single user's email
+ *  @param {string} UserID - Unique user's identification
+ *  @param {string} Email - new email address
+ *  @returns {Boolean}
+ */
+exports.UpdateEmail = async function({ UserID, Email }) {
+  if (!UserID || !Email) {
+    throw new Error("Must provide required parameters to UpdateEmail method");
+  }
+
+  const row = await DB.query(
+    `UPDATE Users
+    SET
+      Email = ?
+    WHERE
+      UserID = ?
+    `,
+    [Email, UserID]
+  );
+
+  console.log(row);
 };
