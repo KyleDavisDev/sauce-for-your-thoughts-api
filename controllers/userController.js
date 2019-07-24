@@ -96,7 +96,7 @@ exports.validateEmailUpdate = async (req, res, next) => {
       isGood: false,
       msg: err.message || "Connection error. Please try again"
     };
-    return res.status(401).send(data);
+    return res.status(err.status).send(data);
   }
 };
 
@@ -205,8 +205,6 @@ exports.updateEmail = updateEmail = async (req, res) => {
       // Go to next middleware
       return next();
     }
-
-    res.status(200).send({ isGood: true });
   } catch (err) {
     console.log(err);
   }
