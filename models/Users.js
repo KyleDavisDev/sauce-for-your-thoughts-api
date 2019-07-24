@@ -102,23 +102,6 @@ exports.AuthenticateUser = async function({ email, password, UserID }) {
     throw new Error("Invalid username or password.");
   }
 
-  // See if account is locked so we can possibly skipping creating JWT
-  // LockedUntil time will be larger if acc locked
-  const date = moment().unix();
-  if (user.LockedUntil && user.LockedUntil > date) {
-    // acc locked if here
-    // incriment login attempts
-    await module.exports.IncLoginAttempts({
-      UserID: user.UserID,
-      LoginAttempts: user.LoginAttempts
-    });
-
-    // Finally throw error w/ vague message
-    throw new Error(
-      "This account has been locked. Please try again in a few hours."
-    );
-  }
-
   // Check if password is good
   const isMatch = await bcrypt.compare(password, user.Password);
 
@@ -127,12 +110,31 @@ exports.AuthenticateUser = async function({ email, password, UserID }) {
 
   // Password is good
   if (isMatch) {
-    // if there's no lock or failed attempts, just return the user
+    // See if account is locked.
+    // LockedUntil time will be larger if acc locked
+    const date = moment().unix();
+    if (user.LockedUntil && user.LockedUntil > date) {
+      // acc locked if here
+      // incriment login attempts
+      await module.exports.IncLoginAttempts({
+        UserID: user.UserID,
+        LoginAttempts: user.LoginAttempts
+      });
+
+      // Throw error w/ vague message
+      throw {
+        status: 403, // Forbidden
+        message:
+          "This account has been locked. Please try again in a few hours."
+      };
+    }
+
+    // If doesn't have any false login attempts, or has been locked out, we can return user
     if (user.LoginAttempts === 0 && !user.LockedUntil) {
       return user;
     }
 
-    // reset attempts and lockedUntil timer
+    // else lets remove restrictions before returning
     await DB.query(
       "UPDATE Users SET LoginAttempts = ?, LockedUntil = ? WHERE  UserID = ?",
       [0, null, user.UserID]
@@ -146,8 +148,18 @@ exports.AuthenticateUser = async function({ email, password, UserID }) {
       LoginAttempts: user.LoginAttempts
     });
 
-    // Finally throw error w/ vague message
-    throw new Error("Invalid username or password.");
+    // Account locked
+    if (user.LoginAttempts >= MAX_LOGIN_ATTEMPTS) {
+      // Throw error w/ vague message
+      throw {
+        status: 403, // Forbidden
+        message:
+          "This account has been locked. Please try again in a few hours."
+      };
+    } else {
+      // Throw error w/ vague message
+      throw { status: 401, message: "Invalid username or password." };
+    }
   }
 };
 
