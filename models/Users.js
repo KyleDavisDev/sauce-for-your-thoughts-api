@@ -265,3 +265,33 @@ exports.UpdateEmail = async function({ UserID, Email }) {
   // If all is good, will return true
   return row && row.changedRows === 1;
 };
+
+/** @description Update a single user's email
+ *  @param {string} UserID - Unique user's identification
+ *  @param {string} Password - new password to be hashed
+ *  @returns {Boolean}
+ */
+exports.UpdatePassword = async function({ UserID, Password }) {
+  // Sanity check
+  if (!UserID || !Password) {
+    throw new Error("Must provide required parameters to UpdateEmail method");
+  }
+
+  // Create salt
+  const salt = await bcrypt.genSalt(SALT_WORK_FACTOR);
+  // Create hash
+  const hash = await bcrypt.hash(Password, salt);
+
+  const row = await DB.query(
+    `UPDATE Users
+    SET
+      Password = ?
+    WHERE
+      UserID = ? AND IsActive = 1 AND LoginAttempts <= ?
+    `,
+    [hash, UserID, MAX_LOGIN_ATTEMPTS]
+  );
+
+  // If all is good, will return true
+  return row && row.changedRows === 1;
+};
