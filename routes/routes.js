@@ -105,7 +105,9 @@ router.post(
 );
 
 // 1. Validate user
-// 2. Return modifiable user info
+// 2. Validate info
+// 3. Update email
+// 4. Relogin
 router.post(
   "/api/user/update/email",
   authController.isLoggedIn,
