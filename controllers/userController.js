@@ -100,6 +100,41 @@ exports.validateEmailUpdate = async (req, res, next) => {
   }
 };
 
+exports.validatePasswordUpdate = async (req, res, next) => {
+  // Make sure new passwords match
+  if (
+    !validator.equals(
+      req.body.user.newPassword,
+      req.body.user.confirmNewPassword
+    )
+  ) {
+    throw new Error("Passwords do not match. Please try again.");
+  }
+
+  try {
+    const { password, UserID } = req.body.user;
+    // Make sure passed password is good
+    const user = await User.AuthenticateUser({ UserID, password });
+
+    // Make sure user was found
+    if (!user) {
+      throw new Error("Could not authenticate user. Please try agian");
+    }
+
+    // Keep going
+    return next();
+  } catch (err) {
+    if (err.code === "ECONNREFUSED") {
+      err.message = "Connection error. Please try again";
+    }
+    const data = {
+      isGood: false,
+      msg: err.message || "Connection error. Please try again"
+    };
+    return res.status(err.status).send(data);
+  }
+};
+
 exports.register = async (req, res, next) => {
   try {
     // These will have already been checked via userController.validateRegister method
@@ -166,7 +201,7 @@ exports.getInfo = async (req, res) => {
  *  userController.validateEmailUpdate should be called before this.
  *  @param {String} req.body.user.UserID - unique user identifer
  *  @param {String} req.body.user.email - new email
- *  @return Continues on next middleware OR returns isGood value
+ *  @return Continues on next middleware OR returns isGood object
  */
 exports.updateEmail = updateEmail = async (req, res, next) => {
   try {
@@ -202,6 +237,63 @@ exports.updateEmail = updateEmail = async (req, res, next) => {
     // Find out if more middleware or if this is last stop.
     const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
       name: "updateEmail",
+      stack: req.route.stack
+    });
+
+    // If we are end of stack, go to client
+    if (isLastMiddlewareInStack) {
+      //return to client
+      return res.status(200).send(Object.assign({}, { isGood: true }));
+    } else {
+      // Go to next middleware
+      return next();
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+/** @description Update a specific user's password
+ *  userController.validatePasswordUpdate should be called before this.
+ *  @param {String} req.body.user.UserID - unique user identifer
+ *  @param {String} req.body.user.password - new password
+ *  @return Continues on next middleware OR returns isGood object
+ */
+exports.updatePassword = updatePassword = async (req, res, next) => {
+  try {
+    // Get user's ID and make sure we have something
+    const { UserID } = req.body.user;
+    if (!UserID) {
+      const data = {
+        isGood: false,
+        msg: "Could not verify user as legit. Please log out and try again."
+      };
+      return res.status(400).send(data);
+    }
+    // Grab email and make sure we have soemthing
+    const { password } = req.body.user;
+    if (!password) {
+      const data = {
+        isGood: false,
+        msg: "Could not find a new password to update to."
+      };
+      return res.status(400).send(data);
+    }
+
+    const isGood = await User.UpdatePassword({ UserID, Password: password });
+
+    if (!isGood) {
+      const data = {
+        isGood: false,
+        msg:
+          "Could not update password. User's account may be locked or inactive."
+      };
+      return res.status(401).send(data);
+    }
+
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "updatePassword",
       stack: req.route.stack
     });
 
