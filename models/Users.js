@@ -257,10 +257,11 @@ exports.UpdateEmail = async function({ UserID, Email }) {
     SET
       Email = ?
     WHERE
-      UserID = ?
+      UserID = ? AND IsActive = 1 AND LoginAttempts <= ?
     `,
-    [Email, UserID]
+    [Email, UserID, MAX_LOGIN_ATTEMPTS]
   );
 
-  console.log(row);
+  // If all is good, will return true
+  return row && row.changedRows === 1;
 };
