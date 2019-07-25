@@ -168,7 +168,7 @@ exports.getInfo = async (req, res) => {
  *  @param {String} req.body.user.email - new email
  *  @return Continues on next middleware OR returns isGood value
  */
-exports.updateEmail = updateEmail = async (req, res) => {
+exports.updateEmail = updateEmail = async (req, res, next) => {
   try {
     // Get user's ID and make sure we have something
     const { UserID } = req.body.user;
@@ -190,6 +190,14 @@ exports.updateEmail = updateEmail = async (req, res) => {
     }
 
     const isGood = await User.UpdateEmail({ UserID, Email: email });
+
+    if (!isGood) {
+      const data = {
+        isGood: false,
+        msg: "Could not update email. User's account may be locked or inactive."
+      };
+      return res.status(401).send(data);
+    }
 
     // Find out if more middleware or if this is last stop.
     const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
