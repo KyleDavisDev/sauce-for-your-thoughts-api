@@ -116,6 +116,16 @@ router.post(
   authController.login
 );
 
+// 1. Validate user
+// 2. Validate info
+// 3. Update password
+router.post(
+  "/api/user/update/password",
+  authController.isLoggedIn,
+  userController.validatePasswordUpdate,
+  userController.updatePassword
+);
+
 // // 1. Validate user
 // // 2. Update user info
 // router.post(
