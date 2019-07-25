@@ -2,6 +2,18 @@ const jwt = require("jsonwebtoken");
 const Users = require("../models/Users");
 const Utility = require("../utility/utility");
 
+/** @description Log user in by generating token
+ *  @param {Object} req.body.user - expects to find user obj. Will check if stringified if not immediately accessible
+ *    @param {String} req.body.user.email - persons email
+ *    @param {String} req.body.user.password - persons password
+ *  @return {Object} data - container object
+ *    @return {Boolean} data.isGood - If request is good
+ *    @return {String} data.msg - text related to isGood boolean
+ *    @return {Object} data.user - container object
+ *      @return {Object} data.user.token - unique user JWT
+ *      @return {Object} data.user.displayName - user's display name
+ *      @return {Object} data.user.email - user's email
+ */
 exports.login = async (req, res) => {
   // Quick sanity check
   if (req.body.user === undefined || Object.keys(req.body.user) === 0) {
