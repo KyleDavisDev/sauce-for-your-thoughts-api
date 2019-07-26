@@ -128,7 +128,7 @@ router.post(
 
 // 1. Validate user
 // 2. Validate info
-// 3. Update password
+// 3. Update display name
 router.post(
   "/api/user/update/displayname",
   authController.isLoggedIn,
