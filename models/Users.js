@@ -7,6 +7,9 @@ const DB = require("../db/db.js");
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCK_TIME = 2 * 60 * 60; // 2 hour lock time in seconds
 const SALT_WORK_FACTOR = 10;
+exports.MIN_PASSWORD_LENGTH = 8;
+exports.MIN_DISPLAYNAME_LENGTH = 5;
+exports.MAX_DISPLAYNAME_LENGTH = 20;
 
 exports.UsersTableStructure = `CREATE TABLE IF NOT EXISTS Users (
   UserID int NOT NULL AUTO_INCREMENT,
@@ -290,6 +293,33 @@ exports.UpdatePassword = async function({ UserID, Password }) {
       UserID = ? AND IsActive = 1 AND LoginAttempts <= ?
     `,
     [hash, UserID, MAX_LOGIN_ATTEMPTS]
+  );
+
+  // If all is good, will return true
+  return row && row.changedRows === 1;
+};
+
+/** @description Update a single user's DisplayName
+ *  @param {string} UserID - Unique user's identification
+ *  @param {string} DisplayName - new password to be hashed
+ *  @returns {Boolean}
+ */
+exports.UpdateDisplayName = async function({ UserID, DisplayName }) {
+  // Sanity check
+  if (!UserID || !DisplayName) {
+    throw new Error(
+      "Must provide required parameters to UpdateDisplayName method"
+    );
+  }
+
+  const row = await DB.query(
+    `UPDATE Users
+    SET
+    DisplayName = ?
+    WHERE
+      UserID = ? AND IsActive = 1 AND LoginAttempts <= ?
+    `,
+    [DisplayName, UserID, MAX_LOGIN_ATTEMPTS]
   );
 
   // If all is good, will return true
