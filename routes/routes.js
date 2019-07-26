@@ -126,6 +126,16 @@ router.post(
   userController.updatePassword
 );
 
+// 1. Validate user
+// 2. Validate info
+// 3. Update password
+router.post(
+  "/api/user/update/displayname",
+  authController.isLoggedIn,
+  userController.validateDisplayNameUpdate,
+  userController.updateDisplayName
+);
+
 // // 1. Validate user
 // // 2. Update user info
 // router.post(
