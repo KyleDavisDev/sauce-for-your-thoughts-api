@@ -101,6 +101,20 @@ exports.validateEmailUpdate = async (req, res, next) => {
 };
 
 exports.validatePasswordUpdate = async (req, res, next) => {
+  // Make sure new password is sufficiently long
+  if (req.body.user.newPassword.length < 8) {
+    throw new Error(
+      "Your new password is too weak! Please make your password over 8 characters long."
+    );
+  }
+
+  // Make sure old password is sufficiently long
+  if (req.body.user.password.length < 8) {
+    throw new Error(
+      "Your old password is too weak! Please make your password over 8 characters long."
+    );
+  }
+
   // Make sure new passwords match
   if (
     !validator.equals(
