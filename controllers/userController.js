@@ -256,7 +256,7 @@ exports.updateEmail = updateEmail = async (req, res, next) => {
 /** @description Update a specific user's password
  *  userController.validatePasswordUpdate should be called before this.
  *  @param {String} req.body.user.UserID - unique user identifer
- *  @param {String} req.body.user.password - new password
+ *  @param {String} req.body.user.newPassword - new password
  *  @return Continues on next middleware OR returns isGood object
  */
 exports.updatePassword = updatePassword = async (req, res, next) => {
@@ -271,8 +271,8 @@ exports.updatePassword = updatePassword = async (req, res, next) => {
       return res.status(400).send(data);
     }
     // Grab email and make sure we have soemthing
-    const { password } = req.body.user;
-    if (!password) {
+    const { newPassword } = req.body.user;
+    if (!newPassword) {
       const data = {
         isGood: false,
         msg: "Could not find a new password to update to."
@@ -280,7 +280,7 @@ exports.updatePassword = updatePassword = async (req, res, next) => {
       return res.status(400).send(data);
     }
 
-    const isGood = await User.UpdatePassword({ UserID, Password: password });
+    const isGood = await User.UpdatePassword({ UserID, Password: newPassword });
 
     if (!isGood) {
       const data = {
