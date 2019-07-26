@@ -3,6 +3,8 @@ const validator = require("validator");
 const Utility = require("../utility/utility");
 const Hashids = require("hashids");
 const hashids = new Hashids();
+const MIN_PASSWORD_LENGTH = User.MIN_PASSWORD_LENGTH;
+const MIN_DISPLAYNAME_LENGTH = User.MIN_DISPLAYNAME_LENGTH;
 
 exports.validateRegister = (req, res, next) => {
   try {
@@ -34,9 +36,9 @@ exports.validateRegister = (req, res, next) => {
     }
 
     // Make sure password is sufficiently long
-    if (req.body.user.password.length < 8) {
+    if (req.body.user.password.length < MIN_PASSWORD_LENGTH) {
       throw new Error(
-        "Your password is too weak! Please make your password over 8 characters long."
+        `Your password is too weak! Please make your password over ${MIN_PASSWORD_LENGTH} characters long.`
       );
     }
 
@@ -102,16 +104,16 @@ exports.validateEmailUpdate = async (req, res, next) => {
 
 exports.validatePasswordUpdate = async (req, res, next) => {
   // Make sure new password is sufficiently long
-  if (req.body.user.newPassword.length < 8) {
+  if (req.body.user.newPassword.length < MIN_PASSWORD_LENGTH) {
     throw new Error(
-      "Your new password is too weak! Please make your password over 8 characters long."
+      `Your new password is too weak! Please make your password over ${MIN_PASSWORD_LENGTH} characters long.`
     );
   }
 
-  // Make sure old password is sufficiently long
-  if (req.body.user.password.length < 8) {
+  // Make sure password is sufficiently long
+  if (req.body.user.password.length < MIN_PASSWORD_LENGTH) {
     throw new Error(
-      "Your old password is too weak! Please make your password over 8 characters long."
+      `Your password is too weak! Please make your password over ${MIN_PASSWORD_LENGTH} characters long.`
     );
   }
 
@@ -122,7 +124,63 @@ exports.validatePasswordUpdate = async (req, res, next) => {
       req.body.user.confirmNewPassword
     )
   ) {
-    throw new Error("Passwords do not match. Please try again.");
+    throw new Error("New passwords do not match. Please try again.");
+  }
+
+  try {
+    const { password, UserID } = req.body.user;
+    // Make sure passed password is good
+    const user = await User.AuthenticateUser({ UserID, password });
+
+    // Make sure user was found
+    if (!user) {
+      throw new Error("Could not authenticate user. Please try agian");
+    }
+
+    // Keep going
+    return next();
+  } catch (err) {
+    if (err.code === "ECONNREFUSED") {
+      err.message = "Connection error. Please try again";
+    }
+    const data = {
+      isGood: false,
+      msg: err.message || "Connection error. Please try again"
+    };
+    return res.status(err.status).send(data);
+  }
+};
+
+/** @description Validate displayName information before moving to next middleware
+ *  @param {String} req.body.user.UserID - unique user identifer
+ *  @param {String} req.body.user.displayName - new display name
+ *  @param {String} req.body.user.confirmDisplayName - confirm new display name
+ *  @param {String} req.body.user.password - user password
+ *  @return Continues on next middleware OR returns error
+ */
+exports.validateDisplayNameUpdate = async (req, res, next) => {
+  // Make sure old password is sufficiently long
+  if (req.body.user.password.length < MIN_PASSWORD_LENGTH) {
+    throw new Error(
+      `Your old password is too weak! Please make your password over ${MIN_PASSWORD_LENGTH} characters long.`
+    );
+  }
+
+  // Make sure display name is sufficiently long
+  if (req.body.user.displayName.length < MIN_DISPLAYNAME_LENGTH) {
+    throw new Error(
+      `Your display name is too short! Please make your display name over ${MIN_DISPLAYNAME_LENGTH} characters long.`
+    );
+  }
+
+  // Make sure new passwords match
+  if (
+    !validator.equals(
+      req.body.user.displayName,
+      req.body.user.confirmDisplayName
+    )
+  ) {
+    throw new Error("Dispaly names do not match. Please try again.");
   }
 
   try {
@@ -308,6 +366,66 @@ exports.updatePassword = updatePassword = async (req, res, next) => {
     // Find out if more middleware or if this is last stop.
     const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
       name: "updatePassword",
+      stack: req.route.stack
+    });
+
+    // If we are end of stack, go to client
+    if (isLastMiddlewareInStack) {
+      //return to client
+      return res.status(200).send(Object.assign({}, { isGood: true }));
+    } else {
+      // Go to next middleware
+      return next();
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+/** @description Update a specific user's password
+ *  userController.validateDisplayNameUpdate should be called before this.
+ *  @param {String} req.body.user.UserID - unique user identifer
+ *  @param {String} req.body.user.displayName - new display name
+ *  @return Continues on next middleware OR returns isGood object
+ */
+exports.updateDisplayName = updateDisplayName = async (req, res, next) => {
+  try {
+    // Get user's ID and make sure we have something
+    const { UserID } = req.body.user;
+    if (!UserID) {
+      const data = {
+        isGood: false,
+        msg: "Could not verify user as legit. Please log out and try again."
+      };
+      return res.status(400).send(data);
+    }
+    // Grab email and make sure we have soemthing
+    const { displayName } = req.body.user;
+    if (!displayName) {
+      const data = {
+        isGood: false,
+        msg: "Could not find a new display name to update to."
+      };
+      return res.status(400).send(data);
+    }
+
+    const isGood = await User.UpdateDisplayName({
+      UserID,
+      DisplayName: displayName
+    });
+
+    if (!isGood) {
+      const data = {
+        isGood: false,
+        msg:
+          "Could not update display name. User's account may be locked or inactive."
+      };
+      return res.status(401).send(data);
+    }
+
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "updateDisplayName",
       stack: req.route.stack
     });
 
