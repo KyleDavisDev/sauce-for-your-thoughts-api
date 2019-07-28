@@ -251,7 +251,7 @@ exports.getSaucesWithNewestReviews = async function() {
      Sauces.Slug AS slug 
     FROM Reviews 
     LEFT JOIN Sauces ON Reviews.SauceID = Sauces.SauceID
-    ORDER BY Reviews.Created DESC
+    ORDER BY Reviews.Updated DESC, Reviews.Created DESC
     LIMIT ?`,
     [MAX_NEW_REVIEW_COUNT]
   );
