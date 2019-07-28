@@ -12,6 +12,7 @@ exports.ReviewsTableStructure = `CREATE TABLE IF NOT EXISTS Reviews (
   SauceID int NOT NULL,
   UserID int NOT NULL,
   Created bigint(20) unsigned DEFAULT NULL,
+  Updated bigint(20) unsigned DEFAULT NULL,
   LabelRating int NOT NULL CHECK (LabelRating > -1 AND LabelRating < 6),
   LabelDescription varchar(300),
   AromaRating int NOT NULL CHECK (AromaRating > -1 AND AromaRating < 6),
@@ -112,6 +113,7 @@ exports.Update = async function({
   OverallDescription,
   Note
 }) {
+  const Updated = moment().unix();
   const res = await DB.query(
     `UPDATE Reviews
       SET
@@ -125,7 +127,8 @@ exports.Update = async function({
         HeatDescription = ?,
         OverallRating = ?,
         OverallDescription = ?,
-        Note = ?
+        Note = ?,
+        Updated = ?
       WHERE
         SauceID = ? AND UserID = ?`,
     [
@@ -140,6 +143,7 @@ exports.Update = async function({
       OverallRating,
       OverallDescription,
       Note,
+      Updated,
       SauceID,
       UserID
     ]
@@ -170,7 +174,10 @@ exports.FindReviewsBySauceID = async function({ SauceID, UserID }) {
       Reviews.OverallRating AS "Reviews.OverallRating",
       Reviews.OverallDescription AS "Reviews.OverallDescription",
       Reviews.Note AS "Reviews.Note",
-      Reviews.Created AS "Reviews.Created",
+      ( CASE
+        WHEN Reviews.Updated IS NULL THEN Reviews.Created 
+        ELSE Reviews.Updated
+      END ) AS "Reviews.Created",
       Users.DisplayName AS "Users.DisplayName",
       Users.Created AS "Users.Created"
       FROM Reviews
@@ -235,7 +242,10 @@ exports.FindSingleReview = async function({ SauceID, UserID }) {
   Reviews.OverallRating AS "Reviews.OverallRating",
   Reviews.OverallDescription AS "Reviews.OverallDescription",
   Reviews.Note AS "Reviews.Note",
-  Reviews.Created AS "Reviews.Created",
+  ( CASE
+    WHEN Reviews.Updated IS NULL THEN Reviews.Created 
+    ELSE Reviews.Updated
+  END ) AS "Reviews.Created",
   Users.DisplayName AS "Users.DisplayName",
   Users.Created AS "Users.Created"
   FROM Reviews
