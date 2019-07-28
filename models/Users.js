@@ -77,16 +77,6 @@ exports.getAll = function(cb) {
   });
 };
 
-// exports.getAllByUser = function(userId, cb) {
-//   db.get().query("SELECT * FROM Users WHERE user_id = ?", userId, function(
-//     err,
-//     rows
-//   ) {
-//     if (err) return cb(err);
-//     cb(null, rows);
-//   });
-// };
-
 exports.AuthenticateUser = async function({ email, password, UserID }) {
   const rows = await DB.query(
     `SELECT
