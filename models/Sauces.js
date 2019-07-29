@@ -333,21 +333,16 @@ exports.FindSaucesByQuery = async function({ params }) {
   LEFT JOIN Sauces_Types ON Sauces_Types.SauceID = Sauces.SauceID
   LEFT JOIN Types ON Sauces_Types.TypeID = Types.TypeID
   LEFT JOIN Reviews ON Reviews.SauceID = Sauces.SauceID
-  WHERE ? AND Sauces.IsActive = 1 AND AdminApproved = 1
-  GROUP BY Sauces.SauceID, Sauces.Name, Sauces.Description, Sauces.Maker, Sauces.Slug
+  WHERE ${query.where} AND Sauces.IsActive = 1 AND AdminApproved = 1
   ORDER BY ${query.order}
-  LIMIT ?
+  LIMIT ${query.limit}
   OFFSET ?`;
 
-  let rows = await DB.query(query.query, [
-    query.where,
-    query.limit,
-    query.offset
-  ]);
+  let rows = await DB.query(query.query, [query.offset]);
 
   // If nothing found, we will simply not offset and return from the 'beginning'
   if (rows.length === 0) {
-    rows = await DB.query(query.query, [query.where, query.limit, 0]);
+    rows = await DB.query(query.query, [0]);
   }
 
   if (!rows) {
