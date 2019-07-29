@@ -312,13 +312,7 @@ exports.FindSaucesByQuery = async function({ params }) {
   // Number of records per page
   query.limit = params.limit > 0 ? params.limit : 8;
 
-  // Find the number of Sauce records
-  const numRecords = await DB.query("Select COUNT(*) FROM Sauces").then(res => {
-    return res.length;
-  });
-
-  // Get offset
-  query.offset = (Math.ceil(numRecords / params.limit) - 1) * params.page;
+  query.offset = (params.page - 1) * params.limit;
 
   // Abstract query out since we may need to use it a second time
   query.query = `SELECT DISTINCT 
@@ -359,10 +353,12 @@ exports.FindSaucesByQuery = async function({ params }) {
  */
 exports.FindTotal = async function() {
   const rows = await DB.query(
-    `SELECT COUNT(*) AS Count
-   FROM Sauces
-   WHERE IsActive=1 && IsPrivate = 0`,
-    [MAX_NEW_REVIEW_COUNT]
+    `SELECT
+      COUNT(*) AS Count
+    FROM
+      Sauces
+    WHERE
+      IsActive=1 && IsPrivate = 0 && AdminApproved = 1`
   );
 
   if (!rows) {
