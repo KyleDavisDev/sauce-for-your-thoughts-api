@@ -522,9 +522,13 @@ exports.getByQuery = getByQuery = async (req, res, next) => {
     // If we are end of stack, go to client
     if (isLastMiddlewareInStack) {
       //return to client
-      return res
-        .status(200)
-        .send(Object.assign({}, res.locals, { isGood: true, sauces }));
+      return res.status(200).send(
+        Object.assign({}, res.locals, {
+          isGood: true,
+          sauces,
+          count: sauces.length
+        })
+      );
     } else {
       // Attach newest to res.locals
       res.locals.sauces = sauces;
