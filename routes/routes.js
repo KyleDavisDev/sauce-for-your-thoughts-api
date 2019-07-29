@@ -64,13 +64,13 @@ router.get("/api/sauces/get/by/featured", sauceController.getSaucesByFeatured);
 //   sauceController.editSauce
 // );
 
-// 1. Return array of sauce objects
+// 1. Validate passed params
+// 2. Return array of sauce objects
 // (Note: will likely change from method get to method post soon)
 router.get(
   "/api/sauces/getByQuery/?",
   sauceController.validateQueryParams,
-  sauceController.getByQuery,
-  sauceController.getTotal
+  sauceController.getByQuery
 );
 
 // // 1. return sauces by specific tag
