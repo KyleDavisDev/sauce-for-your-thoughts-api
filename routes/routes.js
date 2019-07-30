@@ -70,7 +70,8 @@ router.get("/api/sauces/get/by/featured", sauceController.getSaucesByFeatured);
 router.get(
   "/api/sauces/getByQuery/?",
   sauceController.validateQueryParams,
-  sauceController.getByQuery
+  sauceController.getByQuery,
+  sauceController.getTotal
 );
 
 // // 1. return sauces by specific tag
