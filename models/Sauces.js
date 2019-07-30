@@ -315,7 +315,7 @@ exports.FindSaucesByQuery = async function({ params }) {
   query.offset = (params.page - 1) * params.limit;
 
   // Abstract query out since we may need to use it a second time
-  query.query = `SELECT DISTINCT 
+  query.query = `SELECT DISTINCT SQL_CALC_FOUND_ROWS
   Sauces.Name as name,
   Sauces.ReviewCount as numberOfReviews,
   Sauces.Description as description,
@@ -327,7 +327,7 @@ exports.FindSaucesByQuery = async function({ params }) {
   LEFT JOIN Sauces_Types ON Sauces_Types.SauceID = Sauces.SauceID
   LEFT JOIN Types ON Sauces_Types.TypeID = Types.TypeID
   LEFT JOIN Reviews ON Reviews.SauceID = Sauces.SauceID
-  WHERE ${query.where} AND Sauces.IsActive = 1 AND AdminApproved = 1
+  WHERE ${query.where} AND Sauces.IsActive = 1 AND Sauces.AdminApproved = 1
   ORDER BY ${query.order}
   LIMIT ${query.limit}
   OFFSET ?`;
@@ -345,7 +345,12 @@ exports.FindSaucesByQuery = async function({ params }) {
     );
   }
 
-  return rows;
+  // Lastly, lets figure out how many total we have for this query
+  const total = await DB.query("SELECT FOUND_ROWS() as total").then(res => {
+    return res[0].total;
+  });
+
+  return Object.assign({}, rows, { total });
 };
 
 /** @description Returns array of sauces that have had reviews recently added to them
