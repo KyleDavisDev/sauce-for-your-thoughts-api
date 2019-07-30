@@ -511,7 +511,9 @@ exports.getSaucesByFeatured = getSaucesByFeatured = async (req, res, next) => {
  */
 exports.getByQuery = getByQuery = async (req, res, next) => {
   try {
-    const sauces = await Sauces.FindSaucesByQuery({ params: res.locals });
+    const sauces = await Sauces.FindSaucesByQuery({
+      params: res.locals
+    });
 
     // Find out if more middleware or if this is last stop.
     const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
@@ -522,13 +524,10 @@ exports.getByQuery = getByQuery = async (req, res, next) => {
     // If we are end of stack, go to client
     if (isLastMiddlewareInStack) {
       //return to client
-      return res.status(200).send(
-        Object.assign({}, res.locals, {
-          isGood: true,
-          sauces,
-          count: sauces.length
-        })
-      );
+      return res.status(200).send({
+        isGood: true,
+        sauces
+      });
     } else {
       // Attach newest to res.locals
       res.locals.sauces = sauces;
@@ -547,7 +546,7 @@ exports.getByQuery = getByQuery = async (req, res, next) => {
  */
 exports.getTotal = getTotal = async (req, res, next) => {
   try {
-    const count = await Sauces.FindTotal();
+    const total = await Sauces.FindTotal();
 
     // Find out if more middleware or if this is last stop.
     const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
@@ -560,10 +559,10 @@ exports.getTotal = getTotal = async (req, res, next) => {
       //return to client
       return res
         .status(200)
-        .send(Object.assign({}, res.locals, { isGood: true, count }));
+        .send(Object.assign({}, res.locals, { isGood: true, total }));
     } else {
       // Attach newest to res.locals
-      res.locals.count = count;
+      res.locals.total = total;
       // Go to next middleware
       return next();
     }
