@@ -1,4 +1,5 @@
 var mysql = require("mysql");
+const { promisify } = require("util");
 require("dotenv").config({ path: "variables.env" });
 
 class db {
@@ -8,6 +9,7 @@ class db {
     this.connect = this.connect.bind(this);
     this.get = this.get.bind(this);
     this.query = this.query.bind(this);
+    this.getConnection = this.getConnection.bind(this);
   }
 
   connect(cb) {
@@ -38,6 +40,22 @@ class db {
     if (cb !== undefined) cb(); //Callback
 
     return this;
+  }
+
+  getConnection() {
+    return new Promise((resolve, reject) => {
+      this.pool.getConnection(function(err, connection) {
+        if (err) {
+          return reject(err);
+        }
+
+        // promisify the query method
+        connection.query = promisify(connection.query);
+
+        // return connection
+        resolve(connection);
+      });
+    });
   }
 
   get() {
