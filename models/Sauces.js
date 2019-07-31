@@ -271,12 +271,13 @@ exports.getSaucesWithNewestReviews = async function() {
  *  @param {String} [params.order] - How to order the returned array
  *  @param {Number?} [params.limit] - Number per page
  *  @param {Number?} [params.page] - Which page
+ *  @param {Boolean?} includeTotal - determines whether or not to include total amount
  *  @returns {Promise} Promise object that returns array of sauces
  *  @resolves {Object[]} sauce - array of sauce objects w/ basic info
  *
  *  @reject {String} error message
  */
-exports.FindSaucesByQuery = async function({ params }) {
+exports.FindSaucesByQuery = async function({ params, includeTotal = false }) {
   // set page if one wasn't passed
   if (!params.page) {
     params.page = 1;
@@ -330,27 +331,44 @@ exports.FindSaucesByQuery = async function({ params }) {
   WHERE ${query.where} AND Sauces.IsActive = 1 AND Sauces.AdminApproved = 1
   ORDER BY ${query.order}
   LIMIT ${query.limit}
-  OFFSET ?`;
-
-  let rows = await DB.query(query.query, [query.offset]);
-
-  // If nothing found, we will simply not offset and return from the 'beginning'
-  if (rows.length === 0) {
-    rows = await DB.query(query.query, [0]);
-  }
-
-  if (!rows) {
-    throw new Error(
-      "Could not find the appropriate information for this sauce. Please try again"
-    );
-  }
-
-  // Lastly, lets figure out how many total we have for this query
-  const total = await DB.query("SELECT FOUND_ROWS() as total").then(res => {
+  OFFSET 0`;
+  console.log("top of rows");
+  // const rows = {};
+  let conn = await DB.getConnection();
+  // console.log(conn);
+  const rows = await conn.query(query.query);
+  console.log(rows);
+  const total = await conn.query("SELECT FOUND_ROWS() as total").then(res => {
     return res[0].total;
   });
+  console.log(total);
 
-  return Object.assign({}, rows, { total });
+  return {};
+
+  // If nothing found, we will simply not offset and return from the 'beginning'
+  // if (rows.length === 0) {
+  //   rows = await DB.query(query.query, [0]);
+  // }
+
+  // if (!rows) {
+  //   throw new Error(
+  //     "Could not find the appropriate information for this sauce. Please try again"
+  //   );
+  // }
+
+  if (includeTotal) {
+    // Lastly, lets figure out how many total we have for this query
+    const total = await DB.query("SELECT FOUND_ROWS() as total").then(res => {
+      return res[0].total;
+    });
+
+    // console.log(query.query, query.offset);
+    console.log(total);
+
+    return Object.assign({}, rows, { total });
+  } else {
+    return rows;
+  }
 };
 
 /** @description Returns array of sauces that have had reviews recently added to them
