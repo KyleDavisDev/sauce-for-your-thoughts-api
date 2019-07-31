@@ -383,7 +383,8 @@ exports.getSaucesWithNewestReviews = getSaucesWithNewestReviews = async (
 exports.getSaucesByNewest = getSaucesByNewest = async (req, res, next) => {
   try {
     const saucesByNewest = await Sauces.FindSaucesByQuery({
-      params: { type: "all", order: "newest", limit: 10 }
+      params: { type: "all", order: "newest", limit: 10 },
+      includeTotal: false
     });
 
     // Make sure we found the sauces or else throw error
@@ -427,7 +428,8 @@ exports.getSaucesByNewest = getSaucesByNewest = async (req, res, next) => {
 exports.getSaucesByFeatured = getSaucesByFeatured = async (req, res, next) => {
   try {
     const saucesByFeatured = await Sauces.FindSaucesByQuery({
-      params: { type: "all", order: "newest", limit: 10 }
+      params: { type: "all", order: "newest", limit: 10 },
+      includeTotal: false
     });
 
     // Make sure we found the sauces or else throw error
@@ -512,13 +514,19 @@ exports.getSaucesByFeatured = getSaucesByFeatured = async (req, res, next) => {
 exports.getByQuery = getByQuery = async (req, res, next) => {
   try {
     const sauces = await Sauces.FindSaucesByQuery({
-      params: res.locals
+      params: res.locals,
+      includeTotal: true
     });
 
     // Find out if more middleware or if this is last stop.
     const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
       name: "getByQuery",
       stack: req.route.stack
+    });
+
+    return res.status(200).send({
+      isGood: true,
+      sauces
     });
 
     // If we are end of stack, go to client
