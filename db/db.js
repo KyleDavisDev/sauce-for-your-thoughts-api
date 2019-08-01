@@ -49,7 +49,7 @@ class db {
           return reject(err);
         }
 
-        // promisify the query method
+        // promisify the query method - can now use async/await
         connection.query = promisify(connection.query);
 
         // return connection
