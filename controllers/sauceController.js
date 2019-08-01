@@ -126,7 +126,7 @@ exports.validateQueryParams = async (req, res, next) => {
     }
 
     // Grab limit. Make sure is number and greater than 0.
-    const limit = parseInt(req.query.lim, 10);
+    const limit = parseInt(req.query.limit, 10);
     if (limit !== NaN && limit > 0) {
       res.locals.limit = limit;
     } else {
@@ -522,11 +522,6 @@ exports.getByQuery = getByQuery = async (req, res, next) => {
     const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
       name: "getByQuery",
       stack: req.route.stack
-    });
-
-    return res.status(200).send({
-      isGood: true,
-      sauces
     });
 
     // If we are end of stack, go to client
