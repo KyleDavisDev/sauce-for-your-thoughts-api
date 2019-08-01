@@ -336,7 +336,7 @@ exports.FindSaucesByQuery = async function({ params, includeTotal = false }) {
   // Create connection -- Need to be sure to release connection
   let conn = await DB.getConnection();
   // Get sauces
-  const sauces = await conn.query(query.query, [query.offset]);
+  let sauces = await conn.query(query.query, [query.offset]);
 
   // If nothing found, we will simply not offset and return from the 'beginning'
   if (sauces.length === 0) {
