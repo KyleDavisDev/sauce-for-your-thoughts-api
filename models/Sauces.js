@@ -331,43 +331,38 @@ exports.FindSaucesByQuery = async function({ params, includeTotal = false }) {
   WHERE ${query.where} AND Sauces.IsActive = 1 AND Sauces.AdminApproved = 1
   ORDER BY ${query.order}
   LIMIT ${query.limit}
-  OFFSET 0`;
-  console.log("top of rows");
-  // const rows = {};
-  let conn = await DB.getConnection();
-  // console.log(conn);
-  const rows = await conn.query(query.query);
-  console.log(rows);
-  const total = await conn.query("SELECT FOUND_ROWS() as total").then(res => {
-    return res[0].total;
-  });
-  console.log(total);
+  OFFSET ?`;
 
-  return {};
+  // Create connection -- Need to be sure to release connection
+  let conn = await DB.getConnection();
+  // Get sauces
+  const sauces = await conn.query(query.query, [query.offset]);
 
   // If nothing found, we will simply not offset and return from the 'beginning'
-  // if (rows.length === 0) {
-  //   rows = await DB.query(query.query, [0]);
-  // }
+  if (sauces.length === 0) {
+    sauces = await DB.query(query.query, [0]);
+  }
 
-  // if (!rows) {
-  //   throw new Error(
-  //     "Could not find the appropriate information for this sauce. Please try again"
-  //   );
-  // }
+  if (!sauces) {
+    throw new Error(
+      "Could not find the appropriate information for the sauces. Please try again"
+    );
+  }
 
   if (includeTotal) {
-    // Lastly, lets figure out how many total we have for this query
-    const total = await DB.query("SELECT FOUND_ROWS() as total").then(res => {
+    // Find out how many rows total were eligible to be found (Before LIMIT was applied)
+    const total = await conn.query("SELECT FOUND_ROWS() as total").then(res => {
       return res[0].total;
     });
 
-    // console.log(query.query, query.offset);
-    console.log(total);
+    // Release connection
+    conn.release();
 
-    return Object.assign({}, rows, { total });
+    return Object.assign({}, sauces, { total });
   } else {
-    return rows;
+    // Release connection
+    conn.release();
+    return sauces;
   }
 };
 
