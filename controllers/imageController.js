@@ -39,7 +39,7 @@ exports.saveImage = async (req, res, next) => {
 
     // Upload image
     cloudinary.uploader
-      .upload(dUri.content)
+      .upload(dUri.content, { folder: "sauces/" })
       .then(img => {
         // assign name to req.body
         req.body.photo = img.secure_url;
@@ -59,4 +59,13 @@ exports.saveImage = async (req, res, next) => {
   }
 
   // return next();
+};
+
+exports.getAvatarURLs = async (req, res, next) => {
+  cloudinary.v2.api.resources({ type: "upload", prefix: "avatars/" }, function(
+    error,
+    result
+  ) {
+    console.log(error);
+  });
 };
