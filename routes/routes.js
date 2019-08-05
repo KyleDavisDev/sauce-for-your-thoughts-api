@@ -94,7 +94,7 @@ router.post(
   authController.login
 );
 
-// // 1. Generate JWT
+// 1. Generate JWT
 router.post("/api/user/login", authController.login);
 
 // 1. Validate user
@@ -213,6 +213,13 @@ router.post(
 
 // // Types
 // router.get("/api/types/get", typeController.getTypes, authController.encodeID);
+
+// Images
+router.post(
+  "/api/images/getAvatars",
+  authController.isLoggedIn,
+  imageController.getAvatarURLs
+);
 
 // END API ---
 
