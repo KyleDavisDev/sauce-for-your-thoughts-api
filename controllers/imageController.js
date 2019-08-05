@@ -62,7 +62,6 @@ exports.saveImage = async (req, res, next) => {
 };
 
 exports.getAvatarURLs = async (req, res, next) => {
-  console.log("am i here?");
   cloudinary.api.resources(
     { type: "upload", prefix: "avatars/", max_results: 500 },
     function(error, result) {
