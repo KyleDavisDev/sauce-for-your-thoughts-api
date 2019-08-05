@@ -2,6 +2,7 @@ require("dotenv").config({ path: "variables.env" });
 const multer = require("multer"); // helps uploading images/files
 var cloudinary = require("cloudinary").v2; // image hosting
 const Datauri = require("datauri"); // turn image buffer into something handleable
+const Avatars = require("../models/Avatars");
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
@@ -61,29 +62,24 @@ exports.saveImage = async (req, res, next) => {
   // return next();
 };
 
+/** @description Get all Avatar URLs from DB
+ *  @returns {string[]} array of strings
+ */
 exports.getAvatarURLs = async (req, res, next) => {
-  cloudinary.api.resources(
-    { type: "upload", prefix: "avatars/", max_results: 500 },
-    function(error, result) {
-      if (error) {
-        console.warn(err);
-      }
+  try {
+    const urls = await Avatars.getAll();
 
-      const urls = [];
-      for (let i = 0, len = result.resources.length; i < len; i++) {
-        urls.push(result.resources[i].secure_url);
-      }
-
-      console.log(urls);
-
-      // construct return object
+    if (!urls) {
       const data = {
-        isGood: true,
-        urls
+        isGood: false,
+        msg: "Could not find any avatar URLs."
       };
-
-      // Send back successful submission
-      return res.status(200).send(data);
+      return res.status(400).send(data);
     }
-  );
+
+    // create sendback data
+    const data = { isGood: true, urls };
+
+    res.status(200).send(data);
+  } catch (err) {}
 };
