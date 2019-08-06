@@ -409,11 +409,13 @@ exports.updateDisplayName = updateDisplayName = async (req, res, next) => {
       return res.status(400).send(data);
     }
 
+    // Update display name
     const isGood = await User.UpdateDisplayName({
       UserID,
       DisplayName: displayName
     });
 
+    // Make sure good
     if (!isGood) {
       const data = {
         isGood: false,
@@ -434,6 +436,15 @@ exports.updateDisplayName = updateDisplayName = async (req, res, next) => {
       //return to client
       return res.status(200).send(Object.assign({}, { isGood: true }));
     } else {
+      // Get user's email and attach to body
+      const email = await User.FindByDisplayName({
+        DisplayName: displayName
+      }).then(resp => {
+        return resp.Email;
+      });
+
+      req.body.user.email = email;
+
       // Go to next middleware
       return next();
     }
