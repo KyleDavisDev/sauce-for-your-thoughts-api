@@ -156,6 +156,11 @@ exports.AuthenticateUser = async function({ email, password, UserID }) {
   }
 };
 
+/** @description Increase LoginAttempts of user
+ *  @param {String} UserID - User to incriment
+ *  @param {String} LoginAttempts - Number to set attempts to
+ *  @return {Promise}
+ */
 exports.IncLoginAttempts = async function({ UserID, LoginAttempts }) {
   // Check if we need to lock the account or not
   if (LoginAttempts + 1 === MAX_LOGIN_ATTEMPTS) {
@@ -177,9 +182,10 @@ exports.IncLoginAttempts = async function({ UserID, LoginAttempts }) {
 
 /** @description Get basic user info
  *  @param {String?} displayName - unique user display name
- *  @return {RowDataPacket} Obj - container object
- *    @return {String} Obj.DisplayName - user email
- *    @return {String} Obj.Email - user email
+ *  @return {Promise}
+ *  @resolves {RowDataPacket} Obj - container object
+ *    @resolves {String} Obj.DisplayName - user email
+ *    @resolves {String} Obj.Email - user email
  */
 exports.FindByDisplayName = async function({ DisplayName }) {
   const rows = await DB.query(
@@ -196,7 +202,11 @@ exports.FindByDisplayName = async function({ DisplayName }) {
   return rows[0];
 };
 
-// Returns boolean
+/** @description Checks if a userID is a person who is an admin or not
+ *  @param {string} UserID - Unique user's identification
+ *  @returns {Promise}
+ *  @resolves {Boolean} Is person an admin role or not
+ */
 exports.IsAdmin = async function({ UserID }) {
   const tmp = await DB.query(
     `SELECT 
@@ -219,7 +229,8 @@ exports.IsAdmin = async function({ UserID }) {
 /** @description Update a single user's email
  *  @param {string} UserID - Unique user's identification
  *  @param {string} Email - new email address
- *  @returns {Boolean}
+ *  @returns {Promise}
+ *  @resolves {Boolean}
  */
 exports.UpdateEmail = async function({ UserID, Email }) {
   if (!UserID || !Email) {
@@ -243,7 +254,8 @@ exports.UpdateEmail = async function({ UserID, Email }) {
 /** @description Update a single user's email
  *  @param {string} UserID - Unique user's identification
  *  @param {string} Password - new password to be hashed
- *  @returns {Boolean}
+ *  @returns {Promise}
+ *  @resolves {Boolean}
  */
 exports.UpdatePassword = async function({ UserID, Password }) {
   // Sanity check
@@ -273,7 +285,8 @@ exports.UpdatePassword = async function({ UserID, Password }) {
 /** @description Update a single user's DisplayName
  *  @param {string} UserID - Unique user's identification
  *  @param {string} DisplayName - new password to be hashed
- *  @returns {Boolean}
+ *  @returns {Promise}
+ *  @resolves {Boolean}
  */
 exports.UpdateDisplayName = async function({ UserID, DisplayName }) {
   // Sanity check
