@@ -82,14 +82,32 @@ exports.getAll = function(cb) {
   });
 };
 
+/** @description Authenticate a user as legit or not
+ *  @param {String?} email - User email. Must pass email or UserID.
+ *  @param {String?} UserID - User's ID. Must pass email or UserID.
+ *  @param {String} password - user's password
+ *  @return {Promise}
+ *  @resolves {RowDataPacket} Obj - container object
+ *    @resolves {String} Obj.UserID - user email
+ *    @resolves {String} Obj.DisplayName - user display name
+ *    @resolves {String} Obj.Email - user email
+ *    @resolves {String} Obj.URL - user avatar URL
+ */
 exports.AuthenticateUser = async function({ email, password, UserID }) {
   const rows = await DB.query(
     `SELECT
-      UserID, LockedUntil, LoginAttempts, DisplayName, Email, Password
+      Users.UserID, Users.LockedUntil,
+      Users.LoginAttempts, Users.DisplayName,
+      Users.Email, Users.Password,
+      Avatars.URL
     FROM
       Users
+    JOIN Avatars
+      ON Avatars.AvatarID = Users.AvatarID
     WHERE
-      ( Email = ? OR UserID = ? ) AND IsActive = 1
+      ( Users.Email = ? OR Users.UserID = ? )
+      AND Users.IsActive = 1
+      AND Avatars.IsActive = 1
     LIMIT 1`,
     [email, UserID]
   );
@@ -129,6 +147,11 @@ exports.AuthenticateUser = async function({ email, password, UserID }) {
 
     // If doesn't have any false login attempts, or has been locked out, we can return user
     if (user.LoginAttempts === 0 && !user.LockedUntil) {
+      // remove unnecessary info
+      delete user.LoginAttempts;
+      delete user.LockedUntil;
+
+      // return user
       return user;
     }
 
@@ -138,6 +161,11 @@ exports.AuthenticateUser = async function({ email, password, UserID }) {
       [0, null, user.UserID]
     );
 
+    // remove unnecessary info
+    delete user.LoginAttempts;
+    delete user.LockedUntil;
+
+    // return user
     return user;
   } else {
     // password is bad, so increment login attempts before responding
