@@ -175,43 +175,24 @@ exports.IncLoginAttempts = async function({ UserID, LoginAttempts }) {
   );
 };
 
-exports.FindByDisplayName = async function({ displayName, UserID }) {
-  // First let's see if our UserID is an admin or not
-  const isAdmin = UserID && module.exports.IsAdmin({ UserID });
-
-  // If admin, allow to search for any displayName or all users
-  if (isAdmin) {
-    if (displayName) {
-      const rows = await DB.query(
-        "SELECT Email, DisplayName FROM Users where displayName = ?",
-        [displayName]
-      );
-
-      // If error
-      if (!rows || !rows[0]) {
-        throw new Error("Invalid displayName.");
-      }
-
-      // return results
-      return rows[0];
-    } else {
-      // Find all
-      const rows = await DB.query("SELECT Email, DisplayName FROM Users ");
-
-      return rows;
-    }
-  }
-
-  // If not an admin, only return matching UserID
+/** @description Get basic user info
+ *  @param {String?} displayName - unique user display name
+ *  @return {RowDataPacket} Obj - container object
+ *    @return {String} Obj.DisplayName - user email
+ *    @return {String} Obj.Email - user email
+ */
+exports.FindByDisplayName = async function({ DisplayName }) {
   const rows = await DB.query(
-    "SELECT Email, DisplayName FROM Users where UserID = ?",
-    [UserID]
+    "SELECT Email, DisplayName FROM Users where DisplayName = ?",
+    [DisplayName]
   );
 
   // If error
   if (!rows || !rows[0]) {
     throw new Error("Invalid displayName.");
   }
+
+  // return record
   return rows[0];
 };
 
@@ -313,5 +294,5 @@ exports.UpdateDisplayName = async function({ UserID, DisplayName }) {
   );
 
   // If all is good, will return true
-  return row && row.changedRows === 1;
+  return row && row.affectedRows === 1;
 };
