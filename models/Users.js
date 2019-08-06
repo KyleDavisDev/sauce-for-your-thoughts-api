@@ -23,10 +23,14 @@ exports.UsersTableStructure = `CREATE TABLE IF NOT EXISTS Users (
   LoginAttempts int DEFAULT 0,
   LockedUntil bigint(20) unsigned DEFAULT NULL,
   PRIMARY KEY (UserID)
+  UNIQUE KEY 'Email' ('Email'),
+  KEY 'Users_AvatarID_Avatars_AvatarID' ('AvatarID'),
+  CONSTRAINT 'Users_AvatarID_Avatars_AvatarID' FOREIGN KEY ('AvatarID') REFERENCES 'Avatars' ('AvatarID')
   ) ENGINE=InnoDB DEFAULT CHARSET=latin1;`;
 
 exports.UsersTableRemove = `ALTER TABLE Sauces DROP FOREIGN KEY Sauces_Users_UserID;
   ALTER TABLE Reviews DROP FOREIGN KEY Reviews_Users_UserID;
+  ALTER TABLE Users DROP FOREIGN KEY Users_AvatarID_Avatars_AvatarID;
   DROP TABLE Users;`;
 
 // Return insert results
