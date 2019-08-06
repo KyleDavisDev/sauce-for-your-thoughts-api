@@ -134,7 +134,8 @@ router.post(
   "/api/user/update/displayname",
   authController.isLoggedIn,
   userController.validateDisplayNameUpdate,
-  userController.updateDisplayName
+  userController.updateDisplayName,
+  authController.login
 );
 
 // // 1. Validate user
