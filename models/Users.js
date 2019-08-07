@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const moment = require("moment");
+const Avatars = require("./Avatars.js");
 
 const DB = require("../db/db.js");
 
@@ -41,15 +42,22 @@ exports.Insert = async function({ Email, Password, DisplayName }) {
   // Create hash
   const hash = await bcrypt.hash(Password, salt);
 
+  // Find random AvatarID and assign to user
+  const AvatarID = await Avatars.getRandomID();
+
   // Create insert object
   const values = {
     Email,
     Password: hash,
     DisplayName,
-    Created: moment().unix()
+    Created: moment().unix(),
+    AvatarID
   };
 
+  // Insert user record
   const results = await DB.query("INSERT INTO Users SET ?", values);
+
+  //
 
   // Make sure we could save user
   if (!results) {
