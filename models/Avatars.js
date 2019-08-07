@@ -33,3 +33,29 @@ exports.getAll = async () => {
 
   return urls;
 };
+
+/** @description Get a random ID from table
+ *  @return {Promise}
+ *  @resolves {Number} single AvatarID
+ *  @reject {String} error message
+ */
+exports.getRandomID = async () => {
+  const res = await DB.query(`
+  SELECT
+    AvatarID
+  FROM
+    Avatars
+  WHERE
+    IsActive = 1
+  ORDER BY
+    RAND()
+  LIMIT 
+    1`);
+
+  // Make sure could find and ID
+  if (!res) {
+    throw new Error("Error retrieving single avatar. Please try again.");
+  }
+
+  return res[0].AvatarID;
+};
