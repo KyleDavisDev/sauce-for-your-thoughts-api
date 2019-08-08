@@ -30,9 +30,8 @@ exports.login = async (req, res) => {
       password: req.body.user.password
     });
 
-    // create JWT token
-    const payload = { sub: user.UserID };
-    const token = jwt.sign(payload, process.env.SECRET);
+    // get JWT
+    const token = module.exports.createToken({ UserID: user.UserID });
 
     // get name and email
     const { DisplayName: displayName, Email: email, URL: avatarURL } = user;
@@ -270,6 +269,18 @@ exports.updatePassword = async (req, res, next) => {
   } catch (err) {
     res.send(err);
   }
+};
+
+/** @description Creates a unique JWT
+ *  @param {Object} UserID - Unique user id
+ *  @return {String} token - unique JWT
+ */
+exports.createToken = ({ UserID }) => {
+  // create JWT token
+  const payload = { sub: UserID };
+  const token = jwt.sign(payload, process.env.SECRET);
+
+  return token;
 };
 
 // exports.validateToken = (req, res) => {
