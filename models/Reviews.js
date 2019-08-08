@@ -179,10 +179,19 @@ exports.FindReviewsBySauceID = async function({ SauceID, UserID }) {
         ELSE Reviews.Updated
       END ) AS "Reviews.Created",
       Users.DisplayName AS "Users.DisplayName",
-      Users.Created AS "Users.Created"
-      FROM Reviews
-      JOIN Users ON Reviews.UserID = Users.UserID
-      WHERE Reviews.IsActive = 1 AND Reviews.SauceID = ? AND ?`,
+      Users.Created AS "Users.Created",
+      Avatars.URL AS "Users.AvatarURL"
+    FROM
+      Reviews
+    JOIN
+      Users ON Reviews.UserID = Users.UserID
+    JOIN 
+      Avatars ON Users.AvatarID = Avatars.AvatarID
+    WHERE
+      Reviews.IsActive = 1
+      AND Avatars.IsActive = 1
+      AND Reviews.SauceID = ?
+      AND ?`,
     [SauceID, matchUserID]
   );
 
@@ -199,7 +208,8 @@ exports.FindReviewsBySauceID = async function({ SauceID, UserID }) {
       created: row["Reviews.Created"],
       author: {
         displayName: row["Users.DisplayName"],
-        created: row["Users.Created"]
+        created: row["Users.Created"],
+        avatarURL: row["Users.AvatarURL"]
       },
       label: {
         rating: row["Reviews.LabelRating"],
