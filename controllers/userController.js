@@ -1,6 +1,7 @@
 const User = require("../models/Users");
 const validator = require("validator");
 const Utility = require("../utility/utility");
+const authController = require("./authController");
 const Hashids = require("hashids");
 const hashids = new Hashids();
 const MIN_PASSWORD_LENGTH = User.MIN_PASSWORD_LENGTH;
@@ -314,8 +315,11 @@ exports.updateEmail = updateEmail = async (req, res, next) => {
 
     // If we are end of stack, go to client
     if (isLastMiddlewareInStack) {
+      const token = authController.createToken({ UserID });
       //return to client
-      return res.status(200).send(Object.assign({}, { isGood: true }));
+      return res
+        .status(200)
+        .send(Object.assign({}, { isGood: true, user: { token } }));
     } else {
       // Go to next middleware
       return next();
