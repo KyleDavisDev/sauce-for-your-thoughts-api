@@ -113,8 +113,7 @@ router.post(
   "/api/user/update/email",
   authController.isLoggedIn,
   userController.validateEmailUpdate,
-  userController.updateEmail,
-  authController.login
+  userController.updateEmail
 );
 
 // 1. Validate user
