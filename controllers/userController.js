@@ -315,11 +315,8 @@ exports.updateEmail = updateEmail = async (req, res, next) => {
 
     // If we are end of stack, go to client
     if (isLastMiddlewareInStack) {
-      const token = authController.createToken({ UserID });
       //return to client
-      return res
-        .status(200)
-        .send(Object.assign({}, { isGood: true, user: { token } }));
+      return res.status(200).send(Object.assign({}, { isGood: true }));
     } else {
       // Go to next middleware
       return next();
