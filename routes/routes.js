@@ -136,6 +136,16 @@ router.post(
   userController.updateDisplayName
 );
 
+// 1. Validate user
+// 2. Validate info
+// 3. Update avatar url
+router.post(
+  "/api/user/update/avatar",
+  authController.isLoggedIn,
+  userController.validateAvatarUpdate,
+  userController.updateAvatarURL
+);
+
 // // 1. Validate user
 // // 2. Update user info
 // router.post(
