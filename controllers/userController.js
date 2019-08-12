@@ -426,7 +426,7 @@ exports.updatePassword = updatePassword = async (req, res, next) => {
   }
 };
 
-/** @description Update a specific user's password
+/** @description Update a specific user's display name
  *  userController.validateDisplayNameUpdate should be called before this.
  *  @param {String} req.body.user.UserID - unique user identifer
  *  @param {String} req.body.user.displayName - new display name
@@ -472,6 +472,77 @@ exports.updateDisplayName = updateDisplayName = async (req, res, next) => {
     // Find out if more middleware or if this is last stop.
     const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
       name: "updateDisplayName",
+      stack: req.route.stack
+    });
+
+    // If we are end of stack, go to client
+    if (isLastMiddlewareInStack) {
+      //return to client
+      return res.status(200).send(Object.assign({}, { isGood: true }));
+    } else {
+      // Get user's email and attach to body
+      const email = await User.FindByDisplayName({
+        DisplayName: displayName
+      }).then(resp => {
+        return resp.Email;
+      });
+
+      req.body.user.email = email;
+
+      // Go to next middleware
+      return next();
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+/** @description Update a specific user's password
+ *  userController.validateAvatarUpdate should be called before this.
+ *  @param {String} req.body.user.UserID - unique user identifer
+ *  @param {String} req.body.user.avatarURL - new display name
+ *  @return Continues on next middleware OR returns isGood object
+ */
+exports.updateAvatarURL = updateAvatarURL = async (req, res, next) => {
+  try {
+    // Get user's ID and make sure we have something
+    const { UserID } = req.body.user;
+    if (!UserID) {
+      const data = {
+        isGood: false,
+        msg: "Could not verify user as legit. Please log out and try again."
+      };
+      return res.status(400).send(data);
+    }
+
+    // Grab email and make sure we have soemthing
+    const { avatarURL } = req.body.user;
+    if (!avatarURL) {
+      const data = {
+        isGood: false,
+        msg: "Could not find a new avatarURL name to update to."
+      };
+      return res.status(400).send(data);
+    }
+    // Update display name
+    const isGood = await User.UpdateAvatarURL({
+      UserID,
+      AvatarURL: avatarURL
+    });
+
+    // Make sure good
+    if (!isGood) {
+      const data = {
+        isGood: false,
+        msg:
+          "Could not update avatar. User's account may be locked or inactive."
+      };
+      return res.status(401).send(data);
+    }
+
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "updateAvatarURL",
       stack: req.route.stack
     });
 
