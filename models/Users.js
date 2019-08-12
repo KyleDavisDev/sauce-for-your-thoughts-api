@@ -350,3 +350,39 @@ exports.UpdateDisplayName = async function({ UserID, DisplayName }) {
   // If all is good, will return true
   return row && row.affectedRows === 1;
 };
+
+/** @description Update a single user's DisplayName
+ *  @param {string} UserID - Unique user's identification
+ *  @param {string} AvatarURL - new avatar url
+ *  @returns {Promise}
+ *  @resolves {Boolean}
+ */
+exports.UpdateAvatarURL = async function({ UserID, AvatarURL }) {
+  // Sanity check
+  if (!UserID || !AvatarURL) {
+    throw new Error(
+      "Must provide required parameters to UpdateAvatarURL method"
+    );
+  }
+
+  // Find ID related to Avatar
+  const AvatarID = await Avatars.getIDFromURL({ URL: AvatarURL });
+
+  if (!AvatarID) {
+    throw new Error("Error finding AvatarID from URL. Please try again.");
+  }
+  console.log(AvatarID);
+
+  const row = await DB.query(
+    `UPDATE Users
+    SET
+    AvatarID = ?
+    WHERE
+      UserID = ? AND IsActive = 1 AND LoginAttempts <= ?
+    `,
+    [AvatarID, UserID, MAX_LOGIN_ATTEMPTS]
+  );
+
+  // If all is good, will return true
+  return row && row.affectedRows === 1;
+};
