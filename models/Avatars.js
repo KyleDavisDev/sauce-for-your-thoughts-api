@@ -59,3 +59,35 @@ exports.getRandomID = async () => {
 
   return res[0].AvatarID;
 };
+
+/** @description Get the ID related to the URL
+ *  @param {string} URL - URL to look up
+ *  @return {Promise}
+ *  @resolves {Number} single AvatarID
+ *  @reject {String} error message
+ */
+exports.getIDFromURL = async ({ URL }) => {
+  if (!URL) {
+    throw new Error("Must provide required parameters to getIDFromURL method");
+  }
+
+  const res = await DB.query(
+    `
+  SELECT
+    AvatarID
+  FROM
+    Avatars
+  WHERE
+    IsActive = 1
+    AND URL = ?
+  `,
+    [URL]
+  );
+
+  // Make sure could find and ID
+  if (!res) {
+    throw new Error("Error retrieving single avatar. Please try again.");
+  }
+
+  return res[0].AvatarID;
+};
