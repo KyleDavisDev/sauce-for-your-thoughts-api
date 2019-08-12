@@ -208,6 +208,49 @@ exports.validateDisplayNameUpdate = async (req, res, next) => {
   }
 };
 
+/** @description Validate displayName information before moving to next middleware
+ *  @param {String} req.body.user.UserID - unique user identifer
+ *  @param {String} req.body.user.avatarURL - new display name
+ *  @param {String} req.body.user.password - user password
+ *  @return Continues on next middleware OR returns error
+ */
+exports.validateAvatarUpdate = async (req, res, next) => {
+  // Make sure old password is sufficiently long
+  if (req.body.user.password.length < MIN_PASSWORD_LENGTH) {
+    throw new Error(
+      `Your old password is too weak! Please make your password over ${MIN_PASSWORD_LENGTH} characters long.`
+    );
+  }
+
+  // Make sure avatarURL is sufficiently long -- 10 is arbitrary
+  if (req.body.user.avatarURL.length < 10) {
+    throw new Error("Your avatar path is too short!");
+  }
+
+  try {
+    const { password, UserID } = req.body.user;
+    // Make sure passed password is good
+    const user = await User.AuthenticateUser({ UserID, password });
+
+    // Make sure user was found
+    if (!user) {
+      throw new Error("Could not authenticate user. Please try agian");
+    }
+
+    // Keep going
+    return next();
+  } catch (err) {
+    if (err.code === "ECONNREFUSED") {
+      err.message = "Connection error. Please try again";
+    }
+    const data = {
+      isGood: false,
+      msg: err.message || "Connection error. Please try again"
+    };
+    return res.status(err.status).send(data);
+  }
+};
+
 exports.register = async (req, res, next) => {
   try {
     // These will have already been checked via userController.validateRegister method
