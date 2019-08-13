@@ -118,7 +118,7 @@ exports.validateQueryParams = async (req, res, next) => {
     }
 
     // Grab page. Make sure is number and greater than 0.
-    const page = parseInt(req.query.page, 10);
+    const page = parseInt(params.page, 10);
     if (page !== NaN && page > 0) {
       res.locals.page = page;
     } else {
@@ -126,12 +126,20 @@ exports.validateQueryParams = async (req, res, next) => {
     }
 
     // Grab limit. Make sure is number and greater than 0.
-    const limit = parseInt(req.query.limit, 10);
+    const limit = parseInt(params.limit, 10);
     if (limit !== NaN && limit > 0) {
       res.locals.limit = limit;
     } else {
       res.locals.limit = DEFAULT_QUERY_LIMIT;
     }
+
+    // Check srch
+    const srch = params.srch;
+    if (!validator.isNumeric(src) && srch.length < 20) {
+      res.locals.like = srch;
+    }
+
+    console.log(res.locals);
 
     return next();
   } catch (err) {
