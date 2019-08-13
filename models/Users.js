@@ -371,7 +371,6 @@ exports.UpdateAvatarURL = async function({ UserID, AvatarURL }) {
   if (!AvatarID) {
     throw new Error("Error finding AvatarID from URL. Please try again.");
   }
-  console.log(AvatarID);
 
   const row = await DB.query(
     `UPDATE Users
