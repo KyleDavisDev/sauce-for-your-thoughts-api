@@ -137,7 +137,7 @@ exports.validateQueryParams = async (req, res, next) => {
     const srch = params.srch;
     // exists, is string, less than 20 char long
     if (srch && !validator.isNumeric(srch) && srch.length < 20) {
-      res.locals.like = srch;
+      res.locals.srch = srch;
     }
 
     return next();
