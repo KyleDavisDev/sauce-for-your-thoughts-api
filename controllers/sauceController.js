@@ -156,13 +156,13 @@ exports.validateQueryParams = async (req, res, next) => {
  *  @param {String} req.body.sauce.name - name of the sauce
  *  @param {String} req.body.sauce.maker - name of person/company that made sauce
  *  @param {String} req.body.sauce.description - description of the sauce
- *  @param {String?} req.body.sauce.ingrediants - ingrediants of the sauce
- *  @param {Number?|null} req.body.sauce.shu - spiciness of sauce
- *  @param {String[]?} req.body.sauce.types - how the suace is intended to be used
- *  @param {Object?} req.body.sauce.location - location object
- *    @param {String?} req.body.sauce.location.country - country sauce was made in
- *    @param {String?} req.body.sauce.location.state - state/region sauce was made in
- *    @param {String?} req.body.sauce.location.city - city sauce was made in
+ *  @param {String=} req.body.sauce.ingrediants - ingrediants of the sauce
+ *  @param {Number=|null} req.body.sauce.shu - spiciness of sauce
+ *  @param {String[]=} req.body.sauce.types - how the suace is intended to be used
+ *  @param {Object=} req.body.sauce.location - location object
+ *    @param {String=} req.body.sauce.location.country - country sauce was made in
+ *    @param {String=} req.body.sauce.location.state - state/region sauce was made in
+ *    @param {String=} req.body.sauce.location.city - city sauce was made in
  *  @param {String} req.body.sauce.photo - unique name of the photo saved on server
  */
 exports.addSauce = async (req, res, next) => {
