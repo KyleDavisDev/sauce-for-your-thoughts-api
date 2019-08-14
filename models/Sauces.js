@@ -296,6 +296,10 @@ exports.FindSaucesByQuery = async function({ params, includeTotal = false }) {
     query.where = `Types.Value LIKE '${params.type}'`;
   }
 
+  if (params.srch) {
+    query.where += ` && Sauces.Name LIKE '%${params.srch}%'`;
+  }
+
   switch (params.order) {
     case "name":
       query.order = "Sauces.Name ASC";
@@ -332,6 +336,8 @@ exports.FindSaucesByQuery = async function({ params, includeTotal = false }) {
   ORDER BY ${query.order}
   LIMIT ${query.limit}
   OFFSET ?`;
+
+  console.log(query.query);
 
   // Create connection -- Need to be sure to release connection
   let conn = await DB.getConnection();
