@@ -266,11 +266,11 @@ exports.getSaucesWithNewestReviews = async function() {
 };
 
 /** @description Grab set of sauces from DB
- *  @param {Object} [params] - Object of possible params
- *  @param {String} [params.type] - type of sauce to filter by
- *  @param {String} [params.order] - How to order the returned array
- *  @param {Number=} [params.limit] - Number per page
- *  @param {Number=} [params.page] - Which page
+ *  @param {Object=} params - Object of possible params
+ *  @param {String=} params.type - type of sauce to filter by
+ *  @param {String} params.order - How to order the returned array
+ *  @param {Number=} params.limit - Number per page
+ *  @param {Number=} params.page - Which page
  *  @param {Boolean=} includeTotal - determines whether or not to include total amount
  *  @returns {Promise} Promise object that returns array of sauces
  *  @resolves {Object[]} sauce - array of sauce objects w/ basic info
