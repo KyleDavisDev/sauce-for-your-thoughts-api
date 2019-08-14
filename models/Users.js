@@ -91,8 +91,8 @@ exports.getAll = function(cb) {
 };
 
 /** @description Authenticate a user as legit or not
- *  @param {String?} email - User email. Must pass email or UserID.
- *  @param {String?} UserID - User's ID. Must pass email or UserID.
+ *  @param {String=} email - User email. Must pass email or UserID.
+ *  @param {String=} UserID - User's ID. Must pass email or UserID.
  *  @param {String} password - user's password
  *  @return {Promise}
  *  @resolves {RowDataPacket} Obj - container object
@@ -222,7 +222,7 @@ exports.IncLoginAttempts = async function({ UserID, LoginAttempts }) {
 };
 
 /** @description Get basic user info
- *  @param {String?} displayName - unique user display name
+ *  @param {String=} displayName - unique user display name
  *  @return {Promise}
  *  @resolves {RowDataPacket} Obj - container object
  *    @resolves {String} Obj.DisplayName - user email
