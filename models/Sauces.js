@@ -274,6 +274,7 @@ exports.getSaucesWithNewestReviews = async function() {
  *  @param {Boolean=} includeTotal - determines whether or not to include total amount
  *  @returns {Promise} Promise object that returns array of sauces
  *  @resolves {Object[]} sauce - array of sauce objects w/ basic info
+ *  @resolves {Number=} total - how many possible sauces match the specific query
  *
  *  @reject {String} error message
  */
@@ -364,11 +365,11 @@ exports.FindSaucesByQuery = async function({ params, includeTotal = false }) {
     // Release connection
     conn.release();
 
-    return Object.assign({}, sauces, { total });
+    return { sauces, total };
   } else {
     // Release connection
     conn.release();
-    return sauces;
+    return { sauces };
   }
 };
 
