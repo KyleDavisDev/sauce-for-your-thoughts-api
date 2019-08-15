@@ -109,7 +109,7 @@ exports.validateQueryParams = async (req, res, next) => {
 
     // Maybe this will come from DB later?
     // List of known order options
-    const orderOptions = ["name", "newest", "times_reviewed", "avg_rating"];
+    const orderOptions = ["name", "newest", "times reviewed", "avg rating"];
     // If Sort By doesn't exist, assign it
     if (params.order && orderOptions.includes(params.order.toLowerCase())) {
       res.locals.order = params.order.toLowerCase();
