@@ -304,7 +304,7 @@ exports.FindSaucesByQuery = async function({ params, includeTotal = false }) {
     case "name":
       query.order = "Sauces.Name ASC";
       break;
-    case "times_reviewed":
+    case "times reviewed":
       query.order = "NumberOfReviews DESC";
       break;
     case "newest":
@@ -336,6 +336,8 @@ exports.FindSaucesByQuery = async function({ params, includeTotal = false }) {
   ORDER BY ${query.order}
   LIMIT ${query.limit}
   OFFSET ?`;
+
+  console.log(query.query);
 
   // Create connection -- Need to be sure to release connection
   let conn = await DB.getConnection();
