@@ -337,8 +337,6 @@ exports.FindSaucesByQuery = async function({ params, includeTotal = false }) {
   LIMIT ${query.limit}
   OFFSET ?`;
 
-  console.log(query.query);
-
   // Create connection -- Need to be sure to release connection
   let conn = await DB.getConnection();
   // Get sauces
