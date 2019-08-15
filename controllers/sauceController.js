@@ -516,11 +516,11 @@ exports.getSaucesByFeatured = getSaucesByFeatured = async (req, res, next) => {
  *  @param {String} res.locals.order - Which order to list the sauces
  *  @param {Number} res.locals.page - How many we should offset
  *  @param {Number} res.locals.limit - sauce per page
- *  @returns Attaches sauces to res.locals (and clean up res.locals) OR returns sauces w/ res.locals
+ *  @returns Attaches sauces to res.locals, clean up res.locals, attach totalForQuery to res.locals OR returns sauces w/ res.locals
  */
 exports.getByQuery = getByQuery = async (req, res, next) => {
   try {
-    const sauces = await Sauces.FindSaucesByQuery({
+    const { sauces, total: totalForQuery } = await Sauces.FindSaucesByQuery({
       params: res.locals,
       includeTotal: true
     });
@@ -542,6 +542,9 @@ exports.getByQuery = getByQuery = async (req, res, next) => {
       // Attach newest to res.locals
       res.locals.sauces = sauces;
 
+      // attach total for the query to res.locals
+      res.locals.totalForQuery = totalForQuery;
+
       // remove query-related items from res.locals
       delete res.locals.limit;
       delete res.locals.order;
@@ -552,7 +555,6 @@ exports.getByQuery = getByQuery = async (req, res, next) => {
       return next();
     }
   } catch (err) {
-    console.log(err);
     const data = { isGood: false, msg: "Unable to find any sauces" };
     res.status(400).send(data);
   }
