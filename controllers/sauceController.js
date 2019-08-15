@@ -516,7 +516,7 @@ exports.getSaucesByFeatured = getSaucesByFeatured = async (req, res, next) => {
  *  @param {String} res.locals.order - Which order to list the sauces
  *  @param {Number} res.locals.page - How many we should offset
  *  @param {Number} res.locals.limit - sauce per page
- *  @returns Attaches sauces to res.locals OR returns sauces w/ res.locals
+ *  @returns Attaches sauces to res.locals (and clean up res.locals) OR returns sauces w/ res.locals
  */
 exports.getByQuery = getByQuery = async (req, res, next) => {
   try {
@@ -541,6 +541,13 @@ exports.getByQuery = getByQuery = async (req, res, next) => {
     } else {
       // Attach newest to res.locals
       res.locals.sauces = sauces;
+
+      // remove query-related items from res.locals
+      delete res.locals.limit;
+      delete res.locals.order;
+      delete res.locals.srch;
+      delete res.locals.page;
+
       // Go to next middleware
       return next();
     }
