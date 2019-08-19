@@ -389,7 +389,7 @@ exports.getSaucesWithNewestReviews = getSaucesWithNewestReviews = async (
 /** @description Find newly-added sauces */
 exports.getSaucesByNewest = getSaucesByNewest = async (req, res, next) => {
   try {
-    const saucesByNewest = await Sauces.FindSaucesByQuery({
+    const { sauces: saucesByNewest } = await Sauces.FindSaucesByQuery({
       params: { type: "all", order: "newest", limit: 10 },
       includeTotal: false
     });
@@ -434,7 +434,7 @@ exports.getSaucesByNewest = getSaucesByNewest = async (req, res, next) => {
 /** @description Find featured sauces */
 exports.getSaucesByFeatured = getSaucesByFeatured = async (req, res, next) => {
   try {
-    const saucesByFeatured = await Sauces.FindSaucesByQuery({
+    const { sauces: saucesByFeatured } = await Sauces.FindSaucesByQuery({
       params: { type: "all", order: "newest", limit: 10 },
       includeTotal: false
     });
