@@ -11,6 +11,7 @@
   "author": "Kyle Davis",
   "license": "ISC",
   "dependencies": {
+    "@sendgrid/mail": "^6.4.0",
     "axios": "^0.16.2",
     "bcrypt": "^3.0.4",
     "cloudinary": "^1.14.0",
