@@ -74,15 +74,6 @@ router.get(
   sauceController.getTotal
 );
 
-// // 1. return sauces by specific tag
-// router.post("/api/sauces/get/by/tag/", sauceController.getSauceByTag);
-
-// // TODO: Add comment
-// router.get("/api/sauces/search/:q", sauceController.searchSauces);
-
-// // 1. Return array of tags
-// router.get("/api/tags/get", sauceController.getTagsList);
-
 // User(s)
 // 1. Validate the data
 // 2. register the user
@@ -145,14 +136,6 @@ router.post(
   userController.validateAvatarUpdate,
   userController.updateAvatarURL
 );
-
-// // 1. Validate user
-// // 2. Update user info
-// router.post(
-//   "/api/user/update",
-//   authController.isLoggedIn,
-//   userController.updateUser
-// );
 
 // 1. Check is user.token is legit, place user's _id onto user
 router.post("/api/user/isloggedin", authController.isLoggedIn);
