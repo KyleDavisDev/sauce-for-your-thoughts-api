@@ -9,6 +9,9 @@ exports.UserMetaTableStructure = `CREATE TABLE UserMeta (
   ExpireDate datetime DEFAULT NULL,
   IsActive tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (UserMetaID)
+  KEY UserID (UserID),
+  CONSTRAINT UserMeta_UserID_Users_UserID FOREIGN KEY (UserID) REFERENCES Users (UserID)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;`;
 
-exports.UserMetaDrop = "DROP TABLE UserMeta;";
+exports.UserMetaDrop = `ALTER TABLE UserMeta DROP FOREIGN KEY UserMeta_UserID_Users_UserID;
+  DROP TABLE UserMeta;`;
