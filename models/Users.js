@@ -396,3 +396,33 @@ exports.UpdateAvatarURL = async function({ UserID, AvatarURL }) {
   // If all is good, will return true
   return row && row.affectedRows === 1;
 };
+
+/** @description Check if person have verified email or not
+ *  @param {string} UserID - Unique user's identification
+ *  @returns {Promise}
+ *  @resolves {Boolean}
+ */
+exports.IsEmailVerified = async function({ UserID }) {
+  // Sanity check
+  if (!UserID) {
+    throw new Error(
+      "Must provide required parameters to IsEmailVerified method"
+    );
+  }
+
+  const row = await DB.query(
+    `
+    SELECT
+      COUNT(*) AS COUNT
+    FROM
+      Users
+    WHERE
+      UserID = ?
+      AND IsActive = 1
+    `,
+    [UserID, MAX_LOGIN_ATTEMPTS]
+  );
+
+  // If all is good, will return true
+  return row && row.COUNT === 1;
+};
