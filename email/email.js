@@ -37,7 +37,11 @@ class email {
   }
 
   registrationEmailHTML(msg) {
-    return emailConfirmation.emailConfirmation(msg);
+    return emailConfirmation.registrationConfirmationHTML(msg);
+  }
+
+  registrationEmail(msg) {
+    return emailConfirmation.registrationConfirmationText(msg);
   }
 }
 
