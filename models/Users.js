@@ -69,7 +69,7 @@ exports.Insert = async function({ Email, Password, DisplayName }) {
     to: "hellokyledavis@gmail.com",
     from: "no-reply@sfyt.com",
     subject: "Email Confirmation",
-    text: "and easy to do anywhere, even with Node.js",
+    text: EmailClient.registrationEmail("hellokyledavis@gmail.com"),
     html: EmailClient.registrationEmailHTML("hellokyledavis@gmail.com")
   };
 
