@@ -277,3 +277,27 @@ exports.FindSingleReview = async function({ SauceID, UserID }) {
 
   return row[0];
 };
+
+exports.DoesReviewExist = async function({ SauceID, UserID }) {
+  const row = await DB.query(
+    `
+    SELECT
+      COUNT(*)
+    FROM
+      Reviews
+    WHERE
+      Reviews.IsActive = 1
+      AND Reviews.SauceID = ?
+      AND Reviews.UserID = ?
+      `,
+    [SauceID, UserID]
+  );
+
+  if (!row) {
+    throw new Error(
+      "Could not find any reviews for this sauce. Be the first to submit one!"
+    );
+  }
+
+  return !!row[0];
+};
