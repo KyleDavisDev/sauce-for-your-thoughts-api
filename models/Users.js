@@ -24,6 +24,7 @@ exports.UsersTableStructure = `CREATE TABLE IF NOT EXISTS Users (
   LoginAttempts int DEFAULT 0,
   LockedUntil bigint(20) unsigned DEFAULT NULL,
   AvatarID int(11) unsigned DEFAULT NULL,
+  IsEmailVerified int(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (UserID)
   UNIQUE KEY 'Email' ('Email'),
   KEY 'Users_AvatarID_Avatars_AvatarID' ('AvatarID'),
