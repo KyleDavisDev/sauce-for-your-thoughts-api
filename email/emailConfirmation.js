@@ -4,7 +4,7 @@ const env =
     ? "https://sauceforyourthoughts.com"
     : "http://localhost:8080";
 
-exports.emailConfirmation = function(email) {
+exports.registrationConfirmationHTML = function(email) {
   return `<!DOCTYPE html>
   <html lang="en">
       <head>
@@ -64,6 +64,25 @@ exports.emailConfirmation = function(email) {
           </table>
       </body>
   </html>`;
+};
+
+exports.registrationConfirmationText = function(email) {
+  return `Hi there,
+
+  This email has just been used to register for an account on SauceForYourThoughts.com but must be verified first to lift all restrictions.
+  
+  Please click the link below to verify this email address as valid.
+  
+  |  [Confirm Email](${env}/confirm/${email}) | 
+
+    
+
+  If you did not expect this email, click the following link and we will immediately remove this email from our records.
+
+  | [Remove Email](${env}/remove/${email}) |
+  
+  Thanks, SFYT Team
+  `;
 };
 
 const STYLES = `<style type="text/css">
