@@ -31,13 +31,13 @@ exports.registrationConfirmationHTML = function(email) {
                                     <table class="btn btn-primary">
                                       <tr>
                                         <td>
-                                          <a href="${env}/confirm/${email}">Confirm Email</a>
+                                          <a href="${env}/account/email/confirm/${email}">Confirm Email</a>
                                         </td>
                                         <td>
                                         </td>
                                       </tr>
                                     </table>
-                              <p>If you didn't expect this email, please <a href="http://email.mailgun.net/u/eJx1js9uhCAQh59GL5sY_oMHDm66vkB76akBHJWsolHcZN--4zbtrQlhfsA339BZqstoGaE1MbhLrLKildCquTLW3m6MMyXeCkFmF6fhSFWCXI6W95QwcAoUrSF4T3RvJA2ac8dMbXi52RGmabk_J-jcI-5oGE5FFZa5nGK62zHndS94U7AWl1vX6ncEIniTYc8xDZg2CHGNkPKOh_-1pyXk-HAZMAYvhelqKoQy4EjXG157HfC_su6DEYjITgYSZO8ISKMJ8dpL5pXHp3d3BLRIRtple9XP5fgJH-NyDGPeSxy5uvT8Sm4G-2q4IHw5wcsflG3Bmm9Kd3AJ">unsubscribe</a>.</p>
+                              <p>If you didn't expect this email, please <a href="${env}/account/email/remove/${email}">unsubscribe</a>.</p>
                                     <p>Thanks, SFYT Team</p>
                                   </td>
                                 </tr>
@@ -52,7 +52,7 @@ exports.registrationConfirmationHTML = function(email) {
                           "@type": "EmailMessage",
                           "action": {
                             "@type": "ViewAction",
-                            "url": "${env}/confirm/${email}",
+                            "url": "${env}/account/email/confirm/${email}",
                             "name": "Confirm email for SFYT."
                           }
                         }
@@ -73,13 +73,13 @@ exports.registrationConfirmationText = function(email) {
   
   Please click the link below to verify this email address as valid.
   
-  |  [Confirm Email](${env}/confirm/${email}) | 
+  |  [Confirm Email](${env}/account/email/confirm/${email}) | 
 
     
 
   If you did not expect this email, click the following link and we will immediately remove this email from our records.
 
-  | [Remove Email](${env}/remove/${email}) |
+  | [Remove Email](${env}/account/email/remove/${email}) |
   
   Thanks, SFYT Team
   `;
