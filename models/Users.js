@@ -86,8 +86,7 @@ exports.DoesUserExist = async function({ UserID }) {
       Users
     WHERE
       UserID = ?
-      AND IsActive = 1
-      AND IsEmailVerified = 1`,
+      AND IsActive = 1`,
     [UserID]
   );
 
