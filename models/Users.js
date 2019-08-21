@@ -3,6 +3,7 @@ const moment = require("moment");
 const Avatars = require("./Avatars.js");
 
 const DB = require("../db/db.js");
+const EmailClient = require("../email/email");
 
 // Constants
 const MAX_LOGIN_ATTEMPTS = 5;
@@ -58,12 +59,21 @@ exports.Insert = async function({ Email, Password, DisplayName }) {
   // Insert user record
   const results = await DB.query("INSERT INTO Users SET ?", values);
 
-  //
-
   // Make sure we could save user
   if (!results) {
     throw new Error("Error trying to save user. Please try again.");
   }
+
+  // Send email to user asking to confirm email
+  const msg = {
+    to: "hellokyledavis@gmail.com",
+    from: "no-reply@sfyt.com",
+    subject: "Email Confirmation",
+    text: "and easy to do anywhere, even with Node.js",
+    html: EmailClient.registrationEmailHTML("hellokyledavis@gmail.com")
+  };
+
+  await EmailClient.sendEmail(msg);
 
   return results;
 };
