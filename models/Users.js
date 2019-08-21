@@ -66,13 +66,12 @@ exports.Insert = async function({ Email, Password, DisplayName }) {
 
   // Send email to user asking to confirm email
   const msg = {
-    to: "hellokyledavis@gmail.com",
+    to: Email,
     from: "no-reply@sfyt.com",
     subject: "Email Confirmation",
-    text: EmailClient.registrationEmail("hellokyledavis@gmail.com"),
-    html: EmailClient.registrationEmailHTML("hellokyledavis@gmail.com")
+    text: EmailClient.registrationEmail(Email),
+    html: EmailClient.registrationEmailHTML(Email)
   };
-
   await EmailClient.sendEmail(msg);
 
   return results;
@@ -86,7 +85,9 @@ exports.DoesUserExist = async function({ UserID }) {
     FROM
       Users
     WHERE
-      UserID = ? AND IsActive = 1`,
+      UserID = ?
+      AND IsActive = 1
+      AND IsEmailVerified = 1`,
     [UserID]
   );
 
