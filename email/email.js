@@ -1,16 +1,16 @@
 const sgMail = require("@sendgrid/mail");
 require("dotenv").config({ path: "variables.env" });
 
+emailConfirmation = require("./emailConfirmation");
+
 class email {
   constructor() {
     const ENV = process.env.ENV;
     let apiKey;
 
     if (ENV === "prod") {
-      domain = process.env.MAIL_DOMAIN_PROD;
       apiKey = process.env.MAIL_API_KEY_PROD;
     } else {
-      domain = process.env.MAIL_DOMAIN_TEST;
       apiKey = process.env.MAIL_API_KEY_TEST;
     }
 
@@ -34,6 +34,10 @@ class email {
    */
   sendEmail(msg) {
     return this.email.send(msg);
+  }
+
+  registrationEmailHTML(msg) {
+    return emailConfirmation.emailConfirmation(msg);
   }
 }
 
