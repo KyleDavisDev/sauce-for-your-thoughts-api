@@ -115,8 +115,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
     if (!user) {
       const data = {
         isGood: false,
-        msg:
-          "Could not find your account, your account is disabled, or you need to confirm your email."
+        msg: "Could not find your account or your account is disabled."
       };
       return res.status(400).send(data);
     }
