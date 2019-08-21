@@ -15,3 +15,18 @@ exports.UserMetaTableStructure = `CREATE TABLE UserMeta (
 
 exports.UserMetaDrop = `ALTER TABLE UserMeta DROP FOREIGN KEY UserMeta_UserID_Users_UserID;
   DROP TABLE UserMeta;`;
+
+/** @description Update a single user's email
+ *  @param {string} UserID - Unique user's identification
+ *  @param {string} Email - new email address
+ *  @returns {Promise}
+ *  @resolves {Boolean}
+ */
+exports.InsertEmailUpdate = async function({ UserID, Email }) {
+  // Quick sanity check
+  if (!UserID || !Email) {
+    throw new Error(
+      "Must provide required parameters to InsertEmailUpdate method"
+    );
+  }
+};
