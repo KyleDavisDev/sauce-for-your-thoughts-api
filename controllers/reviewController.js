@@ -443,7 +443,7 @@ exports.canUserSubmit = canUserSubmit = async (req, res, next) => {
         msg:
           "Could not find a slug withing your parameters, please make sure one is provided."
       };
-      return res.status(400).send(data);
+      return res.status(404).send(data);
     }
 
     // Find sauceID
@@ -456,7 +456,7 @@ exports.canUserSubmit = canUserSubmit = async (req, res, next) => {
         msg:
           "Could not find any sauces with that slug, please make sure it's a valid slug and try again."
       };
-      return res.status(400).send(data);
+      return res.status(404).send(data);
     }
 
     // Find Review
