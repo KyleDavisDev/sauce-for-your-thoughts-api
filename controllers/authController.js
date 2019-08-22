@@ -283,7 +283,64 @@ exports.createToken = ({ UserID }) => {
   return token;
 };
 
-// exports.validateToken = (req, res) => {
-//   const data = { isGood: true, msg: "Found user." };
-//   return res.status(200).send(data);
-// };
+/** @description Check if user is eligible to add a sauce or not
+ *  @extends res.locals attaches isEmailVerified to res.locals or returns with that message
+ *  @param {String} req.body.user.UserID - unique user string *
+ *  @return Attaches isEmailVerified to res.locals OR Returns res.locals w/ isEmailVerified
+ */
+exports.isEmailVerified = isEmailVerified = async (req, res, next) => {
+  try {
+    // get UserID
+    const { UserID } = req.body.user;
+
+    // Make sure we have userid
+    if (!UserID) {
+      const data = {
+        isGood: false,
+        msg: "Could not find a user to lookup. Please provide a valid user."
+      };
+      return res.status(400).send(data);
+    }
+
+    // Find if email has been verified or not
+    const IsEmailVerified = await Users.IsEmailVerified({ UserID });
+
+    // If not verified, end here.
+    if (!IsEmailVerified) {
+      //return to client
+      return res.status(401).send({
+        isGood: false, //user cannot update
+        msg:
+          "You are ineligible to submit at this time. Please verify email first."
+      });
+    }
+
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "isEmailVerified",
+      stack: req.route.stack
+    });
+
+    // If we are end of stack, go to client
+    if (isLastMiddlewareInStack) {
+      //return to client
+      return res.status(200).send({
+        isGood: IsEmailVerified, //user can/cannot update
+        msg: "You are eligible to submit a sauce."
+      });
+    } else {
+      // Go to next middleware
+      res.locals.isEmailVerified = IsEmailVerified;
+      return next();
+    }
+  } catch (err) {
+    console.log(err);
+    const data = {
+      isGood: false,
+      msg:
+        "There was an error in determing if the user can submit a review to this sauce. Make sure your query parameters are correct and try again.",
+      err
+    };
+    return res.status(400).send(data);
+  }
+};
