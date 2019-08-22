@@ -35,7 +35,7 @@ router.post(
 router.post(
   "/api/review/canusersubmit",
   authController.isLoggedIn,
-  sauceController.canUserSubmit
+  authController.isEmailVerified
 );
 
 // 1. Make sure slug param is legit
@@ -185,6 +185,7 @@ router.post(
 router.post(
   "/api/review/canusersubmit",
   authController.isLoggedIn,
+  authController.isEmailVerified,
   reviewController.canUserSubmit
 );
 
