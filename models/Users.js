@@ -76,13 +76,14 @@ exports.Insert = async function({ Email, Password, DisplayName }) {
     throw new Error("Error trying to save user. Please try again.");
   }
 
+  const emailHashed = await bcrypt.hash(Email, salt);
   // Send email to user asking to confirm email
   const msg = {
     to: Email,
     from: "no-reply@sfyt.com",
     subject: "Email Confirmation",
-    text: EmailClient.registrationEmail(Email),
-    html: EmailClient.registrationEmailHTML(Email)
+    text: EmailClient.registrationEmail(emailHashed),
+    html: EmailClient.registrationEmailHTML(emailHashed)
   };
   await EmailClient.sendEmail(msg);
 
