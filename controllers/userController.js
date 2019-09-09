@@ -251,13 +251,36 @@ exports.validateAvatarUpdate = async (req, res, next) => {
   }
 };
 
+/** @description Register a user into the database.
+ *  @param {String} req.body.user.email - user's email
+ *  @param {String} req.body.user.displayName - user's display name
+ *  @param {String} req.body.user.password - user's password
+ *  @return Continues on next middleware OR returns error
+ */
 exports.register = async (req, res, next) => {
+  // Grab variables and check they exist
+  const {
+    email: Email,
+    displayName: DisplayName,
+    password: Password
+  } = req.body.user;
+
+  if (!Email || !DisplayName || !Password) {
+    const data = {
+      isGood: false,
+      msg:
+        "Could not register user. Please make sure all required information is provided."
+    };
+    // Sending bad data response
+    return res.status(400).send(data);
+  }
+
   try {
     // These will have already been checked via userController.validateRegister method
     const record = {
-      Email: req.body.user.email,
-      DisplayName: req.body.user.displayName,
-      Password: req.body.user.password
+      Email,
+      DisplayName,
+      Password
     };
 
     // Insert into DB
