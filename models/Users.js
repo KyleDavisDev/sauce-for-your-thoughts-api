@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const moment = require("moment");
 const Avatars = require("./Avatars.js");
+const authController = require("../controllers/authController");
 
 const DB = require("../db/db.js");
 const EmailClient = require("../email/email");
@@ -76,14 +77,14 @@ exports.Insert = async function({ Email, Password, DisplayName }) {
     throw new Error("Error trying to save user. Please try again.");
   }
 
-  const emailHashed = await bcrypt.hash(Email, salt);
+  const emailToken = authController.createToken(Email);
   // Send email to user asking to confirm email
   const msg = {
     to: Email,
     from: "no-reply@sfyt.com",
     subject: "Email Confirmation",
-    text: EmailClient.registrationEmail(emailHashed),
-    html: EmailClient.registrationEmailHTML(emailHashed)
+    text: EmailClient.registrationEmail(emailToken),
+    html: EmailClient.registrationEmailHTML(emailToken)
   };
   await EmailClient.sendEmail(msg);
 
@@ -438,4 +439,35 @@ exports.IsEmailVerified = async function({ UserID }) {
 
   // If all is good, will return true
   return row && row.COUNT === 1;
+};
+
+/** @description Toggle whether a user's email has been confirmed or not
+ *  @param {String} Email - Email to toggle
+ *  @param {Boolean} Toggle - whether email has been confirmed or not
+ *  @returns {Promise}
+ *  @resolves {Boolean}
+ */
+exports.toggleConfirmEmail = async function({ Email, Toggle }) {
+  // Sanity check
+  if (!Email || Toggle === undefined || Toggle === null) {
+    throw new Error(
+      "Must provide required parameters to toggleConfirmEmail method"
+    );
+  }
+
+  const row = await DB.query(
+    `
+    UPDATE
+      Users
+    SET
+      IsEmailVerified = ?
+    WHERE
+      Email = ?
+      AND IsActive = 1
+    `,
+    [Toggle, Email]
+  );
+
+  // If all is good, will return true
+  return row && row.affectedRows === 1;
 };
