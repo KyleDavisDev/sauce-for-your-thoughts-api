@@ -31,7 +31,7 @@ exports.login = async (req, res) => {
     });
 
     // get JWT
-    const token = module.exports.createToken({ UserID: user.UserID });
+    const token = module.exports.createToken(user.UserID);
 
     // get name and email
     const { DisplayName: displayName, Email: email, URL: avatarURL } = user;
@@ -175,9 +175,7 @@ exports.forgot = async (req, res) => {
     await user.save();
 
     // create URL and email to user email
-    const resetURL = `http://localhost:8080/account/reset/${
-      user.resetPasswordToken
-    }`;
+    const resetURL = `http://localhost:8080/account/reset/${user.resetPasswordToken}`;
     await mail.send({
       user,
       subject: "Password reset",
@@ -272,12 +270,12 @@ exports.updatePassword = async (req, res, next) => {
 };
 
 /** @description Creates a unique JWT
- *  @param {Object} UserID - Unique user id
+ *  @param {String} StringToCreateTokenWith - Unique user id
  *  @return {String} token - unique JWT
  */
-exports.createToken = ({ UserID }) => {
+exports.createToken = StringToCreateTokenWith => {
   // create JWT token
-  const payload = { sub: UserID };
+  const payload = { sub: StringToCreateTokenWith };
   const token = jwt.sign(payload, process.env.SECRET);
 
   return token;
