@@ -31,7 +31,7 @@ exports.registrationConfirmationHTML = function(email) {
                                     <table class="btn btn-primary">
                                       <tr>
                                         <td>
-                                          <a href="${env}/account/email/confirm/${email}">Confirm Email</a>
+                                          <a href="${env}/account/confirm/email/${email}">Confirm Email</a>
                                         </td>
                                         <td>
                                         </td>
@@ -52,7 +52,7 @@ exports.registrationConfirmationHTML = function(email) {
                           "@type": "EmailMessage",
                           "action": {
                             "@type": "ViewAction",
-                            "url": "${env}/account/email/confirm/${email}",
+                            "url": "${env}/account/confirm/email/${email}",
                             "name": "Confirm email for SFYT."
                           }
                         }
@@ -73,7 +73,7 @@ exports.registrationConfirmationText = function(email) {
   
   Please click the link below to verify this email address as valid.
   
-  |  [Confirm Email](${env}/account/email/confirm/${email}) | 
+  |  [Confirm Email](${env}/account/confirm/email/${email}) | 
 
     
 
