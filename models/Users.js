@@ -37,8 +37,20 @@ exports.UsersTableRemove = `ALTER TABLE Sauces DROP FOREIGN KEY Sauces_Users_Use
   ALTER TABLE Users DROP FOREIGN KEY Users_AvatarID_Avatars_AvatarID;
   DROP TABLE Users;`;
 
-// Return insert results
+/** @description Insert record into database. Will also send off email asking for user to confirm email.
+ *  @param {String} Email - user's email
+ *  @param {String} DisplayName - user's display name
+ *  @param {String} Password - user's password
+ *  @return inserted result
+ */
 exports.Insert = async function({ Email, Password, DisplayName }) {
+  // Throw error if not all info is available.
+  if (!Email || !DisplayName || !Password) {
+    throw new Error(
+      "Could insert user into database. Please make sure all required information is provided."
+    );
+  }
+
   // Create salt
   const salt = await bcrypt.genSalt(SALT_WORK_FACTOR);
   // Create hash
