@@ -145,6 +145,9 @@ router.post(
   userController.updateAvatarURL
 );
 
+// 1. Confirm email
+router.post("/api/user/confirm/email", userController.confirmEmail);
+
 // 1. Check is user.token is legit, place user's _id onto user
 router.post("/api/user/isloggedin", authController.isLoggedIn);
 
