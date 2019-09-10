@@ -433,12 +433,13 @@ exports.IsEmailVerified = async function({ UserID }) {
     WHERE
       UserID = ?
       AND IsActive = 1
+      AND IsEmailVerified = 1
     `,
     [UserID, MAX_LOGIN_ATTEMPTS]
   );
 
   // If all is good, will return true
-  return row && row.COUNT === 1;
+  return row && row[0] && row[0].COUNT === 1;
 };
 
 /** @description Toggle whether a user's email has been confirmed or not
