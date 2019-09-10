@@ -33,7 +33,7 @@ router.post(
 // 1. Check if user.token is legit, place user's _id onto user
 // 2. Check if user can submit a sauce or not
 router.post(
-  "/api/review/canusersubmit",
+  "/api/sauce/canusersubmit",
   authController.isLoggedIn,
   authController.isEmailVerified
 );
@@ -184,7 +184,8 @@ router.post(
 );
 
 // 1. Check if user.token is legit, place user's _id onto user
-// 2. Check if user can submit a specific review
+// 2. Check if email is verified
+// 3. Check if user can submit a specific review
 router.post(
   "/api/review/canusersubmit",
   authController.isLoggedIn,
