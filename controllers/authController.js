@@ -332,11 +332,10 @@ exports.isEmailVerified = isEmailVerified = async (req, res, next) => {
       return next();
     }
   } catch (err) {
-    console.log(err);
     const data = {
       isGood: false,
       msg:
-        "There was an error in determing if the user can submit a review to this sauce. Make sure your query parameters are correct and try again.",
+        "There was an error in determing if your email has been verified or not. Please try again.",
       err
     };
     return res.status(400).send(data);
