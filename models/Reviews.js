@@ -278,26 +278,32 @@ exports.FindSingleReview = async function({ SauceID, UserID }) {
   return row[0];
 };
 
-exports.DoesReviewExist = async function({ SauceID, UserID }) {
+/** @description Check to see if user has submitted a review for specific sauce
+ *  @param {Number} SauceID - unique sauce id
+ *  @param {Number} UserID - unique user id
+ *
+ *  @return {Boolean}
+ */
+exports.HasUserSubmittedReview = async function({ SauceID, UserID }) {
+  // Sanity check
+  if (!SauceID || UserID) {
+    throw new Error(
+      "Must provide required parameters to HasUserSubmittedReview method"
+    );
+  }
+
   const row = await DB.query(
     `
     SELECT
-      COUNT(*)
+      COUNT(*) AS COUNT
     FROM
       Reviews
     WHERE
-      Reviews.IsActive = 1
-      AND Reviews.SauceID = ?
+      Reviews.SauceID = ?
       AND Reviews.UserID = ?
       `,
     [SauceID, UserID]
   );
 
-  if (!row) {
-    throw new Error(
-      "Could not find any reviews for this sauce. Be the first to submit one!"
-    );
-  }
-
-  return !!row[0];
+  return row && row[0] && row[0].COUNT === 1;
 };
