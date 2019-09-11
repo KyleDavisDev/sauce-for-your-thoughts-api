@@ -146,7 +146,7 @@ router.post(
 );
 
 // 1. Confirm email
-router.post("/api/user/confirm/email", userController.confirmEmail);
+router.post("/api/user/confirm/email", authController.confirmEmail);
 
 // 1. Check is user.token is legit, place user's _id onto user
 router.post("/api/user/isloggedin", authController.isLoggedIn);

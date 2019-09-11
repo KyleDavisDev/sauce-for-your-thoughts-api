@@ -341,3 +341,82 @@ exports.isEmailVerified = isEmailVerified = async (req, res, next) => {
     return res.status(400).send(data);
   }
 };
+
+/** @description Confirm an email address
+ *  @param {String} req.body.email - email to confirm
+ *  @return Continues on next middleware OR returns isGood object
+ */
+exports.confirmEmail = confirmEmail = async (req, res, next) => {
+  try {
+    // Make sure we have an email to work with
+    const { email: JWTEmail } = req.body;
+    if (!JWTEmail) {
+      const data = {
+        isGood: false,
+        msg:
+          "Could not find an email address to verify. Please confirm email address is provided correctly and try again."
+      };
+      // Send back bad data response
+      return res.status(400).send(data);
+    }
+
+    // Need to turn JWT into something usable
+    const decoded = await jwt.verify(JWTEmail, process.env.SECRET);
+    if (!decoded) {
+      const data = {
+        isGood: false,
+        msg:
+          "Could not process the passed Email. Please verify URL and try again."
+      };
+      return res.status(400).send(data);
+    }
+
+    // grab Email
+    const Email = decoded.sub;
+
+    // Confirm Email
+    const isGood = await Users.toggleConfirmEmail({
+      Email,
+      Toggle: true
+    });
+
+    // Make sure good
+    if (!isGood) {
+      const data = {
+        isGood: false,
+        msg:
+          "Could not confirm email address. User's account may be locked or inactive."
+      };
+      return res.status(401).send(data);
+    }
+
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "confirmEmail",
+      stack: req.route.stack
+    });
+
+    // If we are end of stack, go to client
+    if (isLastMiddlewareInStack) {
+      //return to client
+      return res.status(200).send({
+        isGood: true,
+        msg: "Your email has been verified! Thank you!"
+      });
+    } else {
+      // Get user's email and attach to body
+      const email = await User.FindByDisplayName({
+        DisplayName: displayName
+      }).then(resp => {
+        return resp.Email;
+      });
+
+      req.body.user.email = email;
+
+      // Go to next middleware
+      return next();
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
