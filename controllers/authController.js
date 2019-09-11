@@ -417,6 +417,11 @@ exports.confirmEmail = confirmEmail = async (req, res, next) => {
       return next();
     }
   } catch (err) {
-    console.log(err);
+    const data = {
+      isGood: false,
+      msg:
+        "Could not confirm email address. Your account may be locked, inactive, or token may be expired. "
+    };
+    return res.status(401).send(data);
   }
 };
