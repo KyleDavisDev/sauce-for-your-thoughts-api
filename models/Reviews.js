@@ -286,7 +286,7 @@ exports.FindSingleReview = async function({ SauceID, UserID }) {
  */
 exports.HasUserSubmittedReview = async function({ SauceID, UserID }) {
   // Sanity check
-  if (!SauceID || UserID) {
+  if (!SauceID || !UserID) {
     throw new Error(
       "Must provide required parameters to HasUserSubmittedReview method"
     );
