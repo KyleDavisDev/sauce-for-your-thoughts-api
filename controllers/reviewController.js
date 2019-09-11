@@ -459,8 +459,8 @@ exports.canUserSubmit = canUserSubmit = async (req, res, next) => {
       return res.status(404).send(data);
     }
 
-    // Find Review
-    const results = await Reviews.DoesReviewExist({
+    // Does the review exist?
+    const doesReviewExist = await Reviews.HasUserSubmittedReview({
       SauceID,
       UserID
     });
@@ -475,15 +475,14 @@ exports.canUserSubmit = canUserSubmit = async (req, res, next) => {
     if (isLastMiddlewareInStack) {
       //return to client
       return res.status(200).send({
-        isGood: !results //user can or cannot update
+        isGood: !doesReviewExist
       });
     } else {
       // Go to next middleware
-      res.locals.canUserSubmit = !results;
+      res.locals.canUserSubmit = !doesReviewExist;
       return next();
     }
   } catch (err) {
-    console.log(err);
     const data = {
       isGood: false,
       msg:
