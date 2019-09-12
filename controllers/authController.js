@@ -53,7 +53,11 @@ exports.login = async (req, res) => {
   }
 };
 
-// Looks at req.body.user.token first then tries to unstringify res.body.user in search for token
+/** @description Verify if a user is legit by checking JWT
+ *  @param {String} req.body.user.token - unique user string
+ *  @extends req.body.user.UserID attaches the user's id to the request obj
+ *  @return Attaches UserID onto req.body.user OR return with isGood status and message
+ */
 exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
   // confirm that we are passed a user.token to parse
   if (req.body.user && req.body.user.token) {
@@ -129,11 +133,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
     // If we are end of stack, go to client
     if (isLastMiddlewareInStack) {
       //return to client
-      return res
-        .status(200)
-        .send(
-          Object.assign({}, res.locals, { isGood: true, msg: "Found user." })
-        );
+      return res.status(200).send({ isGood: true, msg: "Found user." });
     } else {
       // remove token from user
       delete req.body.user.token;
@@ -306,7 +306,7 @@ exports.isEmailVerified = isEmailVerified = async (req, res, next) => {
     // If not verified, end here.
     if (!IsEmailVerified) {
       //return to client
-      return res.status(401).send({
+      return res.status(200).send({
         isGood: false, //user cannot update
         msg:
           "You are ineligible to submit at this time. Please verify email first."
@@ -324,7 +324,7 @@ exports.isEmailVerified = isEmailVerified = async (req, res, next) => {
       //return to client
       return res.status(200).send({
         isGood: IsEmailVerified, //user can/cannot update
-        msg: "You are eligible to submit a sauce."
+        msg: "Email is verified."
       });
     } else {
       // Go to next middleware
