@@ -104,6 +104,14 @@ router.post(
   userController.getInfo
 );
 
+// 1. Check if user.token is legit, place user's _id onto user
+// 2. Check if user can submit a sauce or not
+router.post(
+  "/api/user/check/email/",
+  authController.isLoggedIn,
+  authController.isEmailVerified
+);
+
 // 1. Validate user
 // 2. Validate info
 // 3. Update email
