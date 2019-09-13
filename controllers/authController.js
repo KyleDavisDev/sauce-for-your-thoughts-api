@@ -10,9 +10,10 @@ const Utility = require("../utility/utility");
  *    @return {Boolean} data.isGood - If request is good
  *    @return {String} data.msg - text related to isGood boolean
  *    @return {Object} data.user - container object
- *      @return {Object} data.user.token - unique user JWT
- *      @return {Object} data.user.displayName - user's display name
- *      @return {Object} data.user.email - user's email
+ *      @return {String} data.user.token - unique user JWT
+ *      @return {String} data.user.displayName - user's display name
+ *      @return {String} data.user.email - user's email
+ *      @return {String} data.user.isAdmin - is user an admin or not
  */
 exports.login = async (req, res) => {
   // Quick sanity check
@@ -25,20 +26,38 @@ exports.login = async (req, res) => {
   }
 
   try {
+    // Verify user
     const user = await Users.AuthenticateUser({
       email: req.body.user.email,
       password: req.body.user.password
     });
 
+    // check we found the person
+    if (!user) {
+      const data = {
+        isGood: false,
+        msg: "Could not verify login."
+      };
+
+      //invalid credentials
+      res.status(400).send(data);
+    }
+
+    // Check out if user is an admin or not
+    const isAdmin = await Users.IsAdmin({ UserID: user.UserID });
+
     // get JWT
     const token = module.exports.createToken(user.UserID);
+
+    // remove userID from user obj
+    delete user.UserID;
 
     // get name and email
     const { DisplayName: displayName, Email: email, URL: avatarURL } = user;
     const data = {
       isGood: true,
       msg: "Successfully logged in.",
-      user: { token, displayName, email, avatarURL }
+      user: { token, displayName, email, avatarURL, isAdmin }
     };
     return res.status(200).send(data);
   } catch (err) {
@@ -102,6 +121,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
   try {
     // decode the token using a secret key-phrase
     const decoded = await jwt.verify(token, process.env.SECRET);
+    console.log(decoded);
     if (!decoded) {
       const data = {
         isGood: false,
@@ -112,6 +132,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
 
     // grab UserID
     const userId = decoded.sub;
+    console.log(userId);
 
     // check if a user exists
     const user = await Users.DoesUserExist({ UserID: userId });
