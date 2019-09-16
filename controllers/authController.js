@@ -15,7 +15,7 @@ const Utility = require("../utility/utility");
  *      @return {String} data.user.email - user's email
  *      @return {String} data.user.isAdmin - is user an admin or not
  */
-exports.login = async (req, res) => {
+exports.login = login = async (req, res, next) => {
   // Quick sanity check
   if (req.body.user === undefined || Object.keys(req.body.user) === 0) {
     const data = {
@@ -43,23 +43,46 @@ exports.login = async (req, res) => {
       res.status(400).send(data);
     }
 
-    // Check out if user is an admin or not
-    const isAdmin = await Users.IsAdmin({ UserID: user.UserID });
-
     // get JWT
     const token = module.exports.createToken(user.UserID);
 
-    // remove userID from user obj
-    delete user.UserID;
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "login",
+      stack: req.route.stack
+    });
 
     // get name and email
     const { DisplayName: displayName, Email: email, URL: avatarURL } = user;
-    const data = {
-      isGood: true,
-      msg: "Successfully logged in.",
-      user: { token, displayName, email, avatarURL, isAdmin }
-    };
-    return res.status(200).send(data);
+
+    // If we are end of stack, go to client
+    if (isLastMiddlewareInStack) {
+      // remove userID from user obj -- general cleanup
+      delete user.UserID;
+
+      const data = {
+        isGood: true,
+        msg: "Successfully logged in.",
+        user: { token, displayName, email, avatarURL }
+      };
+      // Send back to client
+      return res.status(200).send(data);
+    } else {
+      // attach user info onto req.body.user obj
+      req.body.user = {
+        token,
+        displayName,
+        email,
+        avatarURL,
+        UserID: user.UserID
+      };
+
+      // remove userID from user obj -- general cleanup
+      delete user.UserID;
+
+      // User is legit, go to next middleware
+      return next();
+    }
   } catch (err) {
     if (err.code === "ECONNREFUSED") {
       err.message = "Connection error. Please try again";
@@ -201,7 +224,7 @@ exports.isAdmin = isAdmin = async (req, res, next) => {
     const { UserID } = req.body.user;
 
     // check if a user exists
-    const isAdmin = await Users.isAdmin({ UserID });
+    const isAdmin = await Users.IsAdmin({ UserID });
 
     if (!isAdmin) {
       const data = {
@@ -219,8 +242,13 @@ exports.isAdmin = isAdmin = async (req, res, next) => {
 
     // If we are end of stack, go to client
     if (isLastMiddlewareInStack) {
+      const data = {
+        isGood: true,
+        msg: "User is admin.",
+        user: { ...req.body.user, isAdmin }
+      };
       //return to client
-      return res.status(200).send({ isGood: true, msg: "User is admin." });
+      return res.status(200).send(data);
     } else {
       // remove token from user
       delete req.body.user.token;
