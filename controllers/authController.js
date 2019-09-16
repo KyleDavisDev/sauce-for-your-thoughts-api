@@ -121,7 +121,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
   try {
     // decode the token using a secret key-phrase
     const decoded = await jwt.verify(token, process.env.SECRET);
-    console.log(decoded);
+
     if (!decoded) {
       const data = {
         isGood: false,
@@ -166,6 +166,14 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
       return next();
     }
   } catch (err) {
+    if (err.name === "TokenExpiredError") {
+      const data = {
+        isGood: false,
+        msg: "Oops! Looks like your login has expired. Please log in again."
+      };
+      // 403, user has token but expired so simply need to relogin
+      return res.status(403).send(data);
+    }
     const data = {
       isGood: false,
       msg: err.message || "Connection error. Please try again"
@@ -297,7 +305,8 @@ exports.updatePassword = async (req, res, next) => {
 exports.createToken = StringToCreateTokenWith => {
   // create JWT token
   const payload = { sub: StringToCreateTokenWith };
-  const token = jwt.sign(payload, process.env.SECRET);
+  const options = { expiresIn: "20 seconds" };
+  const token = jwt.sign(payload, process.env.SECRET, options);
 
   return token;
 };
