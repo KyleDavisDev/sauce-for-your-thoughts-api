@@ -132,7 +132,6 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
 
     // grab UserID
     const userId = decoded.sub;
-    console.log(userId);
 
     // check if a user exists
     const user = await Users.DoesUserExist({ UserID: userId });
