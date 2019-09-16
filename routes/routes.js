@@ -217,13 +217,6 @@ router.post(
 //   authController.login
 // );
 
-// // Peppers
-// router.get(
-//   "/api/peppers/get",
-//   pepperController.getPeppers,
-//   authController.encodeID
-// );
-
 // // Types
 // router.get("/api/types/get", typeController.getTypes, authController.encodeID);
 
