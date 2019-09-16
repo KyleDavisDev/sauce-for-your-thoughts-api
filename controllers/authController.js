@@ -13,7 +13,6 @@ const Utility = require("../utility/utility");
  *      @return {String} data.user.token - unique user JWT
  *      @return {String} data.user.displayName - user's display name
  *      @return {String} data.user.email - user's email
- *      @return {String} data.user.isAdmin - is user an admin or not
  */
 exports.login = login = async (req, res, next) => {
   // Quick sanity check
@@ -206,8 +205,8 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
 
 /** @description Verify if a user is legit by checking JWT
  *  @param {String} req.body.user.UserID - unique user string
- *  @extends req.body.user.UserID attaches the user's id to the request obj
- *  @return Attaches UserID onto req.body.user OR return with isGood status and message
+ *  @extends req.body.user attached whether user is an Admin or not
+ *  @return Attaches isAdmin onto req.body.user OR return with isGood status and message
  */
 exports.isAdmin = isAdmin = async (req, res, next) => {
   if (!req.body.user || !req.body.user.UserID) {
@@ -222,6 +221,7 @@ exports.isAdmin = isAdmin = async (req, res, next) => {
   try {
     // grab UserID
     const { UserID } = req.body.user;
+    delete req.body.user.UserID;
 
     // check if a user exists
     const isAdmin = await Users.IsAdmin({ UserID });
@@ -399,7 +399,7 @@ exports.updatePassword = async (req, res, next) => {
 exports.createToken = StringToCreateTokenWith => {
   // create JWT token
   const payload = { sub: StringToCreateTokenWith };
-  const options = { expiresIn: "20 seconds" };
+  const options = { expiresIn: "7 days" };
   const token = jwt.sign(payload, process.env.SECRET, options);
 
   return token;
