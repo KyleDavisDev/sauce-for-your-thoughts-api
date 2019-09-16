@@ -181,6 +181,73 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
   }
 };
 
+/** @description Verify if a user is legit by checking JWT
+ *  @param {String} req.body.user.UserID - unique user string
+ *  @extends req.body.user.UserID attaches the user's id to the request obj
+ *  @return Attaches UserID onto req.body.user OR return with isGood status and message
+ */
+exports.isAdmin = isAdmin = async (req, res, next) => {
+  if (!req.body.user || !req.body.user.UserID) {
+    const data = {
+      isGood: false,
+      msg: "Could not verify if you are an admin or not."
+    };
+    // 401 not enough data
+    return res.status(400).send(data);
+  }
+
+  try {
+    // grab UserID
+    const { UserID } = req.body.user;
+
+    // check if a user exists
+    const isAdmin = await Users.isAdmin({ UserID });
+
+    if (!isAdmin) {
+      const data = {
+        isGood: false,
+        msg: "Could not find your account or your account is disabled."
+      };
+      return res.status(400).send(data);
+    }
+
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "isAdmin",
+      stack: req.route.stack
+    });
+
+    // If we are end of stack, go to client
+    if (isLastMiddlewareInStack) {
+      //return to client
+      return res.status(200).send({ isGood: true, msg: "User is admin." });
+    } else {
+      // remove token from user
+      delete req.body.user.token;
+
+      // attach user info onto req.body.user obj
+      req.body.user = { ...req.body.user, isAdmin };
+
+      // User is legit, go to next middleware
+      return next();
+    }
+  } catch (err) {
+    if (err.name === "TokenExpiredError") {
+      const data = {
+        isGood: false,
+        msg: "Oops! Looks like your login has expired. Please log in again."
+      };
+      // 403, user has token but expired so simply need to relogin
+      return res.status(403).send(data);
+    }
+    const data = {
+      isGood: false,
+      msg: err.message || "Connection error. Please try again"
+    };
+    return res.status(401).send(data);
+  }
+};
+
 exports.forgot = async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.user.email });
