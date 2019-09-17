@@ -592,3 +592,36 @@ exports.getTotal = getTotal = async (req, res, next) => {
     res.status(400).send(data);
   }
 };
+
+/** @description Get list of unapproved sauces
+ *  @returns Array of sauces OR goes to next middleware
+ */
+exports.getUnapproved = getUnapproved = async (req, res, next) => {
+  try {
+    const sauces = await Sauces.GetUnappoved();
+
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "getUnapproved",
+      stack: req.route.stack
+    });
+
+    // If we are end of stack, go to client
+    if (isLastMiddlewareInStack) {
+      //return to client
+      return res.status(200).send({
+        isGood: true,
+        sauces
+      });
+    } else {
+      // Attach sauces to res.locals
+      res.locals.sauces = sauces;
+
+      // Go to next middleware
+      return next();
+    }
+  } catch (err) {
+    const data = { isGood: false, msg: "Unable to find any sauces" };
+    res.status(400).send(data);
+  }
+};
