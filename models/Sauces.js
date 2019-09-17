@@ -425,6 +425,48 @@ exports.ToggleReviewCount = async function({ Slug, inc }) {
   return true;
 };
 
+/** @description Find all unapproved sauces
+ *  @returns array of sauce objects
+ */
+exports.GetUnappoved = async function() {
+  const rows = await DB.query(
+    `SELECT
+      MAX(Sauces.Photo) AS "Photo",
+      MAX(Sauces.SauceID) AS "SauceID",
+      MAX(Sauces.Name) AS "Name",
+      MAX(Sauces.Maker) AS "Maker",
+      MAX(Sauces.SHU) AS "SHU",
+      MAX(Sauces.Country) AS "Country",
+      MAX(Sauces.City) AS "City",
+      MAX(Sauces.State) AS "State",
+      MAX(Sauces.Description) AS "Description",
+      MAX(Sauces.Created) AS "Created",
+      MAX(Sauces.Slug) AS "Slug",
+      MAX(Sauces.Ingredients) AS "Ingredients",
+      MAX(Users.DisplayName) AS "DisplayName",
+      GROUP_CONCAT(' ', Types.Value) AS "Types"
+    FROM
+      Sauces
+    INNER JOIN
+      Users ON Users.UserID = Sauces.UserID
+    LEFT JOIN
+      Sauces_Types ON Sauces_Types.SauceID = Sauces.SauceID
+    LEFT JOIN
+      Types ON Sauces_Types.TypeID = Types.TypeID
+    WHERE
+      Sauces.IsActive = 1
+      && Sauces.AdminApproved = 0
+    GROUP BY
+      Slug`
+  );
+
+  if (!rows) {
+    throw new Error("Could not execute query. Try again.");
+  }
+
+  return rows;
+};
+
 /** @description Find featured sauces
  *
  */
