@@ -231,7 +231,8 @@ router.post(
 router.post(
   "/api/admin/sauces/unapproved",
   authController.isLoggedIn,
-  authController.isAdmin
+  authController.isAdmin,
+  sauceController.getUnapproved
 );
 
 // END API ---
