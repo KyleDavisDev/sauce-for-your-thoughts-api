@@ -228,6 +228,9 @@ router.post(
 );
 
 // Admin
+// 1. Make sure user is logged in
+// 2. Make sure user is admin
+// 3. Get all unapproved sauces
 router.post(
   "/api/admin/sauces/unapproved",
   authController.isLoggedIn,
@@ -235,6 +238,15 @@ router.post(
   sauceController.getUnapproved
 );
 
+// 1. Make sure user is logged in
+// 2. Make sure user is admin
+// 3. Approve single sauce
+router.post(
+  "/api/admin/sauces/aprove",
+  authController.isLoggedIn,
+  authController.isAdmin,
+  sauceController.approveSauce
+);
 // END API ---
 
 module.exports = router;
