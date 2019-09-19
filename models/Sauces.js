@@ -468,7 +468,6 @@ exports.GetUnappoved = async function() {
 };
 
 /** @description Find featured sauces
- *
  */
 exports.FindFeatured = async function() {
   const rows = await DB.query(
@@ -497,4 +496,40 @@ exports.FindFeatured = async function() {
   }
 
   return rows;
+};
+
+/** @description Toggle a sauce's approval
+ *  @param {String} SauceID - unique sauce id
+ *  @param {Boolean} Toggle - whether sauce should be enabled or disabled
+ *  @returns {Boolean} Whether update worked or not
+ */
+exports.ToggleSauceApproval = async function({ SauceID, Toggle }) {
+  // Sanity check
+  if (!SauceID || !Toggle) {
+    throw new Error(
+      "Must provide required parameters to ToggleSauceApproval method"
+    );
+  }
+
+  const rows = await DB.query(
+    `
+      UPDATE
+        Sauces
+      SET
+        AdminApproved = ?
+      WHERE 
+        SauceID = ?
+    `,
+    [Toggle, SauceID]
+  );
+
+  if (!rows) {
+    throw new Error(
+      "Could not find the appropriate information for this sauce. Please try again"
+    );
+  }
+
+  console.log(rows);
+
+  return rows && rows.affectedRows === 1;
 };
