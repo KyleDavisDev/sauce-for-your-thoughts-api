@@ -46,6 +46,15 @@ router.post(
   authController.isAdmin
 );
 
+// 1. Check if user.token is legit, place user's _id onto user
+// 2. Check if user can submit a sauce or not
+router.post(
+  "/api/sauce/edit",
+  authController.isLoggedIn,
+  // authController.isAdmin
+  sauceController.getSauceBySlug
+);
+
 // 1. Make sure slug param is legit
 // 2. Find sauce by unique slug
 // 3. Find reviews related to sauce
