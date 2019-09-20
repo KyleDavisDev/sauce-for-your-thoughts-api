@@ -51,7 +51,7 @@ router.post(
 router.post(
   "/api/sauce/edit",
   authController.isLoggedIn,
-  // authController.isAdmin
+  authController.isAdmin,
   sauceController.getSauceBySlug
 );
 
