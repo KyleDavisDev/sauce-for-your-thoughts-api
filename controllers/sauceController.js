@@ -228,17 +228,26 @@ exports.addSauce = async (req, res, next) => {
 
 /** @description look up a specific sauce by the sauce's slug
  *  @param {String} res.locals.slug - unique sauce string
+ *  @param {String} req.body.sauce.slug - unique sauce string
+ *  @returns {Boolean} isGood - did the things work as expected?
+ *  @returns {String} msg - small msg associated with task
+ *  @returns {Object} sauce - sauce obj
  */
-exports.getSauceBySlug = async (req, res, next) => {
+exports.getSauceBySlug = getSauceBySlug = async (req, res, next) => {
   try {
-    const { slug } = res.locals;
+    let { slug } = res.locals;
     // Make sure slug is in right place
     if (!slug || slug.length === 0) {
-      const data = {
-        isGood: false,
-        msg: "Unable find your sauce. Please verify you provided a slug."
-      };
-      return res.status(300).send(data);
+      // One last check to see slug is on req body
+      slug = req.body.sauce.slug;
+
+      if (!slug || slug.length === 0) {
+        const data = {
+          isGood: false,
+          msg: "Unable find your sauce. Please verify you provided a slug."
+        };
+        return res.status(300).send(data);
+      }
     }
 
     const Slug = slug;
@@ -251,11 +260,27 @@ exports.getSauceBySlug = async (req, res, next) => {
       );
     }
 
-    // reassign sauce
-    req.body.sauce = sauce;
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "getSauceBySlug",
+      stack: req.route.stack
+    });
 
-    // keep going
-    next();
+    // If we are end of stack, go to client
+    if (isLastMiddlewareInStack) {
+      //return to client
+      return res.status(200).send({
+        isGood: true,
+        sauce,
+        msg: "Found suace"
+      });
+    } else {
+      // reassign sauce
+      req.body.sauce = sauce;
+
+      // keep going
+      return next();
+    }
   } catch (err) {
     // Will be here is input failed a validator check
     const data = {
