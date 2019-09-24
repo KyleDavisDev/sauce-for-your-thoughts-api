@@ -685,3 +685,67 @@ exports.approveSauce = approveSauce = async (req, res, next) => {
     res.status(400).send(data);
   }
 };
+
+/** @description Check if a person is eligible to edit a sauce or not.
+ *  First checks if user is admin or not, then checks if user is sauce owner and sauce is private.
+ *  @param {String} req.body.user.UserID - unique user id
+ *  @param {String} req.body.sauce.slug - unique sauce id
+ *  @returns {Boolean} isGood - did the things work as expected?
+ *  @returns {String} msg - small msg associated with task
+ */
+exports.canUserEdit = canUserEdit = async (req, res, next) => {
+  try {
+    // Grab variables
+    const { UserID } = req.body.user;
+    const { slug: Slug } = req.body.sauce;
+
+    // Quick sanity check
+    if (!Slug || !UserID) {
+      const data = {
+        isGood: false,
+        msg: "Could not required parameters for canUserEdit"
+      };
+      // Send back bad data response
+      return res.status(400).send(data);
+    }
+
+    // If user is an admin, automatically give access.
+    const isUserAdmin = await Users.IsAdmin({ UserID });
+
+    if (!isUserAdmin) {
+      // Check to see if user owns sauce and the sauce is private.
+      // Public sauces can only be edited by an admin.
+      var isUserSauceOwnerAndSaucePrivate = await Sauces.CanUserEditSauce({
+        UserID,
+        Slug
+      });
+    }
+
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "canUserEdit",
+      stack: req.route.stack
+    });
+
+    if (isLastMiddlewareInStack) {
+      const isGood = isUserAdmin || isUserSauceOwnerAndSaucePrivate;
+      const data = {
+        isGood,
+        msg: isGood
+          ? "User is eligible to edit."
+          : "You are ineligible to edit this sauce. You are not the submitter of the sauce or the sauce is listed as a public sauce. Please contact an Admin if this is a mistake."
+      };
+
+      //return to client
+      return res.status(200).send(data);
+    } else {
+      // do we need to do anything here?
+
+      return next();
+    }
+  } catch (err) {
+    console.log(err);
+    const data = { isGood: false, msg: "Unable to approve the sauce" };
+    res.status(400).send(data);
+  }
+};
