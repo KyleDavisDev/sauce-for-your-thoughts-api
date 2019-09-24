@@ -43,7 +43,7 @@ router.post(
 router.post(
   "/api/sauce/canuseredit",
   authController.isLoggedIn,
-  authController.isAdmin
+  sauceController.canUserEdit
 );
 
 // 1. Check if user.token is legit, place user's _id onto user
