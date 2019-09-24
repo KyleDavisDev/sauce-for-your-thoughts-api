@@ -533,3 +533,42 @@ exports.ToggleSauceApproval = async function({ SauceID, Toggle }) {
 
   return rows && rows.affectedRows === 1;
 };
+
+/** @description Check to see if a sauce is editable by user.
+ *  @param {String} UserID - unique user id
+ *  @param {String} Slug - unique sauce id
+ *  @returns {Boolean} Whether user is eligible to edit or not.
+ */
+exports.CanUserEditSauce = async function({ UserID, Slug }) {
+  // Sanity check
+  if (!UserID || !Slug) {
+    throw new Error(
+      "Must provide required parameters to CanUserEditSauce method"
+    );
+  }
+
+  const row = await DB.query(
+    `
+      SELECT
+        COUNT(*) AS COUNT
+      FROM
+        Sauces
+      WHERE
+        UserID = ?
+        AND Slug = ?
+        AND IsPrivate = 1
+        AND IsActive = 1
+    `,
+    [UserID, Slug]
+  );
+
+  console.log(row);
+
+  if (!row) {
+    throw new Error(
+      "Could not find the appropriate information for this sauce. Please try again"
+    );
+  }
+
+  return row && row[0] && row[0].COUNT === 1;
+};
