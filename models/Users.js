@@ -247,7 +247,7 @@ exports.IncLoginAttempts = async function({ UserID, LoginAttempts }) {
 };
 
 /** @description Get basic user info
- *  @param {String=} displayName - unique user display name
+ *  @param {String=} DisplayName - unique user display name
  *  @return {Promise}
  *  @resolves {RowDataPacket} Obj - container object
  *    @resolves {String} Obj.DisplayName - user email
