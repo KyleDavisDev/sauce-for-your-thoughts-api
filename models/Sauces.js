@@ -562,7 +562,96 @@ exports.CanUserEditSauce = async function({ UserID, Slug }) {
     [UserID, Slug]
   );
 
-  console.log(row);
+  if (!row) {
+    throw new Error(
+      "Could not find the appropriate information for this sauce. Please try again"
+    );
+  }
+
+  return row && row[0] && row[0].COUNT === 1;
+};
+
+/** @description Update sauce
+ *  @param {String} Slug - unique sauce slug
+ *  @param {String} Name - name of the sauce
+ *  @param {String} Maker - who made the sauce
+ *  @param {String} Description - description of sauce
+ *  @param {String} Ingredients - list of ingredients
+ *  @param {String} SHU - spiciness of sauce
+ *  @param {String} State - state where sauce is created
+ *  @param {String} Country - country where sauce is created
+ *  @param {String} City - city where sauce is created
+ *  @param {String} Photo - URL for sauce photo
+ *  @param {String} Types - what type of sauce it is
+ *  @returns {Boolean} Whether user is eligible to edit or not.
+ */
+exports.UpdateSauce = async function({
+  Slug,
+  Name,
+  Maker,
+  Description,
+  Ingredients,
+  SHU,
+  State,
+  Country,
+  City,
+  Photo,
+  Types
+}) {
+  // Sanity check
+  if (!Slug || !Name || !Maker || !Description || !Ingredients) {
+    throw new Error("Must provide required parameters to UpdateSauce method");
+  }
+
+  // Finally create insert object
+  const values = {
+    UserID,
+    Name: Name.trim(),
+    Maker,
+    Description,
+    Ingredients,
+    SHU,
+    State,
+    Country,
+    City,
+    Photo,
+    Slug
+  };
+
+  const row = await DB.query(
+    `
+      UPDATE
+        Sauces
+      SET
+        Name = :Name
+        Maker = :Maker
+        Description = :Description
+        Ingredients = :Ingredients
+        SHU = :SHU
+        State = :State
+        Country = :Country
+        City = :City
+        Photo = :Photo
+        Slug = :Slug
+      WHERE
+        UserID = :UserID
+        AND Slug = :Slug
+        AND IsPrivate = 1
+        AND IsActive = 1
+    `,
+    values
+  );
+
+  // Check if we need to insert into Sauces_Types table now too
+  if (Types && Types.length > 0) {
+    // First need to grab IDs of the TypeIDs
+    const TypeIDs = await TypesDB.FindIDByValues({ Values: Types });
+
+    const record = TypeIDs.map(TypeID => {
+      return [SauceID, TypeID];
+    });
+    await Sauces_Types.Insert({ record });
+  }
 
   if (!row) {
     throw new Error(
