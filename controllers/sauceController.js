@@ -741,11 +741,68 @@ exports.canUserEdit = canUserEdit = async (req, res, next) => {
     } else {
       // do we need to do anything here?
 
+      // Keep going
       return next();
     }
   } catch (err) {
     console.log(err);
-    const data = { isGood: false, msg: "Unable to approve the sauce" };
+    const data = {
+      isGood: false,
+      msg: "User is inelgible to edit this sauce."
+    };
+    res.status(400).send(data);
+  }
+};
+
+/** @description Update a specific sauce
+ *  @param {String} req.body.user.UserID - unique user id
+ *  @param {Object} req.body.sauce - sauce object
+ *  @returns {Boolean} isGood - did the things work as expected?
+ *  @returns {String} msg - small msg associated with task
+ */
+exports.updateSauce = updateSauce = async (req, res, next) => {
+  try {
+    // Grab variables
+    const { UserID } = req.body.user;
+    const { sauce } = req.body;
+
+    // Quick sanity check
+    if (!UserID || !sauce) {
+      const data = {
+        isGood: false,
+        msg: "Could not required parameters for updateSauce"
+      };
+      // Send back bad data response
+      return res.status(400).send(data);
+    }
+    console.log(sauce);
+    // const updateSauce = Sauces.UpdateSauce({});
+
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "updateSauce",
+      stack: req.route.stack
+    });
+
+    if (isLastMiddlewareInStack) {
+      const isGood = updateSauce;
+      const data = {
+        isGood,
+        msg: isGood
+          ? "Sauce has been updated!."
+          : "Failed to update sauce. Please try again or contact an admin."
+      };
+
+      //return to client
+      return res.status(200).send(data);
+    } else {
+      // do we need to do anything here?
+
+      return next();
+    }
+  } catch (err) {
+    console.log(err);
+    const data = { isGood: false, msg: "Unable to update the sauce" };
     res.status(400).send(data);
   }
 };
