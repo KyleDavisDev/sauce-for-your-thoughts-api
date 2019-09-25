@@ -30,6 +30,23 @@ router.post(
   sauceController.addSauce
 );
 
+// upload must be called first for post that are "multipart/form-data"
+// multer will put data object onto req.body like normal
+// 1. Check mimetype of image and set req.body
+// 2. Verify user.token, attach UserID to user
+// 3. Save image
+// 4. Convert req.body data to be proper format for DB
+// 5. Save sauce to DB
+router.post(
+  "/api/sauce/update",
+  imageController.upload,
+  authController.isLoggedIn,
+  imageController.saveImage,
+  sauceController.stringToProperType,
+  sauceController.canUserEdit,
+  sauceController.updateSauce
+);
+
 // 1. Check if user.token is legit, place user's _id onto user
 // 2. Check if user can submit a sauce or not
 router.post(
