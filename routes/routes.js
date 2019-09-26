@@ -128,7 +128,7 @@ router.post(
 );
 
 // 1. Generate JWT
-router.post("/api/user/login", authController.login, authController.isAdmin);
+router.post("/api/user/login", authController.login);
 
 // 1. Validate user
 // 2. Return modifiable user info
