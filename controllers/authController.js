@@ -42,6 +42,9 @@ exports.login = login = async (req, res, next) => {
       res.status(400).send(data);
     }
 
+    // check if an admin
+    const isAdmin = await Users.IsAdmin({ UserID: user.UserID });
+
     // get JWT
     const token = module.exports.createToken(user.UserID);
 
@@ -62,7 +65,7 @@ exports.login = login = async (req, res, next) => {
       const data = {
         isGood: true,
         msg: "Successfully logged in.",
-        user: { token, displayName, email, avatarURL }
+        user: { token, displayName, email, avatarURL, isAdmin }
       };
       // Send back to client
       return res.status(200).send(data);
@@ -223,16 +226,8 @@ exports.isAdmin = isAdmin = async (req, res, next) => {
     const { UserID } = req.body.user;
     delete req.body.user.UserID;
 
-    // check if a user exists
+    // check if an admin
     const isAdmin = await Users.IsAdmin({ UserID });
-
-    if (!isAdmin) {
-      const data = {
-        isGood: false,
-        msg: "Could not find your account or your account is disabled."
-      };
-      return res.status(400).send(data);
-    }
 
     // Find out if more middleware or if this is last stop.
     const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
@@ -243,8 +238,8 @@ exports.isAdmin = isAdmin = async (req, res, next) => {
     // If we are end of stack, go to client
     if (isLastMiddlewareInStack) {
       const data = {
-        isGood: true,
-        msg: "User is admin.",
+        isGood: false,
+        msg: isAdmin ? "User is admin." : "User is not an admin",
         user: { ...req.body.user, isAdmin }
       };
       //return to client
