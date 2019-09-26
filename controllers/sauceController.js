@@ -775,8 +775,20 @@ exports.updateSauce = updateSauce = async (req, res, next) => {
       // Send back bad data response
       return res.status(400).send(data);
     }
-    console.log(sauce);
-    // const updateSauce = Sauces.UpdateSauce({});
+
+    const updateSauce = Sauces.UpdateSauce({
+      Slug: sauce.slug,
+      Name: sauce.name,
+      Maker: sauce.maker,
+      Description: sauce.description,
+      Ingredients: sauce.ingredients,
+      SHU: sauce.SHU,
+      State: sauce.state,
+      Country: sauce.country,
+      City: sauce.city,
+      Photo: sauce.photo,
+      UserID
+    });
 
     // Find out if more middleware or if this is last stop.
     const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
