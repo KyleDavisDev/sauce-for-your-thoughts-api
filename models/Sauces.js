@@ -633,14 +633,26 @@ exports.UpdateSauce = async function({
         City = :City
         Photo = :Photo
         Slug = :Slug
+      LEFT JOIN 
+        Users on Users.UserID = Sauces.UserID
+      LEFT JOIN
+        UserRole on UserRole.UserID = Users.UserID
+      LEFT JOIN
+        Roles on Roles.RoleID = UserRole.RoleID
       WHERE
-        UserID = :UserID
+        (Sauces.UserID = :UserID
+           OR (UserRole.UserID = :UserID
+              AND UserRole.RoleID = Roles.RoleID
+              AND Roles.Name = 'Admin' ))
         AND Slug = :Slug
-        AND IsPrivate = 1
-        AND IsActive = 1
+        AND Sauces.IsPrivate = 0
+        AND Sauces.IsActive = 1
+        AND Users.IsActive = 1;
     `,
     values
   );
+
+  console.log(row);
 
   // Check if we need to insert into Sauces_Types table now too
   if (Types && Types.length > 0) {
