@@ -43,6 +43,7 @@ router.post(
   authController.isLoggedIn,
   imageController.saveImage,
   sauceController.stringToProperType,
+  sauceController.validateInsert,
   sauceController.canUserEdit,
   sauceController.updateSauce
 );
