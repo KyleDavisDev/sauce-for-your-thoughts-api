@@ -5,6 +5,7 @@ require("dotenv").config({ path: "variables.env" });
 
 const DB = require("../db/db.js");
 const TypesDB = require("./Types.js");
+const Users = require("./Users.js");
 const Sauces_Types = require("./Sauces_Types.js");
 
 // Constants
@@ -572,6 +573,7 @@ exports.CanUserEditSauce = async function({ UserID, Slug }) {
 };
 
 /** @description Update sauce
+ *  @param {String} UserID - unique user id
  *  @param {String} Slug - unique sauce slug
  *  @param {String} Name - name of the sauce
  *  @param {String} Maker - who made the sauce
@@ -586,6 +588,7 @@ exports.CanUserEditSauce = async function({ UserID, Slug }) {
  *  @returns {Boolean} Whether user is eligible to edit or not.
  */
 exports.UpdateSauce = async function({
+  UserID,
   Slug,
   Name,
   Maker,
@@ -603,56 +606,53 @@ exports.UpdateSauce = async function({
     throw new Error("Must provide required parameters to UpdateSauce method");
   }
 
-  // Finally create insert object
-  const values = {
-    UserID,
-    Name: Name.trim(),
-    Maker,
-    Description,
-    Ingredients,
-    SHU,
-    State,
-    Country,
-    City,
-    Photo,
-    Slug
-  };
+  // IF user is an admin, they will also be able to update the sauce
+  const isAdmin = await Users.IsAdmin({ UserID });
+
+  console.log(isAdmin);
 
   const row = await DB.query(
     `
       UPDATE
         Sauces
-      SET
-        Name = :Name
-        Maker = :Maker
-        Description = :Description
-        Ingredients = :Ingredients
-        SHU = :SHU
-        State = :State
-        Country = :Country
-        City = :City
-        Photo = :Photo
-        Slug = :Slug
       LEFT JOIN 
         Users on Users.UserID = Sauces.UserID
       LEFT JOIN
         UserRole on UserRole.UserID = Users.UserID
       LEFT JOIN
         Roles on Roles.RoleID = UserRole.RoleID
+      SET
+        Sauces.Name = ?,
+        Sauces.Maker = ?,
+        Sauces.Description = ?,
+        Sauces.Ingredients = ?,
+        Sauces.SHU = ?,
+        Sauces.State = ?,
+        Sauces.Country = ?,
+        Sauces.City = ?,
+        Sauces.Photo = ?
       WHERE
-        (Sauces.UserID = :UserID
-           OR (UserRole.UserID = :UserID
-              AND UserRole.RoleID = Roles.RoleID
-              AND Roles.Name = 'Admin' ))
-        AND Slug = :Slug
+        (Sauces.UserID = ?
+           OR 1=${isAdmin ? 1 : 0})
+        AND Slug = ?
         AND Sauces.IsPrivate = 0
         AND Sauces.IsActive = 1
         AND Users.IsActive = 1;
     `,
-    values
+    [
+      Name,
+      Maker,
+      Description,
+      Ingredients,
+      SHU,
+      State,
+      Country,
+      City,
+      Photo,
+      UserID,
+      Slug
+    ]
   );
-
-  console.log(row);
 
   // Check if we need to insert into Sauces_Types table now too
   if (Types && Types.length > 0) {
@@ -671,5 +671,5 @@ exports.UpdateSauce = async function({
     );
   }
 
-  return row && row[0] && row[0].COUNT === 1;
+  return row && row.affectedRows === 1;
 };
