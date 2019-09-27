@@ -41,13 +41,14 @@ exports.validateInsert = (req, res, next) => {
       throw new Error("You must supply a description.");
     }
 
-    // Trim string insert
-    req.body.sauce = Object.keys(sauce).map(key => {
+    // Shallow trim string values
+    Object.keys(sauce).map(key => {
       if (typeof sauce[key] === "string") {
-        return sauce[key].trim();
+        req.body.sauce[key] = sauce[key].trim();
       }
-      return sauce[key];
     });
+
+    // Maybe more filtering here?
 
     next();
   } catch (err) {
@@ -694,6 +695,7 @@ exports.approveSauce = approveSauce = async (req, res, next) => {
  *  @returns {String} msg - small msg associated with task
  */
 exports.canUserEdit = canUserEdit = async (req, res, next) => {
+  console.log(req.body);
   try {
     // Grab variables
     const { UserID } = req.body.user;
@@ -711,6 +713,7 @@ exports.canUserEdit = canUserEdit = async (req, res, next) => {
 
     // If user is an admin, automatically give access.
     const isUserAdmin = await Users.IsAdmin({ UserID });
+    console.log(isUserAdmin);
 
     if (!isUserAdmin) {
       // Check to see if user owns sauce and the sauce is private.
@@ -776,7 +779,7 @@ exports.updateSauce = updateSauce = async (req, res, next) => {
       return res.status(400).send(data);
     }
 
-    const updateSauce = Sauces.UpdateSauce({
+    const updateSauce = await Sauces.UpdateSauce({
       Slug: sauce.slug,
       Name: sauce.name,
       Maker: sauce.maker,
@@ -790,6 +793,8 @@ exports.updateSauce = updateSauce = async (req, res, next) => {
       UserID
     });
 
+    console.log("update sauce", updateSauce);
+
     // Find out if more middleware or if this is last stop.
     const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
       name: "updateSauce",
@@ -801,7 +806,7 @@ exports.updateSauce = updateSauce = async (req, res, next) => {
       const data = {
         isGood,
         msg: isGood
-          ? "Sauce has been updated!."
+          ? "Sauce has been updated!"
           : "Failed to update sauce. Please try again or contact an admin."
       };
 
