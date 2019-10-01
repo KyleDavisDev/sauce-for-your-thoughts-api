@@ -12,18 +12,85 @@ exports.SaucesTypesDrop = `ALTER TABLE Sauces_Types DROP FOREIGN KEY Sauces_Type
   ALTER TABLE Sauces_Types DROP FOREIGN KEY Sauces_Types_Users_UserID;
   DROP TABLE Sauces_Types`;
 
-exports.Insert = async function({ SauceID, TypeID, record }) {
-  // If full record is sent, use this
-  if (record && record.length > 0) {
-    return await DB.query(
-      "INSERT INTO Sauces_Types (SauceID, TypeID) VALUES ?",
-      [record]
+/** @description Insert record(s) into table
+ *  @param {Array[]} Record - array of arrays
+ *  @param {Number} Record[][0] - unique sauce id
+ *  @param {Number} Record[][1] - unique type id
+ *  @returns {Object} returns inserted record
+ */
+exports.Insert = async function({ Record }) {
+  if (!Record && Record.length === 0) {
+    throw new Error(
+      "Must provide required parameters to Sauces_Types.Insert method"
     );
   }
 
-  return DB.query(
-    "INSERT INTO Sauces_Types (SauceID, TypeID) VALUES (?, ?)"[
-      (SauceID, TypeID)
-    ]
+  const rows = await DB.query(
+    "INSERT INTO Sauces_Types (SauceID, TypeID) VALUES ?",
+    [Record]
   );
+
+  if (!rows) {
+    throw new Error("Could not insert records into Sauces_Types.");
+  }
+
+  return rows;
+};
+
+/** @description Update relationship between sauces and types of sauces
+ *  @param {Array[]} Record - array of arrays
+ *  @param {Number} Record[][0] - unique sauce id
+ *  @param {Number} Record[][1] - unique type id
+ *  @returns {Boolean} Whether update was successfull or not
+ */
+exports.Update = async function({ Record }) {
+  if (!Record || Record.length === 0) {
+    throw new Error(
+      "Must provide required parameters to Sauces_Types.Update method"
+    );
+  }
+
+  // Grab user ID
+  const SauceID = Record[0][0];
+  if (!SauceID) {
+    throw new Error(
+      "Must provide required parameters to Sauces_Types.Update method"
+    );
+  }
+
+  // will first remove all existing records
+  await exports.RemoveAll({ SauceID });
+
+  // Add all records
+  const rows = await exports.Insert({ Record });
+
+  return !!rows;
+};
+
+/** @description Drop all records for a user
+ *  @param {Number} SauceID - unique user id
+ *  @returns {Boolean} Was able to remove all or not
+ */
+exports.RemoveAll = async function({ SauceID }) {
+  if (!SauceID) {
+    throw new Error(
+      "Must provide required parameters to Sauces_Types.Update method"
+    );
+  }
+
+  const rows = await DB.query(
+    `
+      DELETE FROM
+        Sauces_Types
+      WHERE
+        SauceID = ?
+    `,
+    [SauceID]
+  );
+
+  if (!rows) {
+    throw new Error("Could not delete user records in Sauces_Types.");
+  }
+
+  return !!rows;
 };
