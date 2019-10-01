@@ -119,10 +119,10 @@ exports.Insert = async function({
     // First need to grab IDs of the TypeIDs
     const TypeIDs = await TypesDB.FindIDByValues({ Values: Types });
 
-    const record = TypeIDs.map(TypeID => {
+    const Record = TypeIDs.map(TypeID => {
       return [SauceID, TypeID];
     });
-    await Sauces_Types.Insert({ record });
+    await Sauces_Types.Insert({ Record });
   }
 
   // return Slug
@@ -130,7 +130,6 @@ exports.Insert = async function({
 };
 
 /** @description Returns Sauce object w/ Users DisplayName
- *
  */
 exports.FindSauceBySlug = async function({ Slug }) {
   const rows = await DB.query(
@@ -202,7 +201,6 @@ exports.FindIDBySlug = async function({ Slug }) {
 };
 
 /** @description Return single Slug
- *
  */
 exports.FindSlugByID = async function({ SauceID }) {
   const rows = await DB.query(
@@ -220,7 +218,6 @@ exports.FindSlugByID = async function({ SauceID }) {
 };
 
 /** @description Return related sauce names and slugs
- *
  */
 exports.FindRelated = async function({ Slug }) {
   // TODO: Get related to slug but for now choose randomly
@@ -244,7 +241,6 @@ exports.FindRelated = async function({ Slug }) {
 };
 
 /** @description Returns array of sauces that have had reviews recently added to them
- *
  */
 exports.getSaucesWithNewestReviews = async function() {
   const rows = await DB.query(
@@ -373,7 +369,6 @@ exports.FindSaucesByQuery = async function({ params, includeTotal = false }) {
 };
 
 /** @description Returns array of sauces that have had reviews recently added to them
- *
  */
 exports.FindTotal = async function() {
   const rows = await DB.query(
@@ -396,7 +391,6 @@ exports.FindTotal = async function() {
 };
 
 /** @description Inc or Dec review count
- *
  */
 exports.ToggleReviewCount = async function({ Slug, inc }) {
   let rows;
@@ -584,7 +578,7 @@ exports.CanUserEditSauce = async function({ UserID, Slug }) {
  *  @param {String} Country - country where sauce is created
  *  @param {String} City - city where sauce is created
  *  @param {String} Photo - URL for sauce photo
- *  @param {String} Types - what type of sauce it is
+ *  @param {String[]} Types - what type of sauce it is
  *  @returns {Boolean} Whether user is eligible to edit or not.
  */
 exports.UpdateSauce = async function({
@@ -608,8 +602,6 @@ exports.UpdateSauce = async function({
 
   // IF user is an admin, they will also be able to update the sauce
   const isAdmin = await Users.IsAdmin({ UserID });
-
-  console.log(isAdmin);
 
   const row = await DB.query(
     `
@@ -659,10 +651,15 @@ exports.UpdateSauce = async function({
     // First need to grab IDs of the TypeIDs
     const TypeIDs = await TypesDB.FindIDByValues({ Values: Types });
 
-    const record = TypeIDs.map(TypeID => {
+    // Get sauceID from slug
+    const SauceID = await exports.FindIDBySlug({ Slug });
+
+    const Record = TypeIDs.map(TypeID => {
       return [SauceID, TypeID];
     });
-    await Sauces_Types.Insert({ record });
+
+    console.log(Record);
+    await Sauces_Types.Update({ Record });
   }
 
   if (!row) {
