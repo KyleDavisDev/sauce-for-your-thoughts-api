@@ -790,10 +790,9 @@ exports.updateSauce = updateSauce = async (req, res, next) => {
       Country: sauce.country,
       City: sauce.city,
       Photo: sauce.photo,
+      Types: sauce.types,
       UserID
     });
-
-    console.log("update sauce", updateSauce);
 
     // Find out if more middleware or if this is last stop.
     const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
