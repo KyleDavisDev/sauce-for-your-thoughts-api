@@ -524,10 +524,62 @@ exports.confirmEmail = confirmEmail = async (req, res, next) => {
       });
     } else {
       // Get user's email and attach to body
-      const email = await User.FindByDisplayName({
+      const email = await User.FindEmail({
         DisplayName: displayName
-      }).then(resp => {
-        return resp.Email;
+      });
+
+      req.body.user.email = email;
+
+      // Go to next middleware
+      return next();
+    }
+  } catch (err) {
+    const data = {
+      isGood: false,
+      msg:
+        "Could not confirm email address. Your account may be locked, inactive, or token may be expired. "
+    };
+    return res.status(401).send(data);
+  }
+};
+
+/** @description Confirm an email address
+ *  @param {String} req.body.user.UserID - User to resend email verfication to
+ *  @return Continues on next middleware OR returns isGood object
+ */
+exports.resendEmail = resendEmail = async (req, res, next) => {
+  try {
+    const { UserID } = req.body.user;
+
+    const Email = await Users.getAll;
+
+    // Make sure good
+    if (!isGood) {
+      const data = {
+        isGood: false,
+        msg:
+          "Could not confirm email address. User's account may be locked or inactive."
+      };
+      return res.status(401).send(data);
+    }
+
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "resendEmail",
+      stack: req.route.stack
+    });
+
+    // If we are end of stack, go to client
+    if (isLastMiddlewareInStack) {
+      //return to client
+      return res.status(200).send({
+        isGood: true,
+        msg: "Your email has been verified! Thank you!"
+      });
+    } else {
+      // Get user's email and attach to body
+      const email = await User.FindEmail({
+        DisplayName: displayName
       });
 
       req.body.user.email = email;
