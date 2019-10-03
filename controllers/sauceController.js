@@ -687,6 +687,41 @@ exports.approveSauce = approveSauce = async (req, res, next) => {
   }
 };
 
+/** @description Decline single sauce
+ *  @param {Number} req.body.sauce.sauceID - unique sauce id
+ *  @returns {Boolean} isGood - did the things work as expected?
+ *  @returns {String} msg - small msg associated with task
+ */
+exports.declineSauce = declineSauce = async (req, res, next) => {
+  try {
+    const { sauceID: SauceID } = req.body.sauce;
+
+    if (!SauceID) {
+      const data = {
+        isGood: false,
+        msg: "Could not find an Sauce to decline."
+      };
+      // Send back bad data response
+      return res.status(400).send(data);
+    }
+
+    const toggleSuccessfull = await Sauces.ToggleSauceApproval({
+      SauceID,
+      Toggle: false
+    });
+
+    //return to client
+    return res.status(200).send({
+      isGood: toggleSuccessfull,
+      msg: "Sauce successfully declined."
+    });
+  } catch (err) {
+    console.log(err);
+    const data = { isGood: false, msg: "Unable to decline the sauce" };
+    res.status(400).send(data);
+  }
+};
+
 /** @description Check if a person is eligible to edit a sauce or not.
  *  First checks if user is admin or not, then checks if user is sauce owner and sauce is private.
  *  @param {String} req.body.user.UserID - unique user id
