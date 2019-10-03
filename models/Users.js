@@ -238,17 +238,24 @@ exports.IncLoginAttempts = async function({ UserID, LoginAttempts }) {
 };
 
 /** @description Get basic user info
- *  @param {String=} DisplayName - unique user display name
- *  @return {Promise}
- *  @resolves {RowDataPacket} Obj - container object
- *    @resolves {String} Obj.DisplayName - user email
- *    @resolves {String} Obj.Email - user email
+ *  @param {String?} DisplayName - unique user display name
+ *  @param {String?} UserID - unique user id
+ *  @return {String} User's email
  */
-exports.FindByDisplayName = async function({ DisplayName }) {
-  const rows = await DB.query(
-    "SELECT Email, DisplayName FROM Users where DisplayName = ?",
-    [DisplayName]
-  );
+exports.FindEmail = async function({ DisplayName, UserID }) {
+  // Sanity check
+  if (!DisplayName && !UserID) {
+    throw new Error("Must provide required parameters to FindEmail method");
+  }
+
+  let rows;
+  if (DisplayName) {
+    rows = await DB.query("SELECT Email FROM Users where DisplayName = ?", [
+      DisplayName
+    ]);
+  } else if (UserID) {
+    rows = await DB.query("SELECT Email FROM Users where UserID = ?", [UserID]);
+  }
 
   // If error
   if (!rows || !rows[0]) {
@@ -256,7 +263,7 @@ exports.FindByDisplayName = async function({ DisplayName }) {
   }
 
   // return record
-  return rows[0];
+  return rows[0].Email;
 };
 
 /** @description Checks if a userID is a person who is an admin or not
