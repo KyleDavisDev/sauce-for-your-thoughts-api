@@ -695,7 +695,6 @@ exports.approveSauce = approveSauce = async (req, res, next) => {
  *  @returns {String} msg - small msg associated with task
  */
 exports.canUserEdit = canUserEdit = async (req, res, next) => {
-  console.log(req.body);
   try {
     // Grab variables
     const { UserID } = req.body.user;
@@ -713,7 +712,6 @@ exports.canUserEdit = canUserEdit = async (req, res, next) => {
 
     // If user is an admin, automatically give access.
     const isUserAdmin = await Users.IsAdmin({ UserID });
-    console.log(isUserAdmin);
 
     if (!isUserAdmin) {
       // Check to see if user owns sauce and the sauce is private.
@@ -785,7 +783,7 @@ exports.updateSauce = updateSauce = async (req, res, next) => {
       Maker: sauce.maker,
       Description: sauce.description,
       Ingredients: sauce.ingredients,
-      SHU: sauce.SHU,
+      SHU: sauce.shu,
       State: sauce.state,
       Country: sauce.country,
       City: sauce.city,
