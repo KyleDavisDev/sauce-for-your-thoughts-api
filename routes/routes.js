@@ -95,20 +95,6 @@ router.get("/api/sauces/get/by/newest", sauceController.getSaucesByNewest);
 // 1. Find featured sauces
 router.get("/api/sauces/get/by/featured", sauceController.getSaucesByFeatured);
 
-// // 1. Check mimetype of image and set req.body
-// // 2. Verify if user is valid
-// // 3. Resize image and write to server
-// // 4. Convert req.body data to be proper format for DB
-// // 5. Write to DB
-// router.post(
-//   "/api/sauce/update",
-//   imageController.upload,
-//   authController.isLoggedIn,
-//   imageController.resize,
-//   sauceController.stringToProperType,
-//   sauceController.editSauce
-// );
-
 // 1. Validate passed params
 // 2. Return array of sauce objects
 // (Note: will likely change from method get to method post soon)
