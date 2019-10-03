@@ -42,8 +42,11 @@ exports.saveImage = async (req, res, next) => {
     cloudinary.uploader
       .upload(dUri.content, { folder: "sauces/" })
       .then(img => {
-        // assign name to req.body
+        // assign name to req.body and sauces
         req.body.photo = img.secure_url;
+        if (req.body.sauce) {
+          req.body.sauce.photo = img.secure_url;
+        }
 
         // Keep going!
         return next();
