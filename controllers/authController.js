@@ -551,14 +551,25 @@ exports.resendEmail = resendEmail = async (req, res, next) => {
   try {
     const { UserID } = req.body.user;
 
-    const Email = await Users.getAll;
-
+    const Email = await Users.FindEmail({ UserID });
     // Make sure good
-    if (!isGood) {
+    if (!Email) {
       const data = {
         isGood: false,
         msg:
-          "Could not confirm email address. User's account may be locked or inactive."
+          "Could not find your email address. Your account may be locked or inactive."
+      };
+      return res.status(401).send(data);
+    }
+
+    const couldSendVerification = await Users.SendVerificationEmail({ Email });
+
+    // Make sure good
+    if (!couldSendVerification) {
+      const data = {
+        isGood: false,
+        msg:
+          "Could not resend verification email. User's account may be locked or inactive."
       };
       return res.status(401).send(data);
     }
@@ -574,7 +585,7 @@ exports.resendEmail = resendEmail = async (req, res, next) => {
       //return to client
       return res.status(200).send({
         isGood: true,
-        msg: "Your email has been verified! Thank you!"
+        msg: "Email verification resent! Thank you."
       });
     } else {
       // Get user's email and attach to body
