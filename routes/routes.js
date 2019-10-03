@@ -284,6 +284,16 @@ router.post(
   authController.isAdmin,
   sauceController.approveSauce
 );
+
+// 1. Make sure user is logged in
+// 2. Make sure user is admin
+// 3. Approve single sauce
+router.post(
+  "/api/admin/sauces/decline",
+  authController.isLoggedIn,
+  authController.isAdmin,
+  sauceController.declineSauce
+);
 // END API ---
 
 module.exports = router;
