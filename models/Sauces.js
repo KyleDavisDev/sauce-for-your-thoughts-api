@@ -658,7 +658,6 @@ exports.UpdateSauce = async function({
       return [SauceID, TypeID];
     });
 
-    console.log(Record);
     await Sauces_Types.Update({ Record });
   }
 
