@@ -476,11 +476,11 @@ exports.toggleConfirmEmail = async function({ Email, Toggle }) {
  *  @returns {Promise}
  *  @resolves {Boolean}
  */
-exports.VerificationEmail = async function({ Email }) {
+exports.SendVerificationEmail = async function({ Email }) {
   // Sanity check
   if (!Email) {
     throw new Error(
-      "Must provide required parameters to VerificationEmail method"
+      "Must provide required parameters to SendVerificationEmail method"
     );
   }
 
