@@ -77,16 +77,7 @@ exports.Insert = async function({ Email, Password, DisplayName }) {
     throw new Error("Error trying to save user. Please try again.");
   }
 
-  const emailToken = authController.createToken(Email);
-  // Send email to user asking to confirm email
-  const msg = {
-    to: Email,
-    from: "no-reply@sfyt.com",
-    subject: "Email Confirmation",
-    text: EmailClient.registrationEmail(emailToken),
-    html: EmailClient.registrationEmailHTML(emailToken)
-  };
-  await EmailClient.sendEmail(msg);
+  await exports.SendVerificationEmail({ Email });
 
   return results;
 };
@@ -471,4 +462,32 @@ exports.toggleConfirmEmail = async function({ Email, Toggle }) {
 
   // If all is good, will return true
   return row && row.affectedRows === 1;
+};
+
+/** @description Send email verification to confirm account creation
+ *  @param {String} Email - Email to confirm
+ *  @returns {Promise}
+ *  @resolves {Boolean}
+ */
+exports.VerificationEmail = async function({ Email }) {
+  // Sanity check
+  if (!Email) {
+    throw new Error(
+      "Must provide required parameters to VerificationEmail method"
+    );
+  }
+
+  const emailToken = authController.createToken(Email);
+  // Send email to user asking to confirm email
+  const msg = {
+    to: Email,
+    from: "no-reply@sfyt.com",
+    subject: "Email Confirmation",
+    text: EmailClient.registrationEmail(emailToken),
+    html: EmailClient.registrationEmailHTML(emailToken)
+  };
+
+  await EmailClient.sendEmail(msg);
+
+  return true;
 };
