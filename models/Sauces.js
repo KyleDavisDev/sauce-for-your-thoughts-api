@@ -500,23 +500,37 @@ exports.FindFeatured = async function() {
  */
 exports.ToggleSauceApproval = async function({ SauceID, Toggle }) {
   // Sanity check
-  if (!SauceID || !Toggle) {
+  if (!SauceID || Toggle === undefined || Toggle === null) {
     throw new Error(
       "Must provide required parameters to ToggleSauceApproval method"
     );
   }
 
-  const rows = await DB.query(
-    `
+  let query;
+
+  if (Toggle) {
+    query = `
       UPDATE
         Sauces
       SET
-        AdminApproved = ?
+        AdminApproved = 1
       WHERE 
         SauceID = ?
-    `,
-    [Toggle, SauceID]
-  );
+        AND IsActive = 1
+      `;
+  } else {
+    query = `
+      UPDATE
+        Sauces
+      SET
+        AdminApproved = 0,
+        IsActive = 0
+      WHERE 
+        SauceID = ?
+    `;
+  }
+
+  const rows = await DB.query(query, [SauceID]);
 
   if (!rows) {
     throw new Error(
