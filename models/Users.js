@@ -99,12 +99,12 @@ exports.DoesUserExist = async function({ UserID }) {
   return rows && rows[0] && rows[0].UserExists === 1;
 };
 
-exports.getAll = function(cb) {
-  db.get().query("SELECT * FROM Users", function(err, rows) {
-    if (err) return cb(err);
-    cb(null, rows);
-  });
-};
+// exports.getAll = function(cb) {
+//   db.get().query("SELECT * FROM Users", function(err, rows) {
+//     if (err) return cb(err);
+//     cb(null, rows);
+//   });
+// };
 
 /** @description Authenticate a user as legit or not
  *  @param {String=} email - User email. Must pass email or UserID.
