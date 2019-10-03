@@ -34,15 +34,17 @@ router.post(
 // multer will put data object onto req.body like normal
 // 1. Check mimetype of image and set req.body
 // 2. Verify user.token, attach UserID to user
-// 3. Save image
-// 4. Convert req.body data to be proper format for DB
-// 5. Save sauce to DB
+// 3. Convert req.body data to be proper format for DB
+// 4. Save image
+// 5. Validate data
+// 6. Check for privaledges
+// 7. Update sauce to DB
 router.post(
   "/api/sauce/update",
   imageController.upload,
   authController.isLoggedIn,
-  imageController.saveImage,
   sauceController.stringToProperType,
+  imageController.saveImage,
   sauceController.validateInsert,
   sauceController.canUserEdit,
   sauceController.updateSauce
