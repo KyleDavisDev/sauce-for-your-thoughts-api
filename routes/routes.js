@@ -127,14 +127,6 @@ router.post(
   userController.getInfo
 );
 
-// 1. Check if user.token is legit, place user's _id onto user
-// 2. Check if user can submit a sauce or not
-router.post(
-  "/api/user/check/email/",
-  authController.isLoggedIn,
-  authController.isEmailVerified
-);
-
 // 1. Validate user
 // 2. Validate info
 // 3. Update email
@@ -177,7 +169,22 @@ router.post(
 );
 
 // 1. Confirm email
-router.post("/api/user/confirm/email", authController.confirmEmail);
+router.post("/api/user/email/confirm", authController.confirmEmail);
+
+// 1. Confirm email
+router.post(
+  "/api/user/email/resend",
+  authController.isLoggedIn,
+  authController.resendEmail
+);
+
+// 1. Check if user.token is legit, place user's _id onto user
+// 2. Check if user can submit a sauce or not
+router.post(
+  "/api/user/email/check/",
+  authController.isLoggedIn,
+  authController.isEmailVerified
+);
 
 // 1. Check is user.token is legit, place user's _id onto user
 router.post("/api/user/isloggedin", authController.isLoggedIn);
