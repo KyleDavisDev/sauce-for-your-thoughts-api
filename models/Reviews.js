@@ -8,9 +8,11 @@ const Sauces = require("../models/Sauces");
 // constants
 const HASH_LENGTH = 10;
 
-exports.ReviewsTableStructure = `CREATE TABLE IF NOT EXISTS Reviews (
-  SauceID int NOT NULL,
-  UserID int NOT NULL,
+exports.ReviewsTableStructure = `CREATE TABLE Reviews (
+  ReviewID int(11) NOT NULL AUTO_INCREMENT,
+  SauceID int(11) NOT NULL,
+  UserID int(11) NOT NULL,
+  HashID varchar(10) DEFAULT NULL,
   Created bigint(20) unsigned DEFAULT NULL,
   Updated bigint(20) unsigned DEFAULT NULL,
   LabelRating int NOT NULL CHECK (LabelRating > -1 AND LabelRating < 6),
@@ -22,14 +24,14 @@ exports.ReviewsTableStructure = `CREATE TABLE IF NOT EXISTS Reviews (
   HeatRating int NOT NULL CHECK (HeatRating > -1 AND HeatRating < 6),
   HeatDescription varchar(300),
   OverallRating int NOT NULL CHECK (OverallRating > -1 AND OverallRating < 6),
-  OverallDescription varchar(300) NOT NULL,
-  Note varchar(300),
-  IsActive boolean DEFAULT '1',
-  HashID varchar(10),
-  PRIMARY KEY (SauceID, UserID),
-  CONSTRAINT Reviews_Sauces_SauceID FOREIGN KEY (SauceID) REFERENCES Sauces(SauceID),
-  CONSTRAINT Reviews_Users_UserID FOREIGN KEY (USERID) REFERENCES Users(UserID)
-  );`;
+  Note varchar(300) DEFAULT NULL,
+  IsActive tinyint(1) DEFAULT '1',
+  PRIMARY KEY (SauceID,UserID),
+  KEY Reviews_Users_UserID (UserID),
+  KEY ReviewID (ReviewID),
+  CONSTRAINT Reviews_Sauces_SauceID FOREIGN KEY (SauceID) REFERENCES Sauces (SauceID),
+  CONSTRAINT Reviews_Users_UserID FOREIGN KEY (UserID) REFERENCES Users (UserID)
+) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=latin1;`;
 
 // Returns insert results
 exports.Insert = async function({
