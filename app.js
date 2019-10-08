@@ -1,5 +1,6 @@
 const express = require("express");
 const routes = require("./routes/routes.js");
+const requestIp = require("request-ip");
 
 //create express app
 const app = express();
@@ -18,14 +19,12 @@ app.use(function(req, res, next) {
   next();
 });
 
-var testerino = function(req, res, next) {
-  console.log("hi");
-  var ip =
-    req.headers["x-forwarded-for"] ||
-    req.connection.remoteAddress ||
-    req.socket.remoteAddress ||
-    (req.connection.socket ? req.connection.socket.remoteAddress : null);
-  console.log(req.headers);
+// inside middleware handler
+const ipMiddleware = function(req, res, next) {
+  const clientIp = requestIp.getClientIp(req);
+
+  console.log(clientIp);
+
   res.on("finish", function() {
     console.log("after");
   });
@@ -33,7 +32,7 @@ var testerino = function(req, res, next) {
   next();
 };
 
-app.use(testerino);
+app.use(ipMiddleware);
 
 // takes raw requests and attaches them to req.body for use later
 app.use(express.json());
