@@ -22,9 +22,17 @@ const BigBrotherMiddleware = async function(req, res, next) {
     console.log(err);
   }
 
-  // res.on("finish", function() {
-  //   console.log("after");
-  // });
+  // When request ends
+  res.on("finish", async function() {
+    try {
+      // Insert into Big Brother
+      const rows = await BigBrother.FinishRecord({
+        BigBrotherID: res.locals.BigBrotherID
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  });
 
   next();
 };
