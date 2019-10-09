@@ -37,14 +37,6 @@ exports.Insert = async function({
       "Could insert action into database. Please make sure all required information is provided."
     );
   }
-  // const query = `
-  // INSERT INTO
-  //     BigBrother
-  //   SET
-  //     Action = ${Action},
-  //     IP = ${IP},
-
-  //     `
 
   const rows = DB.query(
     `
