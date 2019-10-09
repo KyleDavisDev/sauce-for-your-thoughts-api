@@ -441,10 +441,13 @@ exports.isEmailVerified = isEmailVerified = async (req, res, next) => {
     // If we are end of stack, go to client
     if (isLastMiddlewareInStack) {
       //return to client
-      return res.status(200).send({
+      res.status(200).send({
         isGood: IsEmailVerified, //user can/cannot update
         msg: "Email is verified."
       });
+
+      // Go to next middleware
+      next();
     } else {
       // Go to next middleware
       res.locals.isEmailVerified = IsEmailVerified;
