@@ -58,7 +58,5 @@ exports.Insert = async function({
     throw new Error("Error trying to save user. Please try again.");
   }
 
-  console.log(rows);
-
   return rows.insertId;
 };
