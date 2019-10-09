@@ -108,9 +108,42 @@ exports.Update = async function({
 
   const rows = await DB.query(query);
 
-  // Make sure we could save user
+  // Make sure we could update record
   if (!rows) {
-    throw new Error("Error trying to save user. Please try again.");
+    throw new Error("Error trying to update record. Please try again.");
+  }
+
+  return rows && rows.affectedRows === 1;
+};
+
+/** @description Finish off a request in table.
+ *  @param {Number} BigBrotherID - Table row
+ *  @return {Promise}
+ *  @resolves {Boolean} Whether finish worked or not
+ */
+exports.FinishRecord = async function({ BigBrotherID }) {
+  console.log(BigBrotherID);
+  // Throw error if not all info is available.
+  if (!BigBrotherID) {
+    throw new Error(
+      "Could not finish off BigBrother record in database. Please make sure all required information is provided."
+    );
+  }
+
+  const query = `
+    UPDATE
+      BigBrother
+    SET
+      EndDate = ${moment().unix()}
+    WHERE
+      BigBrotherID = ${BigBrotherID}
+  `;
+
+  const rows = await DB.query(query);
+
+  // Make sure we could finish off record
+  if (!rows) {
+    throw new Error("Error trying to finish off record. Please try again.");
   }
 
   return rows && rows.affectedRows === 1;
