@@ -22,7 +22,7 @@ exports.ReviewsTableStructure = `CREATE TABLE BigBrother (
  *  @param {Number?} ReviewID - review id
  *  @param {String} Action - what is happening
  *  @param {String} IP - IP used to make request
- *  @return inserted result
+ *  @return {Number} inserted row id
  */
 exports.Insert = async function({
   UserID = null,
@@ -38,7 +38,7 @@ exports.Insert = async function({
     );
   }
 
-  const rows = DB.query(
+  const rows = await DB.query(
     `
     INSERT INTO
       BigBrother
@@ -47,7 +47,7 @@ exports.Insert = async function({
       IP = ?, 
       UserID = ?,
       SauceID = ?,
-      ReviewID = ?
+      ReviewID = ?,
       StartDate = ${moment().unix()};  
       `,
     [Action, IP, UserID, SauceID, ReviewID]
@@ -58,5 +58,7 @@ exports.Insert = async function({
     throw new Error("Error trying to save user. Please try again.");
   }
 
-  return rows;
+  console.log(rows);
+
+  return rows.insertId;
 };
