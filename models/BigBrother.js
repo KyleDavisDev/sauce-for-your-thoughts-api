@@ -22,7 +22,8 @@ exports.ReviewsTableStructure = `CREATE TABLE BigBrother (
  *  @param {Number?} ReviewID - review id
  *  @param {String} Action - what is happening
  *  @param {String} IP - IP used to make request
- *  @return {Number} inserted row id
+ *  @return {Promise}
+ *  @resolves {Number} inserted row id
  */
 exports.Insert = async function({
   UserID = null,
