@@ -1,4 +1,5 @@
 const DB = require("../db/db.js");
+const moment = require("moment");
 
 exports.ReviewsTableStructure = `CREATE TABLE BigBrother (
   BigBrotherID int(11) NOT NULL AUTO_INCREMENT,
@@ -6,8 +7,9 @@ exports.ReviewsTableStructure = `CREATE TABLE BigBrother (
   SauceID int(11) NULL,
   ReviewID int(11) NULL,
   Action varchar(200) NOT NULL DEFAULT '',
-  Duration int(11) DEFAULT NULL,
+  StartDate bigint(20) NOT NULL,
   IP varchar(30) NOT NULL DEFAULT '',
+  EndDate bigint(20) DEFAULT NULL,
   PRIMARY KEY (BigBrotherID),
   CONSTRAINT BigBrother_ReviewID_Reviews_ReviewID FOREIGN KEY (ReviewID) REFERENCES Reviews (ReviewID),
   CONSTRAINT BigBrother_SauceID_Sauces_SauceID FOREIGN KEY (SauceID) REFERENCES Sauces (SauceID),
@@ -19,7 +21,6 @@ exports.ReviewsTableStructure = `CREATE TABLE BigBrother (
  *  @param {Number?} SauceID - sauce id
  *  @param {Number?} ReviewID - review id
  *  @param {String} Action - what is happening
- *  @param {Number?} Duration - How long it is taking (in ms)
  *  @param {String} IP - IP used to make request
  *  @return inserted result
  */
@@ -28,7 +29,6 @@ exports.Insert = async function({
   SauceID = null,
   ReviewID = null,
   Action,
-  Duration = null,
   IP
 }) {
   // Throw error if not all info is available.
@@ -47,7 +47,8 @@ exports.Insert = async function({
       IP = ?, 
       UserID = ?,
       SauceID = ?,
-      ReviewID = ?;  
+      ReviewID = ?
+      StartDate = ${moment().unix()};  
       `,
     [Action, IP, UserID, SauceID, ReviewID]
   );
