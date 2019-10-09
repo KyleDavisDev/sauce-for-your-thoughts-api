@@ -1,6 +1,7 @@
 const express = require("express");
 const routes = require("./routes/routes.js");
 const requestIp = require("request-ip");
+const BigBrother = require("./models/BigBrother");
 
 //create express app
 const app = express();
@@ -20,14 +21,20 @@ app.use(function(req, res, next) {
 });
 
 // inside middleware handler
-const ipMiddleware = function(req, res, next) {
-  const clientIp = requestIp.getClientIp(req);
+const ipMiddleware = async function(req, res, next) {
+  try {
+    // Don't bother if just getting options
+    if (req.method !== "OPTIONS") {
+      const clientIp = requestIp.getClientIp(req);
+      const rows = await BigBrother.Insert({ IP: clientIp, Action: "test" });
+    }
+  } catch (err) {
+    console.log(err);
+  }
 
-  console.log(clientIp);
-
-  res.on("finish", function() {
-    console.log("after");
-  });
+  // res.on("finish", function() {
+  //   console.log("after");
+  // });
 
   next();
 };
