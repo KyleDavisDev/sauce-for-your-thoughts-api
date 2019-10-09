@@ -61,3 +61,57 @@ exports.Insert = async function({
 
   return rows.insertId;
 };
+
+/** @description Update record in table.
+ *  @param {Number} BigBrotherID - Table row
+ *  @param {Number?} UserID - user id
+ *  @param {Number?} SauceID - sauce id
+ *  @param {Number?} ReviewID - review id
+ *  @param {String?} Action - what is happening
+ *  @param {String?} IP - IP used to make request
+ *  @param {Number?} StardDate - when request started
+ *  @param {Number?} EndDate - when request ended
+ *  @return {Promise}
+ *  @resolves {Boolean} Whether update worked or not
+ */
+exports.Update = async function({
+  BigBrotherID,
+  UserID,
+  SauceID,
+  ReviewID,
+  Action,
+  IP,
+  StartDate,
+  EndDate
+}) {
+  // Throw error if not all info is available.
+  if (!BigBrotherID) {
+    throw new Error(
+      "Could update BigBrother record in database. Please make sure all required information is provided."
+    );
+  }
+
+  const query = `
+    UPDATE
+      BigBrother
+    SET
+      ${UserID ? "UserID = " + UserID + ", " : ""}
+      ${SauceID ? "SauceID = " + SauceID + ", " : ""}
+      ${ReviewID ? "ReviewID = " + ReviewID + ", " : ""}
+      ${Action ? "Action = " + Action + ", " : ""}
+      ${IP ? "IP = " + IP + ", " : ""}
+      ${StartDate ? "StartDate = " + StartDate + ", " : ""}
+      ${EndDate ? "EndDate = " + EndDate + " " : ""}
+    WHERE
+      BigBrotherID = ${BigBrotherID}
+  `;
+
+  const rows = await DB.query(query);
+
+  // Make sure we could save user
+  if (!rows) {
+    throw new Error("Error trying to save user. Please try again.");
+  }
+
+  return rows && rows.affectedRows === 1;
+};
