@@ -344,8 +344,11 @@ exports.getReviewsBySauceSlug = getReviewsBySauceSlug = async (
 
     // If we are end of stack, go to client
     if (isLastMiddlewareInStack) {
-      //return to client
-      return res.status(200).send({ isGood: true, sauce });
+      // send to client
+      res.status(200).send({ isGood: true, sauce });
+
+      // finish request off
+      next();
     } else {
       // Go to next middleware
       return next();
@@ -471,12 +474,15 @@ exports.canUserSubmit = canUserSubmit = async (req, res, next) => {
       stack: req.route.stack
     });
 
-    // If we are end of stack, go to client
+    // If we are end of stack, send to client
     if (isLastMiddlewareInStack) {
-      //return to client
-      return res.status(200).send({
+      // send
+      res.status(200).send({
         isGood: !doesReviewExist
       });
+
+      // finish request
+      next();
     } else {
       // Go to next middleware
       res.locals.canUserSubmit = !doesReviewExist;
