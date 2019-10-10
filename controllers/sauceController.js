@@ -67,8 +67,6 @@ exports.validateSlugParam = async (req, res, next) => {
   try {
     // Grab parameters
     const params = req.query;
-    // Initialize res.locals
-    res.locals = {};
 
     if (validator.isEmpty(params.s)) {
       throw new Error("You must supply a sauce to look up.");
@@ -92,8 +90,6 @@ exports.validateQueryParams = async (req, res, next) => {
   try {
     // Grab parameters
     const params = req.query;
-    // Initialize res.locals
-    res.locals = {};
 
     // Grab available types and make lowercase
     const types = await Types.FindTypes().then(result => {
@@ -393,12 +389,12 @@ exports.getSaucesWithNewestReviews = getSaucesWithNewestReviews = async (
       stack: req.route.stack
     });
 
-    // If we are end of stack, go to client
+    // If we are end of stack, send to client
     if (isLastMiddlewareInStack) {
       // Send to client
-      return res
-        .status(200)
-        .send({ isGood: true, sauce, saucesWithNewestReviews });
+      res.status(200).send({ isGood: true, sauce, saucesWithNewestReviews });
+
+      next();
     } else {
       // Go to next middleware
       return next();
@@ -603,9 +599,12 @@ exports.getTotal = getTotal = async (req, res, next) => {
     // If we are end of stack, go to client
     if (isLastMiddlewareInStack) {
       //return to client
-      return res
+      res
         .status(200)
         .send(Object.assign({}, res.locals, { isGood: true, total }));
+
+      // Finish off request
+      next();
     } else {
       // Attach newest to res.locals
       res.locals.total = total;
