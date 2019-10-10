@@ -1,23 +1,27 @@
 const BigBrother = require("../models/BigBrother");
 const requestIp = require("request-ip");
+const moment = require("moment");
 
 // Middleware for BigBrother to see what's going on.
 const BigBrotherMiddleware = async function(req, res, next) {
+  if (req.method === "OPTIONS") {
+    return next();
+  }
+
   try {
     // Don't bother if just getting options
-    if (req.method !== "OPTIONS") {
-      // Get IP
-      const clientIp = requestIp.getClientIp(req);
 
-      // Insert into Big Brother
-      const BigBrotherID = await BigBrother.Insert({
-        IP: clientIp,
-        Action: "initiate request"
-      });
+    // Get IP
+    const clientIp = requestIp.getClientIp(req);
 
-      // Save ID to locals for later
-      res.locals.BigBrotherID = BigBrotherID;
-    }
+    // Insert into Big Brother
+    const BigBrotherID = await BigBrother.Insert({
+      IP: clientIp,
+      Action: "initiate request"
+    });
+
+    // Save ID to locals for later
+    res.locals.BigBrotherID = BigBrotherID;
   } catch (err) {
     console.log(err);
   }
@@ -25,9 +29,18 @@ const BigBrotherMiddleware = async function(req, res, next) {
   // When request ends
   res.on("finish", async function() {
     try {
+      // Try to find a userID, sauceID, reviewID
+      let UserID = req.body.user ? req.body.user.UserID : 0;
+
+      let BigBrotherID = res.locals.BigBrotherID;
+
+      const EndDate = moment().unix();
+
       // Insert into Big Brother
-      const rows = await BigBrother.FinishRecord({
-        BigBrotherID: res.locals.BigBrotherID
+      const rows = await BigBrother.Update({
+        BigBrotherID,
+        UserID,
+        EndDate
       });
     } catch (err) {
       console.log(err);
