@@ -30,17 +30,20 @@ const BigBrotherMiddleware = async function(req, res, next) {
   res.on("finish", async function() {
     try {
       // Try to find a userID, sauceID, reviewID
-      let UserID = req.body.user ? req.body.user.UserID : 0;
+      let UserID = req.body && req.body.user ? req.body.user.UserID : 0;
 
       let BigBrotherID = res.locals.BigBrotherID;
 
       const EndDate = moment().unix();
 
+      const Action = req.originalUrl;
+
       // Insert into Big Brother
       const rows = await BigBrother.Update({
         BigBrotherID,
         UserID,
-        EndDate
+        EndDate,
+        Action
       });
     } catch (err) {
       console.log(err);
