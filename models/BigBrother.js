@@ -122,7 +122,6 @@ exports.Update = async function({
  *  @resolves {Boolean} Whether finish worked or not
  */
 exports.FinishRecord = async function({ BigBrotherID }) {
-  console.log(BigBrotherID);
   // Throw error if not all info is available.
   if (!BigBrotherID) {
     throw new Error(
