@@ -185,7 +185,14 @@ exports.addReview = async (req, res, next) => {
     };
 
     // Send back successful submission
-    return res.status(200).send(data);
+    res.status(200).send(data);
+
+    // Add IDs to res.locals
+    res.locals.SauceID = SauceID;
+    res.locals.ReviewID = results.insertId;
+
+    // Keep going
+    next();
   } catch (err) {
     // console.log(err);
     const data = {
