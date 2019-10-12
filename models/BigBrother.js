@@ -23,6 +23,7 @@ exports.ReviewsTableStructure = `CREATE TABLE BigBrother (
  *  @param {Number?} ReviewID - review id
  *  @param {String} Action - what is happening
  *  @param {String} IP - IP used to make request
+ *  @param {String} Method - Type of request (GET, POST, etc.)
  *  @return {Promise}
  *  @resolves {Number} inserted row id
  */
@@ -31,10 +32,11 @@ exports.Insert = async function({
   SauceID = null,
   ReviewID = null,
   Action,
-  IP
+  IP,
+  Method
 }) {
   // Throw error if not all info is available.
-  if (!Action || !IP) {
+  if (!Action || !IP || !Method) {
     throw new Error(
       "Could insert action into database. Please make sure all required information is provided."
     );
@@ -50,9 +52,10 @@ exports.Insert = async function({
       UserID = ?,
       SauceID = ?,
       ReviewID = ?,
-      StartDate = ${moment().unix()};  
+      StartDate = ${moment().unix()},
+      Method = ?  
       `,
-    [Action, IP, UserID, SauceID, ReviewID]
+    [Action, IP, UserID, SauceID, ReviewID, Method]
   );
 
   // Make sure we could save user
@@ -72,6 +75,7 @@ exports.Insert = async function({
  *  @param {String?} IP - IP used to make request
  *  @param {Number?} StardDate - when request started
  *  @param {Number?} EndDate - when request ended
+ *  @param {String?} Method - Type of request (POST, GET, etc)
  *  @return {Promise}
  *  @resolves {Boolean} Whether update worked or not
  */
@@ -83,7 +87,8 @@ exports.Update = async function({
   Action,
   IP,
   StartDate,
-  EndDate
+  EndDate,
+  Method
 }) {
   // Throw error if not all info is available.
   if (!BigBrotherID) {
@@ -102,6 +107,7 @@ exports.Update = async function({
       ${Action ? "Action = '" + Action + "', " : ""}
       ${IP ? "IP = " + IP + ", " : ""}
       ${StartDate ? "StartDate = " + StartDate + ", " : ""}
+      ${Method ? "Method = '" + Method + "', " : ""}
       ${EndDate ? "EndDate = " + EndDate + " " : ""}
     WHERE
       BigBrotherID = ${BigBrotherID}
