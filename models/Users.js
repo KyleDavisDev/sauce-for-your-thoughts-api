@@ -294,11 +294,9 @@ exports.FindUserIDByUnique = async function({ DisplayName, Email }) {
     [DisplayName, Email]
   );
 
-  console.log(rows);
-
   // If error
   if (!rows || !rows[0]) {
-    throw new Error("Invalid displayName.");
+    throw new Error("Invalid UserID.");
   }
 
   // return ID
@@ -449,13 +447,14 @@ exports.UpdateAvatarURL = async function({ UserID, AvatarURL }) {
 };
 
 /** @description Check if person have verified email or not
- *  @param {string} UserID - Unique user's identification
+ *  @param {String?} UserID - Unique user's identification
+ *  @param {String?} UserID - Unique user's identification
  *  @returns {Promise}
  *  @resolves {Boolean}
  */
-exports.IsEmailVerified = async function({ UserID }) {
+exports.IsEmailVerified = async function({ UserID, Email }) {
   // Sanity check
-  if (!UserID) {
+  if (!UserID && !Email) {
     throw new Error(
       "Must provide required parameters to IsEmailVerified method"
     );
@@ -468,11 +467,12 @@ exports.IsEmailVerified = async function({ UserID }) {
     FROM
       Users
     WHERE
-      UserID = ?
+      (UserID = ?
+        OR Email = ?)
       AND IsActive = 1
       AND IsEmailVerified = 1
     `,
-    [UserID, MAX_LOGIN_ATTEMPTS]
+    [UserID, Email, MAX_LOGIN_ATTEMPTS]
   );
 
   // If all is good, will return true
