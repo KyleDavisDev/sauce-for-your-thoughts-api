@@ -1,5 +1,6 @@
 const Reviews = require("../models/Reviews.js");
 const Sauces = require("../models/Sauces.js");
+const Users = require("../models/Users.js");
 const validator = require("validator");
 const Utility = require("../utility/utility");
 
@@ -449,11 +450,23 @@ exports.canUserSubmit = canUserSubmit = async (req, res, next) => {
       return res.status(404).send(data);
     }
 
+    // Is user's email confirmed?
+    const isEmailConfirmed = Users.IsEmailVerified({ UserID });
+
+    if (!isEmailConfirmed) {
+      const data = {
+        isGood: false,
+        msg:
+          "Could not confirm your email. Please verify email before continueing."
+      };
+      return res.status(404).send(data);
+    }
+
     // Find sauceID
     const SauceID = await Sauces.FindIDBySlug({ Slug: slug });
 
     // If still cant the SauceID, user has a bad slug
-    if (!slug) {
+    if (!SauceID) {
       const data = {
         isGood: false,
         msg:
