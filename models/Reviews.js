@@ -96,7 +96,7 @@ exports.Insert = async function({
   const Slug = await Sauces.FindSlugByID({ SauceID });
   await Sauces.ToggleReviewCount({ Slug, inc: true });
 
-  return results;
+  return res;
 };
 
 // Returns insert results
