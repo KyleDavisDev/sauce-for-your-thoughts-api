@@ -240,35 +240,55 @@ exports.FindReviewsBySauceID = async function({ SauceID, UserID }) {
   return JSFriendlyArr;
 };
 
-exports.FindSingleReview = async function({ SauceID, UserID }) {
+/** @description Find a single review from DB
+ *  @param {Number?} SauceID - unique sauce id
+ *  @param {Number?} UserID - unique user id
+ *  @param {ReviewID?} ReviewID - unique Review id
+ *  @return {Object} review
+ */
+exports.FindSingleReview = async function({ SauceID, UserID, ReviewID }) {
+  // Sanity check. Must have either (SauceID AND UserID) OR ReviewID
+  if (!(!!SauceID && !!UserID) && !ReviewID) {
+    throw new Error(
+      "Must provide required parameters to FindSingleReview method"
+    );
+  }
+
   const row = await DB.query(
-    `SELECT Reviews.HashID AS "Reviews.ReviewID",
-  Reviews.LabelRating AS "Reviews.LabelRating",
-  Reviews.LabelDescription AS "Reviews.LabelDescription",
-  Reviews.AromaRating AS "Reviews.AromaRating",
-  Reviews.AromaDescription AS "Reviews.AromaDescription",
-  Reviews.TasteRating AS "Reviews.TasteRating",
-  Reviews.TasteDescription AS "Reviews.TasteDescription",
-  Reviews.HeatRating AS "Reviews.HeatRating",
-  Reviews.HeatDescription AS "Reviews.HeatDescription",
-  Reviews.OverallRating AS "Reviews.OverallRating",
-  Reviews.OverallDescription AS "Reviews.OverallDescription",
-  Reviews.Note AS "Reviews.Note",
-  ( CASE
-    WHEN Reviews.Updated IS NULL THEN Reviews.Created 
-    ELSE Reviews.Updated
-  END ) AS "Reviews.Created",
-  Users.DisplayName AS "Users.DisplayName",
-  Users.Created AS "Users.Created"
-  FROM Reviews
-  LEFT JOIN Users ON Reviews.UserID = Users.UserID
-  LEFT JOIN Sauces ON Reviews.SauceID = Sauces.SauceID
-  WHERE Reviews.IsActive = 1
-   AND Sauces.IsActive = 1
-   AND Sauces.IsPrivate = 0
-   AND Reviews.SauceID = ?
-   AND Reviews.UserID = ?`,
-    [SauceID, UserID]
+    `
+    SELECT
+      Reviews.HashID AS "Reviews.ReviewID",
+      Reviews.LabelRating AS "Reviews.LabelRating",
+      Reviews.LabelDescription AS "Reviews.LabelDescription",
+      Reviews.AromaRating AS "Reviews.AromaRating",
+      Reviews.AromaDescription AS "Reviews.AromaDescription",
+      Reviews.TasteRating AS "Reviews.TasteRating",
+      Reviews.TasteDescription AS "Reviews.TasteDescription",
+      Reviews.HeatRating AS "Reviews.HeatRating",
+      Reviews.HeatDescription AS "Reviews.HeatDescription",
+      Reviews.OverallRating AS "Reviews.OverallRating",
+      Reviews.OverallDescription AS "Reviews.OverallDescription",
+      Reviews.Note AS "Reviews.Note",
+      ( CASE
+        WHEN Reviews.Updated IS NULL THEN Reviews.Created 
+        ELSE Reviews.Updated
+      END ) AS "Reviews.Created",
+      Users.DisplayName AS "Users.DisplayName",
+      Users.Created AS "Users.Created"
+    FROM
+      Reviews
+    LEFT JOIN
+      Users ON Reviews.UserID = Users.UserID
+    LEFT JOIN
+      Sauces ON Reviews.SauceID = Sauces.SauceID
+    WHERE
+      Reviews.IsActive = 1
+      AND Sauces.IsActive = 1
+      AND (
+            (Reviews.SauceID = ? AND Reviews.UserID = ?)
+            OR Reviews.ReviewID = ?
+          )`,
+    [SauceID, UserID, ReviewID]
   );
 
   if (!row) {
