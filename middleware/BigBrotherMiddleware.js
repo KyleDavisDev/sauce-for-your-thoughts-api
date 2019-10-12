@@ -9,7 +9,7 @@ const BigBrotherMiddleware = async function(req, res, next) {
   }
 
   try {
-    // Don't bother if just getting options
+    // Don't bother if\ just getting options
 
     // Get IP
     const clientIp = requestIp.getClientIp(req);

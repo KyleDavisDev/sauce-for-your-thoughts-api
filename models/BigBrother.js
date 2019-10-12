@@ -11,6 +11,7 @@ exports.ReviewsTableStructure = `CREATE TABLE BigBrother (
   IP varchar(30) NOT NULL DEFAULT '',
   EndDate bigint(20) DEFAULT NULL,
   PRIMARY KEY (BigBrotherID),
+  Method varchar(15) NOT NULL DEFAULT '',
   CONSTRAINT BigBrother_ReviewID_Reviews_ReviewID FOREIGN KEY (ReviewID) REFERENCES Reviews (ReviewID),
   CONSTRAINT BigBrother_SauceID_Sauces_SauceID FOREIGN KEY (SauceID) REFERENCES Sauces (SauceID),
   CONSTRAINT BigBrother_UserID_Users_UserID FOREIGN KEY (UserID) REFERENCES Users (UserID)
