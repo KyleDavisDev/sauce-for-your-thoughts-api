@@ -33,7 +33,11 @@ const BigBrotherMiddleware = async function(req, res, next) {
   // When request ends
   res.on("finish", async function() {
     try {
+      // Find UserID from req and res
       const UserID = await findUserID(req, res);
+
+      // Find SauceID from req and res
+      const SauceID = findSauceID(req, res);
 
       let BigBrotherID = res.locals.BigBrotherID;
 
@@ -46,7 +50,8 @@ const BigBrotherMiddleware = async function(req, res, next) {
         BigBrotherID,
         UserID,
         EndDate,
-        Action
+        Action,
+        SauceID
       });
     } catch (err) {
       console.log(err);
@@ -63,14 +68,14 @@ const BigBrotherMiddleware = async function(req, res, next) {
  */
 async function findUserID(req, res) {
   // Try to find a userID, sauceID, reviewID
-  let UserID = req.body && req.body.user ? req.body.user.UserID : 0;
+  let UserID = req.body && req.body.user ? req.body.user.UserID : null;
   if (!UserID) {
     // try another place
     UserID = res.locals.UserID;
   }
 
   // If we actually have something, return now.
-  if (UserID && UserID !== 0) {
+  if (UserID && UserID !== null) {
     return UserID;
   }
 
@@ -88,6 +93,27 @@ async function findUserID(req, res) {
   }
 
   return UserID;
+}
+
+/** @description Find the SauceID
+ *  @param {Object} res - response object from express
+ *  @param {Object} req - request object from express
+ *  @return {Number|null}
+ */
+async function findSauceID(req, res) {
+  // first attempt on req.body
+  let SauceID = req.body && req.body.sauce ? req.body.sauce.SauceID : null;
+  if (!SauceID) {
+    // try another place
+    SauceID = res.locals.SauceID;
+  }
+
+  // If we actually have something, return now.
+  if (SauceID && SauceID !== null) {
+    return SauceID;
+  }
+
+  return SauceID;
 }
 
 module.exports = BigBrotherMiddleware;
