@@ -428,7 +428,7 @@ exports.isEmailVerified = isEmailVerified = async (req, res, next) => {
     // If not verified, end here.
     if (!IsEmailVerified) {
       //return to client
-      return res.status(200).send({
+      return res.status(401).send({
         isGood: false, //user cannot update
         msg:
           "You are ineligible to submit at this time. Please verify email first."
