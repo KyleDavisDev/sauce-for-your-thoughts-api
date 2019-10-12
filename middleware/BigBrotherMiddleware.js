@@ -1,4 +1,5 @@
 const BigBrother = require("../models/BigBrother");
+const Users = require("../models/Users");
 const requestIp = require("request-ip");
 const moment = require("moment");
 
@@ -32,12 +33,7 @@ const BigBrotherMiddleware = async function(req, res, next) {
   // When request ends
   res.on("finish", async function() {
     try {
-      // Try to find a userID, sauceID, reviewID
-      let UserID = req.body && req.body.user ? req.body.user.UserID : 0;
-      if (!UserID) {
-        // try another place
-        UserID = res.locals.UserID;
-      }
+      const UserID = await findUserID(req, res);
 
       let BigBrotherID = res.locals.BigBrotherID;
 
@@ -59,5 +55,39 @@ const BigBrotherMiddleware = async function(req, res, next) {
 
   next();
 };
+
+/** @description Find the UserID
+ *  @param {Object} res - response object from express
+ *  @param {Object} req - request object from express
+ *  @return {Number|null}
+ */
+async function findUserID(req, res) {
+  // Try to find a userID, sauceID, reviewID
+  let UserID = req.body && req.body.user ? req.body.user.UserID : 0;
+  if (!UserID) {
+    // try another place
+    UserID = res.locals.UserID;
+  }
+
+  // If we actually have something, return now.
+  if (UserID && UserID !== 0) {
+    return UserID;
+  }
+
+  // If UserID still not defined, see if we can find an email and turn that into an ID
+  if (!UserID) {
+    // maybe we have email?
+    let Email = res.locals.Email;
+
+    if (Email) {
+      // convert Email to UserID
+      UserID = await Users.FindUserIDByUnique({ Email });
+
+      return UserID;
+    }
+  }
+
+  return UserID;
+}
 
 module.exports = BigBrotherMiddleware;
