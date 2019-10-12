@@ -487,6 +487,7 @@ exports.confirmEmail = confirmEmail = async (req, res, next) => {
 
     // Need to turn JWT into something usable
     const decoded = await jwt.verify(JWTEmail, process.env.SECRET);
+
     if (!decoded) {
       const data = {
         isGood: false,
@@ -523,18 +524,19 @@ exports.confirmEmail = confirmEmail = async (req, res, next) => {
 
     // If we are end of stack, go to client
     if (isLastMiddlewareInStack) {
-      //return to client
-      return res.status(200).send({
+      // send to client
+      res.status(200).send({
         isGood: true,
         msg: "Your email has been verified! Thank you!"
       });
-    } else {
-      // Get user's email and attach to body
-      const email = await User.FindEmail({
-        DisplayName: displayName
-      });
 
-      req.body.user.email = email;
+      // attach to locals
+      res.locals.Email = Email;
+
+      // Keep going
+      next();
+    } else {
+      req.body.user.Email = Email;
 
       // Go to next middleware
       return next();
@@ -557,7 +559,7 @@ exports.resendEmail = resendEmail = async (req, res, next) => {
   try {
     const { UserID } = req.body.user;
 
-    const Email = await Users.FindEmail({ UserID });
+    const Email = await Users.FindUserEmail({ UserID });
     // Make sure good
     if (!Email) {
       const data = {
@@ -595,7 +597,7 @@ exports.resendEmail = resendEmail = async (req, res, next) => {
       });
     } else {
       // Get user's email and attach to body
-      const email = await User.FindEmail({
+      const email = await User.FindUserEmail({
         DisplayName: displayName
       });
 
