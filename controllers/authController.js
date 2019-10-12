@@ -500,20 +500,26 @@ exports.confirmEmail = confirmEmail = async (req, res, next) => {
     // grab Email
     const Email = decoded.sub;
 
-    // Confirm Email
-    const isGood = await Users.toggleConfirmEmail({
-      Email,
-      Toggle: true
-    });
+    // Check if email is already verified or not. Can maybe end here.
+    const isVerified = await Users.IsEmailVerified({ Email });
+    if (isVerified) {
+      // do not need to do anything
+    } else {
+      // Confirm Email
+      const isGood = await Users.toggleConfirmEmail({
+        Email,
+        Toggle: true
+      });
 
-    // Make sure good
-    if (!isGood) {
-      const data = {
-        isGood: false,
-        msg:
-          "Could not confirm email address. User's account may be locked or inactive."
-      };
-      return res.status(401).send(data);
+      // Make sure good
+      if (!isGood) {
+        const data = {
+          isGood: false,
+          msg:
+            "Could not confirm email address. User's account may be locked or inactive."
+        };
+        return res.status(401).send(data);
+      }
     }
 
     // Find out if more middleware or if this is last stop.
@@ -542,6 +548,7 @@ exports.confirmEmail = confirmEmail = async (req, res, next) => {
       return next();
     }
   } catch (err) {
+    console.log(err);
     const data = {
       isGood: false,
       msg:
