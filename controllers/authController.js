@@ -59,16 +59,19 @@ exports.login = login = async (req, res, next) => {
 
     // If we are end of stack, go to client
     if (isLastMiddlewareInStack) {
-      // remove userID from user obj -- general cleanup
-      delete user.UserID;
-
       const data = {
         isGood: true,
         msg: "Successfully logged in.",
         user: { token, displayName, email, avatarURL, isAdmin }
       };
       // Send back to client
-      return res.status(200).send(data);
+      res.status(200).send(data);
+
+      // make sure userid is in req.body
+      res.locals.UserID = user.UserID;
+
+      // Keep going
+      next();
     } else {
       // attach user info onto req.body.user obj
       req.body.user = {
