@@ -33,11 +33,14 @@ const BigBrotherMiddleware = async function(req, res, next) {
   // When request ends
   res.on("finish", async function() {
     try {
-      // Find UserID from req and res
+      // Look for UserID from req and res
       const UserID = await findUserID(req, res);
 
-      // Find SauceID from req and res
+      // Look for SauceID from req and res
       const SauceID = findSauceID(req, res);
+
+      // Look for ReviewID from req and res
+      const ReviewID = findReviewID(req, res);
 
       let BigBrotherID = res.locals.BigBrotherID;
 
@@ -51,7 +54,8 @@ const BigBrotherMiddleware = async function(req, res, next) {
         UserID,
         EndDate,
         Action,
-        SauceID
+        SauceID,
+        ReviewID
       });
     } catch (err) {
       console.log(err);
@@ -100,7 +104,7 @@ async function findUserID(req, res) {
  *  @param {Object} req - request object from express
  *  @return {Number|null}
  */
-async function findSauceID(req, res) {
+function findSauceID(req, res) {
   // first attempt on req.body
   let SauceID = req.body && req.body.sauce ? req.body.sauce.SauceID : null;
   if (!SauceID) {
@@ -114,6 +118,27 @@ async function findSauceID(req, res) {
   }
 
   return SauceID;
+}
+
+/** @description Find the ReviewID
+ *  @param {Object} res - response object from express
+ *  @param {Object} req - request object from express
+ *  @return {Number|null}
+ */
+function findReviewID(req, res) {
+  // first attempt on req.body
+  let ReviewID = req.body && req.body.review ? req.body.review.ReviewID : null;
+  if (!ReviewID) {
+    // try another place
+    ReviewID = res.locals.ReviewID;
+  }
+
+  // If we actually have something, return now.
+  if (ReviewID && ReviewID !== null) {
+    return ReviewID;
+  }
+
+  return ReviewID;
 }
 
 module.exports = BigBrotherMiddleware;
