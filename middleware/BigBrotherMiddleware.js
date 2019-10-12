@@ -29,8 +29,13 @@ const BigBrotherMiddleware = async function(req, res, next) {
   // When request ends
   res.on("finish", async function() {
     try {
+      console.log(req.body.user, res.locals);
       // Try to find a userID, sauceID, reviewID
       let UserID = req.body && req.body.user ? req.body.user.UserID : 0;
+      if (!UserID) {
+        // try another place
+        UserID = res.locals.UserID;
+      }
 
       let BigBrotherID = res.locals.BigBrotherID;
 
