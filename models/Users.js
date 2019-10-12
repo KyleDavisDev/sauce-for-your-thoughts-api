@@ -237,15 +237,15 @@ exports.IncLoginAttempts = async function({ UserID, LoginAttempts }) {
   );
 };
 
-/** @description Get basic user info
+/** @description Find a user's email
  *  @param {String?} DisplayName - unique user display name
  *  @param {String?} UserID - unique user id
  *  @return {String} User's email
  */
-exports.FindEmail = async function({ DisplayName, UserID }) {
+exports.FindUserEmail = async function({ DisplayName, UserID }) {
   // Sanity check
   if (!DisplayName && !UserID) {
-    throw new Error("Must provide required parameters to FindEmail method");
+    throw new Error("Must provide required parameters to FindUserEmail method");
   }
 
   let rows;
@@ -264,6 +264,45 @@ exports.FindEmail = async function({ DisplayName, UserID }) {
 
   // return record
   return rows[0].Email;
+};
+
+/** @description Find a user's id based off of another unique value
+ *  @param {String?} DisplayName - unique user display name
+ *  @param {String?} Email - unique user email
+ *  @return {String} User's email
+ */
+exports.FindUserIDByUnique = async function({ DisplayName, Email }) {
+  // Sanity check
+  if (!DisplayName && !Email) {
+    throw new Error(
+      "Must provide required parameters to FindUserIDByUnique method"
+    );
+  }
+
+  let rows = await DB.query(
+    `
+    SELECT
+      UserID
+    FROM
+      Users
+    WHERE
+      DisplayName = ?
+      OR Email = ?
+    LIMIT 
+      1
+    `,
+    [DisplayName, Email]
+  );
+
+  console.log(rows);
+
+  // If error
+  if (!rows || !rows[0]) {
+    throw new Error("Invalid displayName.");
+  }
+
+  // return ID
+  return rows[0].UserID;
 };
 
 /** @description Checks if a userID is a person who is an admin or not
