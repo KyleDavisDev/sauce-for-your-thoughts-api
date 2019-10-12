@@ -4,20 +4,23 @@ const moment = require("moment");
 
 // Middleware for BigBrother to see what's going on.
 const BigBrotherMiddleware = async function(req, res, next) {
+  // Don't bother if just getting options
   if (req.method === "OPTIONS") {
     return next();
   }
 
   try {
-    // Don't bother if\ just getting options
-
     // Get IP
     const clientIp = requestIp.getClientIp(req);
+
+    // get method
+    const Method = req.method;
 
     // Insert into Big Brother
     const BigBrotherID = await BigBrother.Insert({
       IP: clientIp,
-      Action: "initiate request"
+      Action: "initiate request",
+      Method
     });
 
     // Save ID to locals for later
@@ -29,7 +32,6 @@ const BigBrotherMiddleware = async function(req, res, next) {
   // When request ends
   res.on("finish", async function() {
     try {
-      console.log(req.body.user, res.locals);
       // Try to find a userID, sauceID, reviewID
       let UserID = req.body && req.body.user ? req.body.user.UserID : 0;
       if (!UserID) {
