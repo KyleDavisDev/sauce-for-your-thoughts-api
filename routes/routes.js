@@ -203,12 +203,12 @@ router.post(
 
 // 1. Check if user.token is legit, place user's _id onto user
 // 2. Make sure review has legit data
-// 3. Add review to DB
+// 3. Get reviews by sauce slug
 router.post(
   "/api/review/get",
   authController.isLoggedIn,
   reviewController.canUserSubmit,
-  reviewController.getReviewsBySauceSlug
+  reviewController.findReviewBySauceSlug
 );
 
 // 1. Check if user.token is legit, place user's _id onto user
