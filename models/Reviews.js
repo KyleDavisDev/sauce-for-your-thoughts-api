@@ -297,7 +297,36 @@ exports.FindSingleReview = async function({ SauceID, UserID, ReviewID }) {
     );
   }
 
-  return row[0];
+  return {
+    reviewID: row[0]["Reviews.ReviewID"],
+    created: row[0]["Reviews.Created"],
+    author: {
+      displayName: row[0]["Users.DisplayName"],
+      created: row[0]["Users.Created"],
+      avatarURL: row[0]["Users.AvatarURL"]
+    },
+    label: {
+      rating: row[0]["Reviews.LabelRating"],
+      txt: row[0]["Reviews.LabelDescription"]
+    },
+    aroma: {
+      rating: row[0]["Reviews.AromaRating"],
+      txt: row[0]["Reviews.AromaDescription"]
+    },
+    taste: {
+      rating: row[0]["Reviews.TasteRating"],
+      txt: row[0]["Reviews.TasteDescription"]
+    },
+    heat: {
+      rating: row[0]["Reviews.HeatRating"],
+      txt: row[0]["Reviews.HeatDescription"]
+    },
+    overall: {
+      rating: row[0]["Reviews.OverallRating"],
+      txt: row[0]["Reviews.OverallDescription"]
+    },
+    note: { txt: row[0]["Reviews.Note"] }
+  };
 };
 
 /** @description Check to see if user has submitted a review for specific sauce
