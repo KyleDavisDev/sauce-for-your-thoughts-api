@@ -329,3 +329,34 @@ exports.HasUserSubmittedReview = async function({ SauceID, UserID }) {
 
   return row && row[0] && row[0].COUNT === 1;
 };
+
+/** @description Get ReviewID based on HashID
+ *  @param {String} HashID - unique hashid
+ *  @return {Number} ReviewID = unique review id
+ */
+exports.getReviewIDFromHashID = async function({ HashID }) {
+  // Sanity check
+  if (!HashID) {
+    throw new Error(
+      "Must provide required parameters to getReviewIDFromHashID method"
+    );
+  }
+
+  const row = await DB.query(
+    `
+    SELECT
+      ReviewID
+    FROM
+      Reviews
+    WHERE
+      HashID = ?
+      `,
+    [HashID]
+  );
+
+  if (!row || !row[0] || !row[0].ReviewID) {
+    throw new Error("Could not find a review that matched your hashed id");
+  }
+
+  return row[0].ReviewID;
+};
