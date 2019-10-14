@@ -372,6 +372,74 @@ exports.getReviewsBySauceSlug = getReviewsBySauceSlug = async (
   }
 };
 
+/** @description Find Single review based on sauce and user id
+ *  @param {String} req.body.sauce.slug - sauce slug
+ *  @param {String} req.body.user.UserID - unique user id
+ *  @return returns single review
+ */
+exports.findReviewBySauceSlug = findReviewBySauceSlug = async (
+  req,
+  res,
+  next
+) => {
+  // Grab values
+  const Slug =
+    req.body.sauce && req.body.sauce.slug ? req.body.sauce.slug : null;
+  const UserID =
+    req.body.user && req.body.user.UserID ? req.body.user.UserID : null;
+
+  // Quick sanity check
+  if (!Slug || !UserID) {
+    const data = {
+      isGood: false,
+      msg: "Could not find your specific review. Please try again."
+    };
+    return res.status(300).send(data);
+  }
+
+  try {
+    // Find SauceID from slug
+    const SauceID = await Sauces.FindIDBySlug({ Slug });
+
+    // Find single review
+    const review = await Reviews.FindSingleReview({
+      SauceID,
+      UserID
+    });
+
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "findReviewBySauceSlug",
+      stack: req.route.stack
+    });
+
+    // If we are end of stack, go to client
+    if (isLastMiddlewareInStack) {
+      // send to client
+      res.status(200).send({ isGood: true, review });
+
+      // attach id's to res.locals
+      res.locals.SauceID = SauceID;
+      res.locals.ReviewID = await Reviews.getReviewIDFromHashID({
+        HashID: review.ReviewID
+      });
+
+      // finish request off
+      next();
+    } else {
+      // Go to next middleware
+      return next();
+    }
+  } catch (err) {
+    const data = {
+      isGood: false,
+      msg:
+        "Error finding reviews. Make sure you have passed a legitimate slug and try again."
+    };
+    return res.status(400).send(data);
+  }
+};
+
 /** @description Get review _id's based on sauces[] _id
  *  @param {Object[]} req.response.sauces[] - array of sauce objects
  *  @param {String[]} req.response.sauces[]._id - unique sauce string
