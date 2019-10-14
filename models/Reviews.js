@@ -360,14 +360,16 @@ exports.HasUserSubmittedReview = async function({ SauceID, UserID }) {
 };
 
 /** @description Get ReviewID based on HashID
- *  @param {String} HashID - unique hashid
+ *  @param {String?} HashID - unique hashid
+ *  @param {String?} SauceID - unique sauce id
+ *  @param {String?} UserID - unique user id
  *  @return {Number} ReviewID = unique review id
  */
-exports.getReviewIDFromHashID = async function({ HashID }) {
+exports.FindReviewIDFromUniques = async function({ HashID, SauceID, UserID }) {
   // Sanity check
-  if (!HashID) {
+  if (!HashID && !(SauceID || UserID)) {
     throw new Error(
-      "Must provide required parameters to getReviewIDFromHashID method"
+      "Must provide required parameters to FindReviewIDFromUniques method"
     );
   }
 
@@ -379,8 +381,11 @@ exports.getReviewIDFromHashID = async function({ HashID }) {
       Reviews
     WHERE
       HashID = ?
+      OR (
+        SauceID = ? AND UserID = ?
+      )
       `,
-    [HashID]
+    [HashID, SauceID, UserID]
   );
 
   if (!row || !row[0] || !row[0].ReviewID) {
