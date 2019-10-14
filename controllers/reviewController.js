@@ -281,7 +281,19 @@ exports.editReview = async (req, res, next) => {
     };
 
     // Send back successful submission
-    return res.status(200).send(data);
+    res.status(200).send(data);
+
+    // get review id and attach
+    const ReviewID = await Reviews.FindReviewIDFromUniques({
+      UserID: req.body.user.UserID,
+      SauceID
+    });
+
+    // add to res.locals
+    res.locals.ReviewID = ReviewID;
+    res.locals.SauceID = SauceID;
+
+    next();
   } catch (err) {
     console.log(err);
     const data = {
@@ -420,9 +432,11 @@ exports.findReviewBySauceSlug = findReviewBySauceSlug = async (
 
       // attach id's to res.locals
       res.locals.SauceID = SauceID;
-      res.locals.ReviewID = await Reviews.getReviewIDFromHashID({
-        HashID: review.ReviewID
+      const ReviewID = await Reviews.FindReviewIDFromUniques({
+        SauceID,
+        UserID
       });
+      res.locals.ReviewID = ReviewID;
 
       // finish request off
       next();
@@ -431,6 +445,7 @@ exports.findReviewBySauceSlug = findReviewBySauceSlug = async (
       return next();
     }
   } catch (err) {
+    console.log(err);
     const data = {
       isGood: false,
       msg:
