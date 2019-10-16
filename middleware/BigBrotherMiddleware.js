@@ -1,5 +1,6 @@
 const BigBrother = require("../models/BigBrother");
 const Users = require("../models/Users");
+const Sauces = require("../models/Sauces");
 const requestIp = require("request-ip");
 const moment = require("moment");
 
@@ -39,7 +40,7 @@ const BigBrotherMiddleware = async function(req, res, next) {
       const UserID = await findUserID(req, res);
 
       // Look for SauceID from req and res
-      const SauceID = findSauceID(req, res);
+      const SauceID = await findSauceID(req, res);
 
       // Look for ReviewID from req and res
       const ReviewID = findReviewID(req, res);
@@ -67,7 +68,8 @@ const BigBrotherMiddleware = async function(req, res, next) {
 /** @description Find the UserID
  *  @param {Object} res - response object from express
  *  @param {Object} req - request object from express
- *  @return {Number|null}
+ *  @return {Promise}
+ *  @resolves {Number|null}
  */
 async function findUserID(req, res) {
   // Try to find a userID, sauceID, reviewID
@@ -101,9 +103,10 @@ async function findUserID(req, res) {
 /** @description Find the SauceID
  *  @param {Object} res - response object from express
  *  @param {Object} req - request object from express
- *  @return {Number|null}
+ *  @return {Promise}
+ *  @resolves {Number|null}
  */
-function findSauceID(req, res) {
+async function findSauceID(req, res) {
   // first attempt on req.body
   let SauceID = req.body && req.body.sauce ? req.body.sauce.SauceID : null;
   if (!SauceID) {
@@ -114,6 +117,12 @@ function findSauceID(req, res) {
   // If we actually have something, return now.
   if (SauceID && SauceID !== null) {
     return SauceID;
+  }
+
+  // if still nothing, look for slug on res.locals to convert to an ID
+  if (res.locals.SauceSlug) {
+    const Slug = res.locals.SauceSlug;
+    SauceID = await Sauces.FindSauceIDFromUniques({ Slug });
   }
 
   return SauceID;
