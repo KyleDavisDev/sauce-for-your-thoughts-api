@@ -85,7 +85,7 @@ exports.Insert = async function({
     Slug,
     Created
   };
-  return Slug;
+
   // Finally insert complete record into DB
   const result = await DB.query("INSERT INTO Sauces SET ?", values);
   const SauceID = result.insertId;
