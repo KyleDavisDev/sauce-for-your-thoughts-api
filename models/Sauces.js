@@ -122,6 +122,7 @@ exports.FindSauceBySlug = async function({ Slug }) {
       MAX(Sauces.Created) AS "Sauces.Created",
       MAX(Sauces.Slug) AS "Sauces.Slug",
       MAX(Sauces.Ingredients) AS "Sauces.Ingredients",
+      MAX(Sauces.AdminApproved) AS "Sauces.AdminApproved",
       MAX(Users.DisplayName) AS "Users.DisplayName",
       MAX(Users.Created) AS "Users.Created",
       GROUP_CONCAT('', Types.Value) AS "Sauces.Types"
@@ -137,7 +138,6 @@ exports.FindSauceBySlug = async function({ Slug }) {
       Sauces.Slug = ?
       AND Sauces.IsActive = 1
       AND Users.IsActive = 1
-      AND Sauces.AdminApproved = 1
     GROUP BY Slug
     `,
     [Slug]
@@ -164,7 +164,8 @@ exports.FindSauceBySlug = async function({ Slug }) {
     description: rows[0]["Sauces.Description"],
     created: rows[0]["Sauces.Created"],
     slug: rows[0]["Sauces.Slug"],
-    types: rows[0]["Sauces.Types"] ? rows[0]["Sauces.Types"].split(",") : null
+    types: rows[0]["Sauces.Types"] ? rows[0]["Sauces.Types"].split(",") : null,
+    isAdminApproved: rows[0]["Sauces.AdminApproved"]
   };
 
   // Return Sauce
