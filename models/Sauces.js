@@ -29,7 +29,7 @@ exports.SaucesTableStructure = `CREATE TABLE Sauces (
   SHU varchar(20) DEFAULT NULL,
   Ingredients varchar(300) DEFAULT NULL,
   IsActive tinyint(1) DEFAULT '1',
-  AdminApproved tinyint(1) DEFAULT '1',
+  AdminApproved tinyint(1) DEFAULT '0',
   IsPrivate tinyint(1) NOT NULL DEFAULT '0',
   ReviewCount int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (SauceID),
