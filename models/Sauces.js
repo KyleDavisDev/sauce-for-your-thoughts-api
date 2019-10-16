@@ -55,43 +55,19 @@ exports.Insert = async function({
   IsPrivate,
   Types
 }) {
+  // Going to figure out what our slug is first
+  const Created = moment().unix();
+  // Create unique salt
+  const salt = UserID + "." + process.env.SECRET + "." + Created;
+  // Generate algo w/ salt and set min length
+  const hashids = new Hashids(salt, HASH_LENGTH);
+  // Generate unique hash
+  const hash = hashids.encode(UserID);
+  // Use unique hash as slug
+  const Slug = hash;
+
   // trim whitespace from name
   const trimmedName = Name.trim();
-
-  // Need to first determine what the slug will be by
-  // finding how many other sauces share same name
-  let rows = await DB.query(
-    // `SELECT COUNT(*) AS Count FROM Sauces WHERE Name LIKE '%${trimmedName}%'`
-    "SELECT COUNT(*) AS Count FROM Sauces WHERE Name = ?",
-    [trimmedName]
-  );
-
-  // If no other entires, then we can just slugify the name
-  // Otherwise we will concat "-" and add one to count
-  // This will make each slug unique
-  let Slug =
-    rows[0].Count === 0
-      ? slug(trimmedName)
-      : slug(trimmedName) + "-" + (rows[0].Count + 1);
-
-  // Need to make sure that the new slugified value is not already taken
-  rows = await DB.query("SELECT COUNT(*) AS Count FROM Sauces WHERE Slug = ?", [
-    Slug
-  ]);
-
-  // Either keep Slug the same or concat "-" and a hashed value
-  if (rows[0].Count === 0) {
-    // We good and don't need to do anything
-  } else {
-    // Create unique salt
-    const salt = Slug + "." + process.env.SECRET;
-    // Generate algo w/ salt and set min length
-    const hashids = new Hashids(salt, HASH_LENGTH);
-    // Generate unique hash
-    const hash = hashids.encode(rows[0].Count);
-    // concat "-" and generated hash value
-    Slug = Slug + "-" + hash;
-  }
 
   // Finally create insert object
   const values = {
@@ -107,9 +83,9 @@ exports.Insert = async function({
     Photo,
     IsPrivate: IsPrivate === true ? IsPrivate : false,
     Slug,
-    Created: moment().unix()
+    Created
   };
-
+  return Slug;
   // Finally insert complete record into DB
   const result = await DB.query("INSERT INTO Sauces SET ?", values);
   const SauceID = result.insertId;
