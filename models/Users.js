@@ -349,7 +349,7 @@ exports.UpdateEmail = async function({ UserID, Email }) {
   );
 
   // If all is good, will return true
-  return row && row.changedRows === 1;
+  return row && row.affectedRows === 1;
 };
 
 /** @description Update a single user's email
@@ -380,7 +380,7 @@ exports.UpdatePassword = async function({ UserID, Password }) {
   );
 
   // If all is good, will return true
-  return row && row.changedRows === 1;
+  return row && row.affectedRows === 1;
 };
 
 /** @description Update a single user's DisplayName
