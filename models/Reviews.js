@@ -359,7 +359,7 @@ exports.HasUserSubmittedReview = async function({ SauceID, UserID }) {
   return row && row[0] && row[0].COUNT === 1;
 };
 
-/** @description Get ReviewID based on HashID
+/** @description Get ReviewID based on unique values
  *  @param {String?} HashID - unique hashid
  *  @param {String?} SauceID - unique sauce id
  *  @param {String?} UserID - unique user id
