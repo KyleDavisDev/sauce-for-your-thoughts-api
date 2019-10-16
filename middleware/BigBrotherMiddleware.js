@@ -1,6 +1,7 @@
 const BigBrother = require("../models/BigBrother");
 const Users = require("../models/Users");
 const Sauces = require("../models/Sauces");
+const Reviews = require("../models/Reviews");
 const requestIp = require("request-ip");
 const moment = require("moment");
 
@@ -43,7 +44,7 @@ const BigBrotherMiddleware = async function(req, res, next) {
       const SauceID = await findSauceID(req, res);
 
       // Look for ReviewID from req and res
-      const ReviewID = findReviewID(req, res);
+      const ReviewID = await findReviewID(req, res);
 
       let BigBrotherID = res.locals.BigBrotherID;
 
@@ -131,9 +132,10 @@ async function findSauceID(req, res) {
 /** @description Find the ReviewID
  *  @param {Object} res - response object from express
  *  @param {Object} req - request object from express
- *  @return {Number|null}
+ *  @returns {Promise}
+ *  @resolves {Number|null}
  */
-function findReviewID(req, res) {
+async function findReviewID(req, res) {
   // first attempt on req.body
   let ReviewID = req.body && req.body.review ? req.body.review.ReviewID : null;
   if (!ReviewID) {
@@ -144,6 +146,13 @@ function findReviewID(req, res) {
   // If we actually have something, return now.
   if (ReviewID && ReviewID !== null) {
     return ReviewID;
+  }
+
+  // check if we can get the ID based on other ID's
+  const UserID = res.locals.UserID;
+  const SauceID = res.locals.SauceID;
+  if (SauceID && UserID) {
+    ReviewID = await Reviews.FindReviewIDFromUniques({ SauceID, UserID });
   }
 
   return ReviewID;
