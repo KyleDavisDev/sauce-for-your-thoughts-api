@@ -17,10 +17,12 @@ const BigBrotherMiddleware = async function(req, res, next) {
     // get method
     const Method = req.method;
 
+    const Action = req.originalUrl;
+
     // Insert into Big Brother
     const BigBrotherID = await BigBrother.Insert({
       IP: clientIp,
-      Action: "initiate request",
+      Action,
       Method
     });
 
@@ -46,14 +48,11 @@ const BigBrotherMiddleware = async function(req, res, next) {
 
       const EndDate = moment().unix();
 
-      const Action = req.originalUrl;
-
       // Insert into Big Brother
       const rows = await BigBrother.Update({
         BigBrotherID,
         UserID,
         EndDate,
-        Action,
         SauceID,
         ReviewID
       });
