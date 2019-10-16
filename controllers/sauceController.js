@@ -263,14 +263,19 @@ exports.getSauceBySlug = getSauceBySlug = async (req, res, next) => {
       stack: req.route.stack
     });
 
+    // attach slug to res.locals
+    res.locals.SauceSlug = Slug;
+
     // If we are end of stack, go to client
     if (isLastMiddlewareInStack) {
-      //return to client
-      return res.status(200).send({
+      // send to client
+      res.status(200).send({
         isGood: true,
         sauce,
         msg: "Found suace"
       });
+
+      next();
     } else {
       // reassign sauce
       req.body.sauce = sauce;
@@ -279,6 +284,7 @@ exports.getSauceBySlug = getSauceBySlug = async (req, res, next) => {
       return next();
     }
   } catch (err) {
+    console.log(err);
     // Will be here is input failed a validator check
     const data = {
       isGood: false,
