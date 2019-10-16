@@ -425,18 +425,14 @@ exports.findReviewBySauceSlug = findReviewBySauceSlug = async (
       stack: req.route.stack
     });
 
-    // If we are end of stack, go to client
+    // If we are end of stack, send to client
     if (isLastMiddlewareInStack) {
       // send to client
       res.status(200).send({ isGood: true, review });
 
       // attach id's to res.locals
       res.locals.SauceID = SauceID;
-      const ReviewID = await Reviews.FindReviewIDFromUniques({
-        SauceID,
-        UserID
-      });
-      res.locals.ReviewID = ReviewID;
+      res.locals.UserID = UserID;
 
       // finish request off
       next();
