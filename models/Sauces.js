@@ -29,7 +29,7 @@ exports.SaucesTableStructure = `CREATE TABLE Sauces (
   SHU varchar(20) DEFAULT NULL,
   Ingredients varchar(300) DEFAULT NULL,
   IsActive tinyint(1) DEFAULT '1',
-  AdminApproved tinyint(1) DEFAULT '0',
+  AdminApproved tinyint(1) DEFAULT '1',
   IsPrivate tinyint(1) NOT NULL DEFAULT '0',
   ReviewCount int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (SauceID),
@@ -109,26 +109,37 @@ exports.Insert = async function({
  */
 exports.FindSauceBySlug = async function({ Slug }) {
   const rows = await DB.query(
-    `SELECT MAX(Sauces.Photo) AS "Sauces.Photo",
-    MAX(Sauces.Name) AS "Sauces.Name",
-    MAX(Sauces.Maker) AS "Sauces.Maker",
-    MAX(Sauces.SHU) AS "Sauces.SHU",
-    MAX(Sauces.Country) AS "Sauces.Country",
-    MAX(Sauces.City) AS "Sauces.City",
-    MAX(Sauces.State) AS "Sauces.State",
-    MAX(Sauces.Description) AS "Sauces.Description",
-    MAX(Sauces.Created) AS "Sauces.Created",
-    MAX(Sauces.Slug) AS "Sauces.Slug",
-    MAX(Sauces.Ingredients) AS "Sauces.Ingredients",
-    MAX(Users.DisplayName) AS "Users.DisplayName",
-    MAX(Users.Created) AS "Users.Created",
-    GROUP_CONCAT('', Types.Value) AS "Sauces.Types"
-    FROM Sauces
-    INNER JOIN Users ON Users.UserID = Sauces.UserID
-    LEFT JOIN Sauces_Types ON Sauces_Types.SauceID = Sauces.SauceID
-    LEFT JOIN Types ON Sauces_Types.TypeID = Types.TypeID
-    WHERE Sauces.Slug = ?
-    GROUP BY Slug`,
+    `
+    SELECT
+      MAX(Sauces.Photo) AS "Sauces.Photo",
+      MAX(Sauces.Name) AS "Sauces.Name",
+      MAX(Sauces.Maker) AS "Sauces.Maker",
+      MAX(Sauces.SHU) AS "Sauces.SHU",
+      MAX(Sauces.Country) AS "Sauces.Country",
+      MAX(Sauces.City) AS "Sauces.City",
+      MAX(Sauces.State) AS "Sauces.State",
+      MAX(Sauces.Description) AS "Sauces.Description",
+      MAX(Sauces.Created) AS "Sauces.Created",
+      MAX(Sauces.Slug) AS "Sauces.Slug",
+      MAX(Sauces.Ingredients) AS "Sauces.Ingredients",
+      MAX(Users.DisplayName) AS "Users.DisplayName",
+      MAX(Users.Created) AS "Users.Created",
+      GROUP_CONCAT('', Types.Value) AS "Sauces.Types"
+    FROM
+      Sauces
+    INNER JOIN
+      Users ON Users.UserID = Sauces.UserID
+    LEFT JOIN
+      Sauces_Types ON Sauces_Types.SauceID = Sauces.SauceID
+    LEFT JOIN
+      Types ON Sauces_Types.TypeID = Types.TypeID
+    WHERE
+      Sauces.Slug = ?
+      AND Sauces.IsActive = 1
+      AND Users.IsActive = 1
+      AND Sauces.AdminApproved = 1
+    GROUP BY Slug
+    `,
     [Slug]
   );
 
@@ -658,4 +669,35 @@ exports.UpdateSauce = async function({
   }
 
   return row && row.affectedRows === 1;
+};
+
+/** @description Get SauceID based on uniques
+ *  @param {String?} Slug - unique string
+ *  @return {Number} SauceID = unique review id
+ */
+exports.FindSauceIDFromUniques = async function({ Slug }) {
+  // Sanity check
+  if (!Slug) {
+    throw new Error(
+      "Must provide required parameters to FindSauceIDFromUniques method"
+    );
+  }
+
+  const row = await DB.query(
+    `
+    SELECT
+      SauceID
+    FROM
+      Sauces
+    WHERE
+      Slug = ?
+      `,
+    [Slug]
+  );
+
+  if (!row || !row[0] || !row[0].SauceID) {
+    throw new Error("Could not find a review that matched your hashed id");
+  }
+
+  return row[0].SauceID;
 };
