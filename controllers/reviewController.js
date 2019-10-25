@@ -18,7 +18,7 @@ exports.validateReview = (req, res, next) => {
       }
     });
     // Grab review
-    const review = { ...req.body.review };
+    const review = Object.assign({}, req.body.review);
 
     // Make sure required fields are present
     if (

@@ -187,7 +187,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
       delete req.body.user.token;
 
       // attach user info onto req.body.user obj
-      req.body.user = { ...req.body.user, UserID: userId };
+      req.body.user.UserID = userId;
 
       // User is legit, go to next middleware
       return next();
@@ -243,7 +243,7 @@ exports.isAdmin = isAdmin = async (req, res, next) => {
       const data = {
         isGood: false,
         msg: isAdmin ? "User is admin." : "User is not an admin",
-        user: { ...req.body.user, isAdmin }
+        user: Object.assign({}, req.body.user, isAdmin)
       };
       //return to client
       return res.status(200).send(data);
@@ -252,7 +252,7 @@ exports.isAdmin = isAdmin = async (req, res, next) => {
       delete req.body.user.token;
 
       // attach user info onto req.body.user obj
-      req.body.user = { ...req.body.user, isAdmin };
+      req.body.user = Object.assign({}, req.body.user, isAdmin);
 
       // User is legit, go to next middleware
       return next();
