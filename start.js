@@ -9,7 +9,11 @@ DB.connect(function(err) {
 
   // Start the app
   const app = require("./app.js");
-  app.set("port", process.env.PORT || 8080);
+  if (process.env.NODE_END === "dev") {
+    app.set("port", process.env.DEV_PORT || 8080);
+  } else if (process.env.NODE_END === "prod") {
+    app.set("port", process.env.PROD_PORT || 8080);
+  }
   const server = app.listen(app.get("port"), () => {
     console.log(`Express running on PORT ${server.address().port}`);
   });
