@@ -34,7 +34,11 @@ class db {
       host,
       user,
       password,
-      database
+      database,
+      connectionLimit: 1000,
+      connectTimeout: 60 * 60 * 1000,
+      acquireTimeout: 60 * 60 * 1000,
+      timeout: 60 * 60 * 1000
     });
 
     if (cb !== undefined) cb(); //Callback
