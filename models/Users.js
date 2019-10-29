@@ -14,21 +14,20 @@ exports.MIN_PASSWORD_LENGTH = 8;
 exports.MIN_DISPLAYNAME_LENGTH = 5;
 exports.MAX_DISPLAYNAME_LENGTH = 20;
 
-exports.UsersTableStructure = `CREATE TABLE IF NOT EXISTS Users (
-  UserID int NOT NULL AUTO_INCREMENT,
-  Email varchar(50) NOT NULL UNIQUE,
-  IsActive BOOLEAN DEFAULT '1',
-  Password varchar(100) NOT NULL,
-  DisplayName varchar(50) NOT NULL,
-  Created bigint(20) unsigned DEFAULT NULL,
-  ResetPasswordToken varchar(300),
-  ResetPasswordExpires bigint(20) unsigned DEFAULT NULL,
-  LoginAttempts int DEFAULT 0,
-  LockedUntil bigint(20) unsigned DEFAULT NULL,
-  AvatarID int(11) unsigned DEFAULT NULL,
-  IsEmailVerified int(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (UserID)
-  UNIQUE KEY 'Email' ('Email'),
+exports.UsersTableStructure = `CREATE TABLE IF NOT EXISTS 'Users' (
+  'UserID' int NOT NULL AUTO_INCREMENT,
+  'Email' varchar(50) NOT NULL,
+  'IsActive' BOOLEAN DEFAULT '1',
+  'Password' varchar(100) NOT NULL,
+  'DisplayName' varchar(50) NOT NULL,
+  'Created' bigint(20) unsigned DEFAULT NULL,
+  'ResetPasswordToken' varchar(300),
+  'ResetPasswordExpires' bigint(20) unsigned DEFAULT NULL,
+  'LoginAttempts' int DEFAULT 0,
+  'LockedUntil' bigint(20) unsigned DEFAULT NULL,
+  'AvatarID' int(11) unsigned DEFAULT NULL,
+  'IsEmailVerified' int(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY ('UserID'),
   KEY 'Users_AvatarID_Avatars_AvatarID' ('AvatarID'),
   CONSTRAINT 'Users_AvatarID_Avatars_AvatarID' FOREIGN KEY ('AvatarID') REFERENCES 'Avatars' ('AvatarID')
   ) ENGINE=InnoDB DEFAULT CHARSET=latin1;`;
