@@ -14,10 +14,10 @@ class db {
 
   connect(cb) {
     // Set variables
-    const ENV = process.env.ENV;
+    const NODE_ENV = process.env.NODE_ENV;
     let host, user, password, database;
 
-    if (ENV === "prod") {
+    if (NODE_ENV === "prod") {
       host = process.env.DB_HOST_PROD;
       user = process.env.DB_USER_PROD;
       password = process.env.DB_PASS_PROD;
