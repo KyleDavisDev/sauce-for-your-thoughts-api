@@ -90,14 +90,7 @@ router.get(
 );
 
 // 1. Find newly-added sauces
-router.get(
-  "/api/sauces/get/by/newest",
-  function(req, res, next) {
-    console.log("inside newest");
-    next();
-  },
-  sauceController.getSaucesByNewest
-);
+router.get("/api/sauces/get/by/newest", sauceController.getSaucesByNewest);
 
 // 1. Find featured sauces
 router.get("/api/sauces/get/by/featured", sauceController.getSaucesByFeatured);
