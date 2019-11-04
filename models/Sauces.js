@@ -66,13 +66,10 @@ exports.Insert = async function({
   // Use unique hash as slug
   const Slug = hash;
 
-  // trim whitespace from name
-  const trimmedName = Name.trim();
-
   // Finally create insert object
   const values = {
     UserID,
-    Name: trimmedName,
+    Name: Name.trim(),
     Maker,
     Description,
     Ingredients,
