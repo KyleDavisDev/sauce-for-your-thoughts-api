@@ -438,10 +438,8 @@ exports.getSaucesByNewest = getSaucesByNewest = async (req, res, next) => {
 
     // If we are end of stack, go to client
     if (isLastMiddlewareInStack) {
-      // Send to client
-      return res
-        .status(200)
-        .send(Object.assign({}, res.locals, { isGood: true, saucesByNewest }));
+      // Send response to client
+      return res.status(200).send({ isGood: true, saucesByNewest });
     } else {
       // attach to res.locals
       res.locals.saucesByNewest = saucesByNewest;
@@ -483,12 +481,8 @@ exports.getSaucesByFeatured = getSaucesByFeatured = async (req, res, next) => {
 
     // If we are end of stack, go to client
     if (isLastMiddlewareInStack) {
-      // Send to client
-      return res
-        .status(200)
-        .send(
-          Object.assign({}, res.locals, { isGood: true, saucesByFeatured })
-        );
+      // Send response to client
+      return res.status(200).send({ isGood: true, saucesByFeatured });
     } else {
       // attach to res.locals
       res.locals.saucesByFeatured = saucesByFeatured;
