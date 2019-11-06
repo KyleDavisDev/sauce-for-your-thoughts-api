@@ -24,6 +24,7 @@ exports.ReviewsTableStructure = `CREATE TABLE Reviews (
   HeatRating int NOT NULL CHECK (HeatRating > -1 AND HeatRating < 6),
   HeatDescription varchar(300),
   OverallRating int NOT NULL CHECK (OverallRating > -1 AND OverallRating < 6),
+  OverallDescription varchar(300) NOT NULL,
   Note varchar(300) DEFAULT NULL,
   IsActive tinyint(1) DEFAULT '1',
   PRIMARY KEY (SauceID,UserID),
