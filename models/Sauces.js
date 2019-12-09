@@ -22,7 +22,7 @@ exports.SaucesTableStructure = `CREATE TABLE Sauces (
   Slug varchar(150) NOT NULL,
   Description varchar(1000) NOT NULL,
   Created bigint(20) unsigned DEFAULT NULL,
-  Photo varchar(100) DEFAULT NULL,
+  Photo varchar(150) DEFAULT NULL,
   Country varchar(100) DEFAULT NULL,
   State varchar(100) DEFAULT NULL,
   City varchar(100) DEFAULT NULL,
