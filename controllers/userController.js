@@ -226,6 +226,7 @@ exports.validateAvatarUpdate = async (req, res, next) => {
 
   try {
     const { password, UserID } = req.body.user;
+
     // Make sure passed password is good
     const user = await User.AuthenticateUser({ UserID, password });
 
@@ -233,7 +234,6 @@ exports.validateAvatarUpdate = async (req, res, next) => {
     if (!user) {
       throw new Error("Could not authenticate user. Please try agian");
     }
-
     // Keep going
     return next();
   } catch (err) {
@@ -525,6 +525,7 @@ exports.updateDisplayName = updateDisplayName = async (req, res, next) => {
  */
 exports.updateAvatarURL = updateAvatarURL = async (req, res, next) => {
   try {
+    console.log("yo");
     // Get user's ID and make sure we have something
     const { UserID } = req.body.user;
     if (!UserID) {
