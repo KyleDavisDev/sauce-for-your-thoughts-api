@@ -130,7 +130,6 @@ exports.AuthenticateUser = async function({ email, password, UserID }) {
     WHERE
       ( Users.Email = ? OR Users.UserID = ? )
       AND Users.IsActive = 1
-      AND Avatars.IsActive = 1
     LIMIT 1`,
     [email, UserID]
   );
