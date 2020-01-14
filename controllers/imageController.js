@@ -10,6 +10,13 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_SECRET
 });
 
+// cloudinary.api.resources(
+//   { type: "upload", prefix: "avatars/", max_results: 100 },
+//   function(error, result) {
+//     console.log(error, result);
+//   }
+// );
+
 const multerOptions = {
   storage: multer.memoryStorage(),
   fileFilter(req, file, next) {
