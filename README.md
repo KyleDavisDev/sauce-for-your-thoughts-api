@@ -29,23 +29,23 @@ If everything has gone well, Express should now be listening to API requests.
 - [x] Skew mongoose object _id's.
 - [x] Reduce amount of data returned on requests to get all sauces.
 - [x] Impliment means to handle limit and page query params.
-- [ ] Extend ability to handle different query params
-- [ ] Add additional sauce parameters (label, smell, texture, etc.).
-- [ ] Figure out way to manage user image uploads.
-- [ ] Add 'staging' feature for sauces before they go out to public.
+- [x] Extend ability to handle different query params
+- [x] Add additional sauce parameters (label, smell, texture, etc.).
+- [x] Figure out way to manage user image uploads.
+- [x] Add 'staging' feature for sauces before they go out to public.
 - [ ] Add way to handle when/if user reports inappropriate content.
 - [ ] Create a Model that has a list of inappropriate/unacceptable words.
 - [ ] Run user input through scanner to filter out unwanted language.
-- [ ] Add different ways for users to filter through the sauces (i.e. by pepper, hottest, highest rated, etc.).
+- [x] Add different ways for users to filter through the sauces (i.e. by pepper, hottest, highest rated, etc.).
 - [ ] Allow users to mark if they have tried a sauce already.
 - [ ] Allow users to have favorite sauces.
 - [ ] Allow users to follow other users.
 - [ ] Standardize code documentation.
 - [ ] Write tests.
 - [ ] Look into Typescript and/or Java Spring for long-term migration.
-- [ ] Look into switching from noSQL to SQL.
+- [x] Look into switching from noSQL to SQL.
 - [ ] Extend 'forgot password' system.
-- [ ] Look into sending emails via node.
-- [ ] Confirm email to activate account.
+- [x] Look into sending emails via node.
+- [x] Confirm email to activate account.
 - [x] Extend 'Add Sauce' page.
 - [x] Extend 'Add Review' section.
