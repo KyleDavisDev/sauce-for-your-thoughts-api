@@ -5,8 +5,16 @@ const Reviews = require("../models/Reviews");
 const requestIp = require("request-ip");
 const moment = require("moment");
 
+// kill switch to monitor traffic or not
+const USE_BIG_BROTHER = false;
+
 // Middleware for BigBrother to see what's going on.
 const BigBrotherMiddleware = async function(req, res, next) {
+  // Kill switch
+  if (!USE_BIG_BROTHER) {
+    return next();
+  }
+
   // Don't bother if just getting options
   if (req.method === "OPTIONS") {
     return next();
