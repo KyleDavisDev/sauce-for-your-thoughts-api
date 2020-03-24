@@ -180,8 +180,12 @@ exports.addReview = async (req, res, next) => {
     }
 
     // construct return object
+    const _review = await Reviews.FindSingleReview({
+      ReviewID: results.insertId
+    });
     const data = {
-      isGood: true
+      isGood: true,
+      review: _review
     };
 
     // Send back successful submission
@@ -199,7 +203,7 @@ exports.addReview = async (req, res, next) => {
       isGood: false,
       msg:
         "Could not save review. Make sure all fields are filled and try again.",
-      err
+      err: err.message
     };
     return res.status(400).send(data);
   }
@@ -585,6 +589,96 @@ exports.canUserSubmit = canUserSubmit = async (req, res, next) => {
     } else {
       // Go to next middleware
       res.locals.canUserSubmit = !doesReviewExist;
+      return next();
+    }
+  } catch (err) {
+    const data = {
+      isGood: false,
+      msg:
+        "There was an error in determing if the user can submit a review to this sauce. Make sure your query parameters are correct and try again.",
+      err
+    };
+    return res.status(400).send(data);
+  }
+};
+
+/** @description Check if user is eligible to add review or not
+ *  @extends res.locals attaches canUserEdit to res.locals or returns with that message
+ *  @param {String} req.body.user.UserID - unique user string
+ *  @param {String} req.body.sauce.slug - unique sauce string
+ *
+ *  @return Attaches canUserEdit to res.locals OR Returns res.locals w/ canUserEdit
+ */
+exports.canUserEdit = canUserEdit = async (req, res, next) => {
+  try {
+    // get UserID
+    const { UserID } = req.body.user;
+    // Try to grab slug off of sauce
+    let slug = req.body.sauce ? req.body.sauce.slug : null;
+    // If couldn't find slug on sauce, lets try in review
+    if (!slug) {
+      slug = req.body.review.sauce;
+    }
+
+    // If still cant find a slug, end here.
+    if (!slug) {
+      const data = {
+        isGood: false,
+        msg:
+          "Could not find a slug withing your parameters, please make sure one is provided."
+      };
+      return res.status(404).send(data);
+    }
+
+    // Is user's email confirmed?
+    const isEmailConfirmed = Users.IsEmailVerified({ UserID });
+
+    if (!isEmailConfirmed) {
+      const data = {
+        isGood: false,
+        msg:
+          "Could not confirm your email. Please verify email before continueing."
+      };
+      return res.status(404).send(data);
+    }
+
+    // Find sauceID
+    const SauceID = await Sauces.FindIDBySlug({ Slug: slug });
+
+    // If still cant the SauceID, user has a bad slug
+    if (!SauceID) {
+      const data = {
+        isGood: false,
+        msg:
+          "Could not find any sauces with that slug, please make sure it's a valid slug and try again."
+      };
+      return res.status(404).send(data);
+    }
+
+    // Does the review exist?
+    const doesReviewExist = await Reviews.HasUserSubmittedReview({
+      SauceID,
+      UserID
+    });
+
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "canUserEdit",
+      stack: req.route.stack
+    });
+
+    // If we are end of stack, send to client
+    if (isLastMiddlewareInStack) {
+      // send
+      res.status(200).send({
+        isGood: doesReviewExist
+      });
+
+      // finish request
+      next();
+    } else {
+      // Go to next middleware
+      res.locals.canUserSubmit = doesReviewExist;
       return next();
     }
   } catch (err) {
