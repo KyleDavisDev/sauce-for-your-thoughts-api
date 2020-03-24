@@ -248,15 +248,16 @@ exports.FindReviewsBySauceID = async function({ SauceID, UserID }) {
  *  @return {Object} review
  */
 exports.FindSingleReview = async function({ SauceID, UserID, ReviewID }) {
-  // Sanity check. Must have either (SauceID AND UserID) OR ReviewID
-  if (!(!!SauceID && !!UserID) && !ReviewID) {
-    throw new Error(
-      "Must provide required parameters to FindSingleReview method"
-    );
-  }
+  try {
+    // Sanity check. Must have either (SauceID AND UserID) OR ReviewID
+    if (!(!!SauceID && !!UserID) && !ReviewID) {
+      throw new Error(
+        "Must provide required parameters to FindSingleReview method"
+      );
+    }
 
-  const row = await DB.query(
-    `
+    const row = await DB.query(
+      `
     SELECT
       Reviews.HashID AS "Reviews.ReviewID",
       Reviews.LabelRating AS "Reviews.LabelRating",
@@ -289,45 +290,49 @@ exports.FindSingleReview = async function({ SauceID, UserID, ReviewID }) {
             (Reviews.SauceID = ? AND Reviews.UserID = ?)
             OR Reviews.ReviewID = ?
           )`,
-    [SauceID, UserID, ReviewID]
-  );
-
-  if (!row) {
-    throw new Error(
-      "Could not find any reviews for this sauce. Be the first to submit one!"
+      [SauceID, UserID, ReviewID]
     );
-  }
 
-  return {
-    reviewID: row[0]["Reviews.ReviewID"],
-    created: row[0]["Reviews.Created"],
-    author: {
-      displayName: row[0]["Users.DisplayName"],
-      created: row[0]["Users.Created"],
-      avatarURL: row[0]["Users.AvatarURL"]
-    },
-    label: {
-      rating: row[0]["Reviews.LabelRating"],
-      txt: row[0]["Reviews.LabelDescription"]
-    },
-    aroma: {
-      rating: row[0]["Reviews.AromaRating"],
-      txt: row[0]["Reviews.AromaDescription"]
-    },
-    taste: {
-      rating: row[0]["Reviews.TasteRating"],
-      txt: row[0]["Reviews.TasteDescription"]
-    },
-    heat: {
-      rating: row[0]["Reviews.HeatRating"],
-      txt: row[0]["Reviews.HeatDescription"]
-    },
-    overall: {
-      rating: row[0]["Reviews.OverallRating"],
-      txt: row[0]["Reviews.OverallDescription"]
-    },
-    note: { txt: row[0]["Reviews.Note"] }
-  };
+    if (!row) {
+      throw new Error(
+        "Could not find any reviews for this sauce. Be the first to submit one!"
+      );
+    }
+
+    return {
+      reviewID: row[0]["Reviews.ReviewID"],
+      created: row[0]["Reviews.Created"],
+      author: {
+        displayName: row[0]["Users.DisplayName"],
+        created: row[0]["Users.Created"],
+        avatarURL: row[0]["Users.AvatarURL"]
+      },
+      label: {
+        rating: row[0]["Reviews.LabelRating"],
+        txt: row[0]["Reviews.LabelDescription"]
+      },
+      aroma: {
+        rating: row[0]["Reviews.AromaRating"],
+        txt: row[0]["Reviews.AromaDescription"]
+      },
+      taste: {
+        rating: row[0]["Reviews.TasteRating"],
+        txt: row[0]["Reviews.TasteDescription"]
+      },
+      heat: {
+        rating: row[0]["Reviews.HeatRating"],
+        txt: row[0]["Reviews.HeatDescription"]
+      },
+      overall: {
+        rating: row[0]["Reviews.OverallRating"],
+        txt: row[0]["Reviews.OverallDescription"]
+      },
+      note: { txt: row[0]["Reviews.Note"] }
+    };
+  } catch (err) {
+    // relay error message to previous catch
+    throw new Error(err.message);
+  }
 };
 
 /** @description Check to see if user has submitted a review for specific sauce
