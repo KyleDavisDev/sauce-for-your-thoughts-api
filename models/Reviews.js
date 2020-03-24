@@ -276,7 +276,8 @@ exports.FindSingleReview = async function({ SauceID, UserID, ReviewID }) {
         ELSE Reviews.Updated
       END ) AS "Reviews.Created",
       Users.DisplayName AS "Users.DisplayName",
-      Users.Created AS "Users.Created"
+      Users.Created AS "Users.Created",
+      Sauces.Slug as "Sauces.Slug"
     FROM
       Reviews
     LEFT JOIN
@@ -301,6 +302,7 @@ exports.FindSingleReview = async function({ SauceID, UserID, ReviewID }) {
 
     return {
       reviewID: row[0]["Reviews.ReviewID"],
+      sauce: row[0]["Sauces.Slug"],
       created: row[0]["Reviews.Created"],
       author: {
         displayName: row[0]["Users.DisplayName"],
