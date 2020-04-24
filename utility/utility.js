@@ -1,3 +1,8 @@
+const BAD_REQUEST = 400; // request could not be understood for some reason; bad syntax?
+const UNAUTHORIZED = 401; // authorization is possible but has failed for any reason
+const FORBIDDEN = 403; // authorized passed but user does not have permissions
+const NOT_FOUND = 404; // resource not found but may be available in the future
+
 class utility {
   constructor() {}
 
@@ -17,6 +22,18 @@ class utility {
     }
 
     return position + 1 == stack.length;
+  }
+
+  /** @description Get all reviews related to specific sauce slug.
+   *  @param {String} err - error string
+   *  @return {Number} The status code error
+   */
+  generateErrorStatusCode(err) {
+    if (err === "TokenExpiredError") return UNAUTHORIZED;
+    if (err == "Connection error. Please try again") return BAD_REQUEST;
+
+    // default to bad request
+    return BAD_REQUEST;
   }
 }
 
