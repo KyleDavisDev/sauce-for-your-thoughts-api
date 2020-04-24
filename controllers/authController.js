@@ -2,6 +2,8 @@ const jwt = require("jsonwebtoken");
 const Users = require("../models/Users");
 const Utility = require("../utility/utility");
 
+const JSON_EXPIRES_IN = "10 minutes";
+
 /** @description Log user in by generating token
  *  @param {Object} req.body.user - expects to find user obj. Will check if stringified if not immediately accessible
  *    @param {String} req.body.user.email - persons email
@@ -45,8 +47,13 @@ exports.login = login = async (req, res, next) => {
     // check if an admin
     const isAdmin = await Users.IsAdmin({ UserID: user.UserID });
 
-    // get JWT
+    // create JWT
     const token = module.exports.createToken(user.UserID);
+
+    // create httpOnly cookie
+    // const cookie = moule.exports.createCookie
+    res.cookie("sessionID", 5, { maxAge: 900000, httpOnly: true, path: "/" });
+    console.log("cookie created successfully");
 
     // Find out if more middleware or if this is last stop.
     const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
@@ -199,13 +206,16 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
         msg: "Oops! Looks like your login has expired. Please log in again."
       };
       // 403, user has token but expired so simply need to relogin
-      return res.status(403).send(data);
+      const statusCode = Utility.generateErrorStatusCode(err.name);
+      return res.status(statusCode).send(data);
     }
     const data = {
       isGood: false,
       msg: err.message || "Connection error. Please try again"
     };
-    return res.status(401).send(data);
+
+    const statusCode = Utility.generateErrorStatusCode(data.msg);
+    return res.status(statusCode).send(data);
   }
 };
 
@@ -296,7 +306,9 @@ exports.forgot = async (req, res) => {
     await user.save();
 
     // create URL and email to user email
-    const resetURL = `http://localhost:8080/account/reset/${user.resetPasswordToken}`;
+    const resetURL = `http://localhost:8080/account/reset/${
+      user.resetPasswordToken
+    }`;
     await mail.send({
       user,
       subject: "Password reset",
@@ -397,7 +409,7 @@ exports.updatePassword = async (req, res, next) => {
 exports.createToken = StringToCreateTokenWith => {
   // create JWT token
   const payload = { sub: StringToCreateTokenWith };
-  const options = { expiresIn: "7 days" };
+  const options = { expiresIn: JSON_EXPIRES_IN };
   const token = jwt.sign(payload, process.env.SECRET, options);
 
   return token;
