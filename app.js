@@ -1,6 +1,7 @@
 const express = require("express");
 const routes = require("./routes/routes.js");
 var useragent = require("express-useragent");
+var cookieParser = require("cookie-parser");
 
 const BigBrotherMiddleware = require("./middleware/BigBrotherMiddleware");
 const CrossOriginMiddleware = require("./middleware/CrossOriginMiddleware");
@@ -16,6 +17,9 @@ app.use(CrossOriginMiddleware);
 
 // Start recording what person is doing
 app.use(BigBrotherMiddleware);
+
+// Make handling cookies easier
+app.use(cookieParser());
 
 //serves up static files from distribution and images folder.
 app.use("/public/uploads", express.static(__dirname + "/public/uploads"));
