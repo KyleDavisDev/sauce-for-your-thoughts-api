@@ -4,7 +4,8 @@ const BAD_REQUEST = 400; // request could not be understood for some reason; bad
 const UNAUTHORIZED = 401; // authorization is possible but has failed for any reason
 const FORBIDDEN = 403; // authorized passed but user does not have permissions
 const NOT_FOUND = 404; // resource not found but may be available in the future
-const JWT_EXPIRES_IN = "1 minutes"; // how long should auth token last for?
+const JWT_AUTH_EXPIRES_IN = 60; // how long, in seconds, should auth token last for?
+const JWT_REFRESH_EXPIRES_IN = 60 * 60 * 24 * 7; // how long, in seconds, should refresh token last for?
 
 class utility {
   constructor() {}
@@ -27,7 +28,7 @@ class utility {
     return position + 1 == stack.length;
   }
 
-  /** @description Get all reviews related to specific sauce slug.
+  /** @description Standardize error status by passing to a single function here
    *  @param {String} err - error string
    *  @return {Number} The status code error
    */
@@ -45,14 +46,13 @@ class utility {
    *  @param {String} secret2 - random, secret string. Used for refresh token.
    */
   async createTokens(userID, secret, secret2) {
-    console.log("am i here?");
     const createToken = jwt.sign(
       {
         user: userID
       },
       secret,
       {
-        expiresIn: JWT_EXPIRES_IN
+        expiresIn: JWT_AUTH_EXPIRES_IN
       }
     );
 
@@ -62,7 +62,7 @@ class utility {
       },
       secret2,
       {
-        expiresIn: "7d"
+        expiresIn: JWT_REFRESH_EXPIRES_IN
       }
     );
 
@@ -71,4 +71,4 @@ class utility {
 }
 
 const Utility = new utility();
-module.exports = Utility;
+module.exports = { Utility, JWT_AUTH_EXPIRES_IN, JWT_REFRESH_EXPIRES_IN };
