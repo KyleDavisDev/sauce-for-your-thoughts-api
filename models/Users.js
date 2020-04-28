@@ -112,6 +112,7 @@ exports.DoesUserExist = async function({ UserID }) {
  *  @return {Promise}
  *  @resolves {RowDataPacket} Obj - container object
  *    @resolves {String} Obj.UserID - user email
+ *    @resolves {String} Obj.Password - user hashed password
  *    @resolves {String} Obj.DisplayName - user display name
  *    @resolves {String} Obj.Email - user email
  *    @resolves {String} Obj.URL - user avatar URL
@@ -145,9 +146,6 @@ exports.AuthenticateUser = async function({ email, password, UserID }) {
 
   // Check if password is good
   const isMatch = await bcrypt.compare(password, user.Password);
-
-  // delete password from user
-  delete user.Password;
 
   // Password is good
   if (isMatch) {
