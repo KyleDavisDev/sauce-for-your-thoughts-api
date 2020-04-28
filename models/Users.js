@@ -119,9 +119,12 @@ exports.DoesUserExist = async function({ UserID }) {
 exports.AuthenticateUser = async function({ email, password, UserID }) {
   const rows = await DB.query(
     `SELECT
-      Users.UserID, Users.LockedUntil,
-      Users.LoginAttempts, Users.DisplayName,
-      Users.Email, Users.Password,
+      Users.UserID,
+      Users.LockedUntil,
+      Users.LoginAttempts,
+      Users.DisplayName,
+      Users.Email,
+      Users.Password,
       Avatars.URL
     FROM
       Users
