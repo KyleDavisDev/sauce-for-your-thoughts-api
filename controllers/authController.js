@@ -1,6 +1,10 @@
 const jwt = require("jsonwebtoken");
 const Users = require("../models/Users");
-const Utility = require("../utility/utility");
+const {
+  Utility,
+  JWT_AUTH_EXPIRES_IN,
+  JWT_REFRESH_EXPIRES_IN
+} = require("../utility/utility");
 
 /** @description Log user in by generating token
  *  @param {Object} req.body.user - expects to find user obj. Will check if stringified if not immediately accessible
@@ -44,28 +48,25 @@ exports.login = login = async (req, res, next) => {
 
     // check if an admin
     const isAdmin = await Users.IsAdmin({ UserID: user.UserID });
-    console.log("hi");
-    // create JWT
+
+    // create auth token and refresh token
     const [token, refreshToken] = await Utility.createTokens(
       user.UserID,
       process.env.SECRET,
-      process.env.SECRET2 + "123"
+      process.env.SECRET2 + user.Password
     );
-    console.log(token);
 
-    // create httpOnly cookie
-    // const cookie = moule.exports.createCookie
+    // create httpOnly cookies from tokens
     res.cookie("sfyt-api-token", token, {
-      maxAge: 900000,
+      maxAge: 1000 * JWT_AUTH_EXPIRES_IN, // seconds to miliseconds
       httpOnly: true,
       path: "/"
     });
     res.cookie("sfyt-api-refresh-token", refreshToken, {
-      maxAge: 900000,
+      maxAge: 1000 * JWT_REFRESH_EXPIRES_IN, // seconds to miliseconds
       httpOnly: true,
       path: "/"
     });
-    console.log("cookies created successfully");
 
     // Find out if more middleware or if this is last stop.
     const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
