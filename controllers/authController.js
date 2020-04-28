@@ -2,8 +2,6 @@ const jwt = require("jsonwebtoken");
 const Users = require("../models/Users");
 const Utility = require("../utility/utility");
 
-const JSON_EXPIRES_IN = "10 minutes";
-
 /** @description Log user in by generating token
  *  @param {Object} req.body.user - expects to find user obj. Will check if stringified if not immediately accessible
  *    @param {String} req.body.user.email - persons email
@@ -46,14 +44,28 @@ exports.login = login = async (req, res, next) => {
 
     // check if an admin
     const isAdmin = await Users.IsAdmin({ UserID: user.UserID });
-
+    console.log("hi");
     // create JWT
-    const token = module.exports.createToken(user.UserID);
+    const [token, refreshToken] = await Utility.createTokens(
+      user.UserID,
+      process.env.SECRET,
+      process.env.SECRET2 + "123"
+    );
+    console.log(token);
 
     // create httpOnly cookie
     // const cookie = moule.exports.createCookie
-    res.cookie("sessionID", 5, { maxAge: 900000, httpOnly: true, path: "/" });
-    console.log("cookie created successfully");
+    res.cookie("sfyt-api-token", token, {
+      maxAge: 900000,
+      httpOnly: true,
+      path: "/"
+    });
+    res.cookie("sfyt-api-refresh-token", refreshToken, {
+      maxAge: 900000,
+      httpOnly: true,
+      path: "/"
+    });
+    console.log("cookies created successfully");
 
     // Find out if more middleware or if this is last stop.
     const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
@@ -400,19 +412,6 @@ exports.updatePassword = async (req, res, next) => {
   } catch (err) {
     res.send(err);
   }
-};
-
-/** @description Creates a unique JWT
- *  @param {String} StringToCreateTokenWith - Unique user id
- *  @return {String} token - unique JWT
- */
-exports.createToken = StringToCreateTokenWith => {
-  // create JWT token
-  const payload = { sub: StringToCreateTokenWith };
-  const options = { expiresIn: JSON_EXPIRES_IN };
-  const token = jwt.sign(payload, process.env.SECRET, options);
-
-  return token;
 };
 
 /** @description Check if user is eligible to add a sauce or not
