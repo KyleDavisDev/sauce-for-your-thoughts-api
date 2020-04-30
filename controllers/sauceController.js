@@ -1,7 +1,7 @@
 const Sauces = require("../models/Sauces");
 const Users = require("../models/Users");
 const Types = require("../models/Types");
-const Utility = require("../utility/utility");
+const { Utility } = require("../utility/utility");
 const validator = require("validator");
 
 // constants

@@ -2,7 +2,7 @@ const Reviews = require("../models/Reviews.js");
 const Sauces = require("../models/Sauces.js");
 const Users = require("../models/Users.js");
 const validator = require("validator");
-const Utility = require("../utility/utility");
+const { Utility } = require("../utility/utility");
 
 // Constants
 const MAXLENGTH = 300;
