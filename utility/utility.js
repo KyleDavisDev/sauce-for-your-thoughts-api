@@ -13,7 +13,7 @@ class utility {
   /** @description Get all reviews related to specific sauce slug.
    *  @param {String} name - Name of current middleware
    *  @param {Layer[]} stack - Array of middleware layers
-   *  @return Attaches reviews to sauce.
+   *  @return {Boolean} whether or not the current middleware is the last or not
    */
   isLastMiddlewareInStack({ name, stack }) {
     let position = 0;
