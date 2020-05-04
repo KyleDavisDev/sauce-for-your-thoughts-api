@@ -81,7 +81,11 @@ exports.Insert = async function({ Email, Password, DisplayName }) {
   return results;
 };
 
-// Returns bool
+/** @description Check if user exists and is active in the DB
+ *  @param {Number} UserID - user's id
+ *  @return {Promise} promise
+ *  @resolves {Boolean} Wether or not user exists and it active in DB
+ */
 exports.DoesUserExist = async function({ UserID }) {
   const rows = await DB.query(
     `SELECT 
@@ -98,12 +102,47 @@ exports.DoesUserExist = async function({ UserID }) {
   return rows && rows[0] && rows[0].UserExists === 1;
 };
 
-// exports.getAll = function(cb) {
-//   db.get().query("SELECT * FROM Users", function(err, rows) {
-//     if (err) return cb(err);
-//     cb(null, rows);
-//   });
-// };
+/** @description Grab specific user by their id
+ *  @param {Number} UserID - user's id
+ *  @return {Promise}
+ *  @resolves {RowDataPacket} Obj - container object
+ *    @resolves {String} Obj.UserID - user email
+ *    @resolves {String} Obj.Password - user hashed password
+ *    @resolves {String} Obj.DisplayName - user display name
+ *    @resolves {String} Obj.Email - user email
+ *    @resolves {String} Obj.URL - user avatar URL
+ */
+exports.FindUserByID = async function({ UserID }) {
+  const rows = await DB.query(
+    `SELECT
+      Users.UserID,
+      Users.LockedUntil,
+      Users.LoginAttempts,
+      Users.DisplayName,
+      Users.Email,
+      Users.Password,
+      Avatars.URL
+    FROM
+      Users
+    JOIN Avatars
+      ON Avatars.AvatarID = Users.AvatarID
+    WHERE
+      Users.UserID = ?
+      AND Users.IsActive = 1
+    LIMIT 1`,
+    [UserID]
+  );
+
+  // assign for easier use
+  const user = rows[0];
+  // verify we found someone
+  if (!rows || !user) {
+    throw new Error("Invalid username or password.");
+  }
+
+  // Return user
+  return user;
+};
 
 /** @description Authenticate a user as legit or not
  *  @param {String=} email - User email. Must pass email or UserID.
