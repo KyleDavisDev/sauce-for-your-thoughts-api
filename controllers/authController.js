@@ -184,9 +184,47 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
 };
 
 exports.refreshAuthToken = async (req, res, next) => {
-  // 1. Grab refresh token
-  const refreshToken = req.cookies["sfyt-api-refresh-token"];
-  if (!refreshToken) {
+  try {
+    // 1. Grab refresh token
+    const refreshToken = req.cookies["sfyt-api-refresh-token"];
+    if (!refreshToken) {
+      const data = {
+        isGood: false,
+        msg: "Could not verify your account or your account is disabled."
+      };
+      const errCode = Utility.generateErrorStatusCode(data.msg);
+      return res.status(errCode).send(data);
+    }
+
+    // 2. Check if refresh token is valid or not
+    const [isRefreshTokenValid, userID] = await Utility.validateRefreshToken(
+      refreshToken
+    );
+    if (!isRefreshTokenValid) {
+      const data = {
+        isGood: false,
+        msg: "Could not verify your account or your account is disabled."
+      };
+      const errCode = Utility.generateErrorStatusCode(data.msg);
+      return res.status(errCode).send(data);
+    }
+
+    // Create new auth token
+    const authToken = await Utility.createAuthToken(userID, process.env.SECRET);
+
+    // create httpOnly cookies from token
+    res.cookie("sfyt-api-token", authToken, {
+      maxAge: 1000 * JWT_AUTH_EXPIRES_IN, // time, in milliseconds, for token expiration
+      httpOnly: true,
+      path: "/"
+    });
+
+    return res.status(200).send({ isGood: true });
+  } catch (err) {
+    // set cookie to 'delete'
+    res.clearCookie("sfyt-api-refresh-token", { path: "/" });
+
+    // construct our return data object
     const data = {
       isGood: false,
       msg: "Could not verify your account or your account is disabled."
@@ -194,11 +232,6 @@ exports.refreshAuthToken = async (req, res, next) => {
     const errCode = Utility.generateErrorStatusCode(data.msg);
     return res.status(errCode).send(data);
   }
-
-  // 2. Check if refresh token is valid or not
-  const isRefreshTokenValid = await Utility.validateRefreshToken(refreshToken);
-
-  return res.status(200).send({ isGood: true, isRefreshTokenValid });
 };
 
 /** @description Verify if a user is legit by checking JWT
@@ -529,7 +562,6 @@ exports.confirmEmail = confirmEmail = async (req, res, next) => {
       return next();
     }
   } catch (err) {
-    console.log(err);
     const data = {
       isGood: false,
       msg:
