@@ -137,7 +137,7 @@ exports.FindUserByID = async function({ UserID }) {
   const user = rows[0];
   // verify we found someone
   if (!rows || !user) {
-    throw new Error("Invalid username or password.");
+    throw new Error("Could not find user.");
   }
 
   // Return user
