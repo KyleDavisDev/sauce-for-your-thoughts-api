@@ -58,12 +58,12 @@ exports.login = login = async (req, res, next) => {
 
     // create httpOnly cookies from tokens
     res.cookie("sfyt-api-token", token, {
-      maxAge: 1000 * JWT_AUTH_EXPIRES_IN, // seconds to miliseconds
+      maxAge: 1000 * JWT_AUTH_EXPIRES_IN, // time, in milliseconds, for token expiration
       httpOnly: true,
       path: "/"
     });
     res.cookie("sfyt-api-refresh-token", refreshToken, {
-      maxAge: 1000 * JWT_REFRESH_EXPIRES_IN, // seconds to miliseconds
+      maxAge: 1000 * JWT_REFRESH_EXPIRES_IN, // time, in milliseconds, for token expiration
       httpOnly: true,
       path: "/"
     });
@@ -126,110 +126,79 @@ exports.login = login = async (req, res, next) => {
  *  @return Attaches UserID onto req.body.user OR return with isGood status and message
  */
 exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
-  // confirm that we are passed a user.token to parse
-  if (req.body.user && req.body.user.token) {
-    // We are good and can continue to parse request
-  } else {
-    // Not good. Need to try to find token somewhere else or give error message
-    // One last check: maybe we were passed a stringified object
-    if (
-      req.body.user !== undefined &&
-      Object.prototype.toString.call(req.body.user) === "[object String]"
-    ) {
-      // convert string to object
-      const obj = JSON.parse(req.body.user);
-
-      // concat onto req.body
-      Object.keys(obj).forEach(x => {
-        req.body[x] = obj[x];
-      });
-
-      // Now make sure we can find a req.body.user.token val
-      if (!req.body.user.token) {
+  // grab api token
+  const token = req.cookies["sfyt-api-token"];
+  if (token) {
+    try {
+      // 1. Grab userID from token
+      const { user: userID } = jwt.verify(token, process.env.SECRET);
+      if (!userID) {
         const data = {
           isGood: false,
-          msg:
-            "You are not logged in or your token is invalid. Please try again. If you stringified an object, make sure the string is stored in 'data'."
+          msg: "Could not verify your account or your account is disabled."
         };
-        return res.status(401).send(data);
+        const errCode = Utility.generateErrorStatusCode(data.msg);
+        return res.status(errCode).send(data);
       }
-    } else {
-      const data = {
-        isGood: false,
-        msg:
-          "You are not logged in or your token is invalid. Please try again. If you stringified an object, make sure the string is stored in 'data'."
-      };
-      return res.status(401).send(data);
+
+      // 2. Check if a user exists
+      const user = await Users.DoesUserExist({ UserID: userID });
+      if (!user) {
+        const data = {
+          isGood: false,
+          msg: "Could not find your account or your account is disabled."
+        };
+        const errCode = Utility.generateErrorStatusCode(data.msg);
+        return res.status(errCode).send(data);
+      }
+
+      // 3. Find out if more middleware or if this is last stop.
+      const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+        name: "isLoggedIn",
+        stack: req.route.stack
+      });
+
+      // 4. Send response back OR keep going
+      if (isLastMiddlewareInStack) {
+        //return to client
+        return res.status(200).send({ isGood: true, msg: "Found user." });
+      } else {
+        // attach user info onto req.body.user obj
+        req.body.user.UserID = userID;
+
+        // User is legit, go to next middleware
+        return next();
+      }
+    } catch (err) {
+      // If api token is expired, we can check the refresh token
     }
-  }
-
-  // get token from post
-  const { token } = req.body.user;
-
-  try {
-    // decode the token using a secret key-phrase
-    const decoded = await jwt.verify(token, process.env.SECRET);
-
-    if (!decoded) {
-      const data = {
-        isGood: false,
-        msg: "Could not verify your account or your account is disabled."
-      };
-      return res.status(400).send(data);
-    }
-
-    // grab UserID
-    const userId = decoded.sub;
-
-    // check if a user exists
-    const user = await Users.DoesUserExist({ UserID: userId });
-
-    if (!user) {
-      const data = {
-        isGood: false,
-        msg: "Could not find your account or your account is disabled."
-      };
-      return res.status(400).send(data);
-    }
-
-    // Find out if more middleware or if this is last stop.
-    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
-      name: "isLoggedIn",
-      stack: req.route.stack
-    });
-
-    // If we are end of stack, go to client
-    if (isLastMiddlewareInStack) {
-      //return to client
-      return res.status(200).send({ isGood: true, msg: "Found user." });
-    } else {
-      // remove token from user
-      delete req.body.user.token;
-
-      // attach user info onto req.body.user obj
-      req.body.user.UserID = userId;
-
-      // User is legit, go to next middleware
-      return next();
-    }
-  } catch (err) {
-    if (err.name === "TokenExpiredError") {
-      const data = {
-        isGood: false,
-        msg: "Oops! Looks like your login has expired. Please log in again."
-      };
-      // 403, user has token but expired so simply need to relogin
-      const statusCode = Utility.generateErrorStatusCode(err.name);
-      return res.status(statusCode).send(data);
-    }
+  } else {
+    // User has not provided required token so ending it here.
     const data = {
       isGood: false,
-      msg: err.message || "Connection error. Please try again"
+      msg: "Your login has expired. Please relogin and try again."
     };
-
-    const statusCode = Utility.generateErrorStatusCode(data.msg);
-    return res.status(statusCode).send(data);
+    const errCode = Utility.generateErrorStatusCode(data.msg);
+    return res.status(errCode).send(data);
   }
+};
+
+exports.refreshAuthToken = async (req, res, next) => {
+  // 1. Grab refresh token
+  const refreshToken = req.cookies["sfyt-api-refresh-token"];
+  if (!refreshToken) {
+    const data = {
+      isGood: false,
+      msg: "Could not verify your account or your account is disabled."
+    };
+    const errCode = Utility.generateErrorStatusCode(data.msg);
+    return res.status(errCode).send(data);
+  }
+
+  // 2. Check if refresh token is valid or not
+  const isRefreshTokenValid = await Utility.validateRefreshToken(refreshToken);
+
+  return res.status(200).send({ isGood: true, isRefreshTokenValid });
 };
 
 /** @description Verify if a user is legit by checking JWT
