@@ -12,6 +12,9 @@ const imageController = require("../controllers/imageController.js");
 
 // APIs here -----
 
+// Auth
+router.post("/api/auth/refresh_token", authController.refreshAuthToken);
+
 // Sauce(s)
 
 // upload must be called first for post that are "multipart/form-data"
