@@ -1,10 +1,12 @@
 const jwt = require("jsonwebtoken");
+const Users = require("../models/Users");
 
 const BAD_REQUEST = 400; // request could not be understood for some reason; bad syntax?
 const UNAUTHORIZED = 401; // authorization is possible but has failed for any reason
 const FORBIDDEN = 403; // authorized passed but user does not have permissions
 const NOT_FOUND = 404; // resource not found but may be available in the future
-const JWT_AUTH_EXPIRES_IN = 60; // how long, in seconds, should auth token last for?
+const LOGIN_EXPIRED = 410; // login token expired. User should login again to get new token
+const JWT_AUTH_EXPIRES_IN = 15; // how long, in seconds, should auth token last for?
 const JWT_REFRESH_EXPIRES_IN = 60 * 60 * 24 * 7; // how long, in seconds, should refresh token last for?
 
 class utility {
@@ -34,7 +36,11 @@ class utility {
    */
   generateErrorStatusCode(err) {
     if (err === "TokenExpiredError") return UNAUTHORIZED;
-    if (err == "Connection error. Please try again") return BAD_REQUEST;
+    if (err === "Connection error. Please try again") return BAD_REQUEST;
+    if (err === "Could not verify your account or your account is disabled.")
+      return BAD_REQUEST;
+    if (err === "Your login has expired. Please relogin and try again.")
+      return LOGIN_EXPIRED;
 
     // default to bad request
     return BAD_REQUEST;
@@ -67,6 +73,43 @@ class utility {
     );
 
     return Promise.all([createToken, createRefreshToken]);
+  }
+
+  /** @description Check to see if the refresh token is legit or not
+   *  @param {String} token - the refresh token being verified
+   *  @returns {Boolean} whether token is legit or not
+   */
+  async validateRefreshToken(token) {
+    try {
+      // 1) Grab userID from jwt
+      const { user: userID } = jwt.decode(token);
+      if (!userID) {
+        return false;
+      }
+
+      // 2) Verify person exists
+      const doesUserExist = await Users.DoesUserExist({ UserID: userID });
+      if (!doesUserExist) {
+        return false;
+      }
+
+      // 3) Grab user from DB
+      const user = await Users.FindUserByID({ UserID: userID });
+
+      // 3. Check if token is legit
+
+      const isTrusted = !!jwt.verify(
+        token,
+        process.env.SECRET2 + user.Password
+      );
+
+      return isTrusted;
+    } catch (err) {
+      // TODO: Log error
+
+      // token is not legit or something else happened
+      return false;
+    }
   }
 }
 
