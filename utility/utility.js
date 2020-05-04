@@ -50,9 +50,25 @@ class utility {
    *  @param {String} userID - an identifiable user string
    *  @param {String} secret - random, secret string. Used for auth token.
    *  @param {String} secret2 - random, secret string. Used for refresh token.
+   *  @returns {Promise}
+   *  @resolves {String[]} array of JWT
    */
   async createTokens(userID, secret, secret2) {
-    const createToken = jwt.sign(
+    const createToken = this.createAuthToken(userID, secret);
+
+    const createRefreshToken = this.createRefreshToken(userID, secret2);
+
+    return Promise.all([createToken, createRefreshToken]);
+  }
+
+  /** @description Create authentication token
+   *  @param {String} userID - an identifiable user string
+   *  @param {String} secret - random, secret string. Used for auth token.
+   *  @returns {Promise}
+   *  @resolves {String} JWT
+   */
+  async createAuthToken(userID, secret) {
+    return jwt.sign(
       {
         user: userID
       },
@@ -61,8 +77,16 @@ class utility {
         expiresIn: JWT_AUTH_EXPIRES_IN
       }
     );
+  }
 
-    const createRefreshToken = jwt.sign(
+  /** @description Create Refresh token
+   *  @param {String} userID - an identifiable user string
+   *  @param {String} secret2 - random, secret string. Used for auth token.
+   *  @returns {Promise}
+   *  @resolves {String} JWT
+   */
+  async createRefreshToken(userID, secret2) {
+    return jwt.sign(
       {
         user: userID
       },
@@ -71,18 +95,17 @@ class utility {
         expiresIn: JWT_REFRESH_EXPIRES_IN
       }
     );
-
-    return Promise.all([createToken, createRefreshToken]);
   }
 
   /** @description Check to see if the refresh token is legit or not
    *  @param {String} token - the refresh token being verified
    *  @returns {Boolean} whether token is legit or not
+   *  @returns {Number} the user's ID
    */
   async validateRefreshToken(token) {
     try {
       // 1) Grab userID from jwt
-      const { user: userID } = jwt.decode(token);
+      const { user: userID } = await jwt.decode(token);
       if (!userID) {
         return false;
       }
@@ -97,13 +120,12 @@ class utility {
       const user = await Users.FindUserByID({ UserID: userID });
 
       // 3. Check if token is legit
-
       const isTrusted = !!jwt.verify(
         token,
         process.env.SECRET2 + user.Password
       );
 
-      return isTrusted;
+      return [isTrusted, userID];
     } catch (err) {
       // TODO: Log error
 
