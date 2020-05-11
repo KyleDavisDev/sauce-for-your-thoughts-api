@@ -130,7 +130,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
   const token = req.cookies["sfyt-api-token"];
   if (token) {
     try {
-      // 1. Grab userID from token
+      // 1) Grab userID from token
       const { user: userID } = jwt.verify(token, process.env.SECRET);
       if (!userID) {
         const data = {
@@ -141,7 +141,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
         return res.status(errCode).send(data);
       }
 
-      // 2. Check if a user exists
+      // 2) Check if a user exists
       const user = await Users.DoesUserExist({ UserID: userID });
       if (!user) {
         const data = {
@@ -152,17 +152,20 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
         return res.status(errCode).send(data);
       }
 
-      // 3. Find out if more middleware or if this is last stop.
+      // 3) Find out if more middleware or if this is last stop.
       const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
         name: "isLoggedIn",
         stack: req.route.stack
       });
 
-      // 4. Send response back OR keep going
+      // 4) Send response back OR keep going
       if (isLastMiddlewareInStack) {
         //return to client
         return res.status(200).send({ isGood: true, msg: "Found user." });
       } else {
+        if (!req.body.user) {
+          req.body.user = {};
+        }
         // attach user info onto req.body.user obj
         req.body.user.UserID = userID;
 
@@ -170,7 +173,13 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
         return next();
       }
     } catch (err) {
-      // If api token is expired, we can check the refresh token
+      // If api token is expired, we cannot find user, or something else happened, ask person to sign in again
+      const data = {
+        isGood: false,
+        msg: "Your login has expired. Please relogin and try again."
+      };
+      const errCode = Utility.generateErrorStatusCode(data.msg);
+      return res.status(errCode).send(data);
     }
   } else {
     // User has not provided required token so ending it here.
@@ -185,7 +194,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
 
 exports.refreshAuthToken = async (req, res, next) => {
   try {
-    // 1. Grab refresh token
+    // 1) Grab refresh token
     const refreshToken = req.cookies["sfyt-api-refresh-token"];
     if (!refreshToken) {
       const data = {
@@ -196,7 +205,7 @@ exports.refreshAuthToken = async (req, res, next) => {
       return res.status(errCode).send(data);
     }
 
-    // 2. Check if refresh token is valid or not
+    // 2) Check if refresh token is valid or not
     const [isRefreshTokenValid, userID] = await Utility.validateRefreshToken(
       refreshToken
     );
@@ -209,20 +218,20 @@ exports.refreshAuthToken = async (req, res, next) => {
       return res.status(errCode).send(data);
     }
 
-    // Create new auth token
+    // 3) Create new auth token
     const authToken = await Utility.createAuthToken(userID, process.env.SECRET);
-
-    // create httpOnly cookies from token
     res.cookie("sfyt-api-token", authToken, {
       maxAge: 1000 * JWT_AUTH_EXPIRES_IN, // time, in milliseconds, for token expiration
       httpOnly: true,
       path: "/"
     });
 
-    return res.status(200).send({ isGood: true });
+    // 4) Return to user
+    return res.status(200).send({ isGood: true, token: authToken });
   } catch (err) {
-    // set cookie to 'delete'
-    res.clearCookie("sfyt-api-refresh-token", { path: "/" });
+    // set cookies to 'delete'
+    res.clearCookie("sfyt-api-refresh-token", { path: "/", maxAge: 0 });
+    res.clearCookie("sfyt-api-token", { path: "/", maxAge: 0 });
 
     // construct our return data object
     const data = {
