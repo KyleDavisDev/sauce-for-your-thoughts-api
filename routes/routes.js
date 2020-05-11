@@ -12,10 +12,10 @@ const imageController = require("../controllers/imageController.js");
 
 // APIs here -----
 
-// Auth
+// Auth -------------------------------------------------------
 router.post("/api/auth/refresh_token", authController.refreshAuthToken);
 
-// Sauce(s)
+// Sauce(s) -------------------------------------------------------
 
 // upload must be called first for post that are "multipart/form-data"
 // multer will put data object onto req.body like normal
@@ -108,7 +108,7 @@ router.get(
   sauceController.getTotal
 );
 
-// User(s)
+// User(s) -------------------------------------------------------
 // 1. Validate the data
 // 2. register the user
 // 3. Log user in via JWT
@@ -174,7 +174,7 @@ router.post(
 // 1. Confirm email
 router.post("/api/user/email/confirm", authController.confirmEmail);
 
-// 1. Confirm email
+// 1. Resend email
 router.post(
   "/api/user/email/resend",
   authController.isLoggedIn,
@@ -191,6 +191,14 @@ router.post(
 
 // 1. Check is user.token is legit, place user's _id onto user
 router.post("/api/user/isloggedin", authController.isLoggedIn);
+
+router.post(
+  "/api/user/getInfo",
+  authController.isLoggedIn,
+  userController.getInfo
+);
+
+//Review(s) -------------------------------------------------------
 
 // 1. Check if user.token is legit, place user's _id onto user
 // 2. See if user is eligible to submit review for sauce
