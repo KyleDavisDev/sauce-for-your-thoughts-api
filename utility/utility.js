@@ -119,7 +119,7 @@ class utility {
       // 3) Grab user from DB
       const user = await Users.FindUserByID({ UserID: userID });
 
-      // 3. Check if token is legit
+      // 4) Check if token is legit
       const isTrusted = !!jwt.verify(
         token,
         process.env.SECRET2 + user.Password
