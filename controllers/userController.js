@@ -301,9 +301,8 @@ exports.register = async (req, res, next) => {
   }
 };
 
-// TODO: Sanity checks for params
-/** @description search DB for user
- *  @param {String} req.body.user._id - unique user identifer
+/** @description Returns basic information about a specific user
+ *  @param {String} req.body.user.UserID - unique user identifer
  *  @return {Object} data - container object
  *    @return {Boolean} data.isGood - whether user was able to be found or not
  *    @return {String} data.msg - small blurb about isGood bool
@@ -314,7 +313,7 @@ exports.register = async (req, res, next) => {
  */
 exports.getInfo = async (req, res) => {
   try {
-    // Get user's ID and make sure we have something
+    // 1) Grab user's ID and make sure we have something
     const { UserID } = req.body.user;
     if (!UserID) {
       const data = {
@@ -323,12 +322,21 @@ exports.getInfo = async (req, res) => {
       };
       return res.status(400).send(data);
     }
-    // See who we are looking for specifically. This could be undefinded/null
-    const { displayName } = req.body;
 
-    const users = await User.FindByDisplayName({ displayName, UserID });
-    res.status(200).send({ isGood: true, users });
+    // 2) Get info about user
+    const user = await User.FindUserByID({ UserID });
+
+    // 3) Construct client-appropriate data object
+    const userObj = {
+      displayName: user.DisplayName,
+      avatarURL: user.URL,
+      isAdmin: await User.IsAdmin({ UserID })
+    };
+
+    // 4) Return to client
+    res.status(200).send({ isGood: true, user: userObj });
   } catch (err) {
+    // TODO: error handling
     console.log(err);
   }
 };
