@@ -116,8 +116,6 @@ exports.FindUserByID = async function({ UserID }) {
   const rows = await DB.query(
     `SELECT
       Users.UserID,
-      Users.LockedUntil,
-      Users.LoginAttempts,
       Users.DisplayName,
       Users.Email,
       Users.Password,
