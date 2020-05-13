@@ -19,9 +19,16 @@ exports.FindIDByValues = async function({ Values }) {
   });
 };
 
-// Returns array of active types
+/** @description Grab all the types of sauces available
+ *  @returns {Promise}
+ *  @resolves {String[]} array of types
+ */
 exports.FindTypes = async function() {
   const rows = await DB.query("SELECT Value FROM Types WHERE IsActive = 1");
+
+  if (!rows) {
+    throw new Error("Error finding types of sauces.");
+  }
 
   return rows.map(row => {
     return row.Value;
