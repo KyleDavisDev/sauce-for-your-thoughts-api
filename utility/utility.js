@@ -6,7 +6,7 @@ const UNAUTHORIZED = 401; // authorization is possible but has failed for any re
 const FORBIDDEN = 403; // authorized passed but user does not have permissions
 const NOT_FOUND = 404; // resource not found but may be available in the future
 const LOGIN_EXPIRED = 410; // login token expired. User should login again to get new token
-const JWT_AUTH_EXPIRES_IN = 15; // how long, in seconds, should auth token last for?
+const JWT_AUTH_EXPIRES_IN = 120; // how long, in seconds, should auth token last for?
 const JWT_REFRESH_EXPIRES_IN = 60 * 60 * 24 * 7; // how long, in seconds, should refresh token last for?
 
 class utility {
@@ -37,6 +37,12 @@ class utility {
   generateErrorStatusCode(err) {
     if (err === "TokenExpiredError") return UNAUTHORIZED;
     if (err === "Connection error. Please try again") return BAD_REQUEST;
+    if (err === "Could not find any types") return NOT_FOUND;
+    if (
+      err ===
+      "Something broke and we were unable to find any types. Please try again."
+    )
+      return NOT_FOUND;
     if (err === "Could not verify your account or your account is disabled.")
       return BAD_REQUEST;
     if (err === "Your login has expired. Please relogin and try again.")
