@@ -7,7 +7,7 @@ const userController = require("../controllers/userController.js");
 const authController = require("../controllers/authController.js");
 const reviewController = require("../controllers/reviewController.js");
 // const pepperController = require("../controllers/pepperController.js");
-// const typeController = require("../controllers/typeController.js");
+const typeController = require("../controllers/typeController.js");
 const imageController = require("../controllers/imageController.js");
 
 // APIs here -----
@@ -268,8 +268,8 @@ router.post(
 //   authController.login
 // );
 
-// // Types
-// router.get("/api/types/get", typeController.getTypes, authController.encodeID);
+// Types -------------------------------------------------------
+router.get("/api/types/getTypes", typeController.getTypes);
 
 // Images
 router.post(
