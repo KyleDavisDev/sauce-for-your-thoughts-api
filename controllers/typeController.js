@@ -1,34 +1,43 @@
-const Type = require("mongoose").model("Type");
+const Types = require("../models/Types");
+const { Utility } = require("../utility/utility");
 
-/** @description Method to find all possible peppers
- *  @extends req.response - semi 'global' object between middleware
+/** @description Get all active sauce types
+ *  @returns {Object} data - container object
+ *  @returns {Boolean} data.isGood - did everything go well?
+ *  @returns {String[]} data.types - types of sauces
+ *
  */
 exports.getTypes = async (req, res, next) => {
   try {
-    const types = await Type.find({}).sort({ name: 1 });
-
+    // 1) Get types of sauces
+    const types = await Types.FindTypes();
     if (!types || types.length === 0) {
       const data = {
         isGood: false,
         msg: "Could not find any types."
       };
-      res.status(400).send(data);
+      const errCode = Utility.generateErrorStatusCode(data.msg);
+      res.status(errCode).send(data);
     }
 
-    // Init req.response if need be
-    if (req.response === undefined) req.response = {};
-
-    // Add types to req.response
-    req.response.types = types.map(x => x.toObject());
-
-    next();
+    // 2) return to client
+    const data = {
+      isGood: true,
+      msg: "Found types",
+      types
+    };
+    return res.status(200).send(data);
   } catch (err) {
+    // TODO: Log error to database
+
+    // Construct data obj
     const data = {
       isGood: false,
       msg:
-        "Something broke and we were unable to find any types. Please try again.",
-      err
+        "Something broke and we were unable to find any types. Please try again."
     };
-    return res.status(401).send(data);
+    const errCode = Utility.generateErrorStatusCode(data.msg);
+
+    return res.status(errCode).send(data);
   }
 };
