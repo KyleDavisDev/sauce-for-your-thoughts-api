@@ -1,6 +1,6 @@
 const User = require("../models/Users");
 const validator = require("validator");
-const Utility = require("../utility/utility");
+const { Utility } = require("../utility/utility");
 const MIN_PASSWORD_LENGTH = User.MIN_PASSWORD_LENGTH;
 const MIN_DISPLAYNAME_LENGTH = User.MIN_DISPLAYNAME_LENGTH;
 
@@ -82,7 +82,7 @@ exports.validateEmailUpdate = async (req, res, next) => {
   });
 
   try {
-    const { email, password, UserID } = req.body.user;
+    const { password, UserID } = req.body.user;
     // Make sure passed password is good
     const user = await User.AuthenticateUser({ UserID, password });
 
@@ -286,6 +286,8 @@ exports.register = async (req, res, next) => {
     // go to authController.login
     next();
   } catch (err) {
+    // TODO: Log error into DB
+
     let msg;
     if (err.code === "ER_DUP_ENTRY") {
       msg =
@@ -337,7 +339,6 @@ exports.getInfo = async (req, res) => {
     res.status(200).send({ isGood: true, user: userObj });
   } catch (err) {
     // TODO: error handling
-    console.log(err);
   }
 };
 
@@ -392,9 +393,7 @@ exports.updateEmail = updateEmail = async (req, res, next) => {
       // Go to next middleware
       return next();
     }
-  } catch (err) {
-    console.log(err);
-  }
+  } catch (err) {}
 };
 
 /** @description Update a specific user's password
@@ -449,9 +448,7 @@ exports.updatePassword = updatePassword = async (req, res, next) => {
       // Go to next middleware
       return next();
     }
-  } catch (err) {
-    console.log(err);
-  }
+  } catch (err) {}
 };
 
 /** @description Update a specific user's display name
@@ -520,9 +517,7 @@ exports.updateDisplayName = updateDisplayName = async (req, res, next) => {
       // Go to next middleware
       return next();
     }
-  } catch (err) {
-    console.log(err);
-  }
+  } catch (err) {}
 };
 
 /** @description Update a specific user's password
@@ -533,7 +528,6 @@ exports.updateDisplayName = updateDisplayName = async (req, res, next) => {
  */
 exports.updateAvatarURL = updateAvatarURL = async (req, res, next) => {
   try {
-    console.log("yo");
     // Get user's ID and make sure we have something
     const { UserID } = req.body.user;
     if (!UserID) {
@@ -592,7 +586,5 @@ exports.updateAvatarURL = updateAvatarURL = async (req, res, next) => {
       // Go to next middleware
       return next();
     }
-  } catch (err) {
-    console.log(err);
-  }
+  } catch (err) {}
 };
