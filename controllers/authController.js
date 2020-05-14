@@ -109,6 +109,8 @@ exports.login = login = async (req, res, next) => {
       return next();
     }
   } catch (err) {
+    // TODO: Log error in a DB
+
     if (err.code === "ECONNREFUSED") {
       err.message = "Connection error. Please try again";
     }
@@ -496,8 +498,8 @@ exports.isEmailVerified = isEmailVerified = async (req, res, next) => {
  */
 exports.confirmEmail = confirmEmail = async (req, res, next) => {
   try {
-    // Make sure we have an email to work with
-    const { email: JWTEmail } = req.body;
+    // 1) Make sure we have an email to work with
+    const { jwt: JWTEmail } = req.body;
     if (!JWTEmail) {
       const data = {
         isGood: false,
@@ -508,75 +510,61 @@ exports.confirmEmail = confirmEmail = async (req, res, next) => {
       return res.status(400).send(data);
     }
 
-    // Need to turn JWT into something usable
-    const decoded = await jwt.verify(JWTEmail, process.env.SECRET);
-
-    if (!decoded) {
+    // 2) Turn JWT into something usable
+    const [isTrusted, userID] = await Utility.validateEmailToken(JWTEmail);
+    if (!isTrusted) {
       const data = {
         isGood: false,
         msg:
-          "Could not process the passed Email. Please verify URL and try again."
+          "Oops! Your URL may be expired or invalid. Please request a new verification email and try again."
       };
-      return res.status(400).send(data);
+      const errCode = Utility.generateErrorStatusCode(data.msg);
+      return res.status(errCode).send(data);
     }
 
-    // grab Email
-    const Email = decoded.sub;
-
-    // Check if email is already verified or not. Can maybe end here.
-    const isVerified = await Users.IsEmailVerified({ Email });
-    if (isVerified) {
-      // do not need to do anything
-    } else {
-      // Confirm Email
-      const isGood = await Users.toggleConfirmEmail({
-        Email,
-        Toggle: true
-      });
-
-      // Make sure good
-      if (!isGood) {
-        const data = {
-          isGood: false,
-          msg:
-            "Could not confirm email address. User's account may be locked or inactive."
-        };
-        return res.status(401).send(data);
-      }
+    // 3) Toggle email on
+    const success = await Users.toggleConfirmEmail({
+      UserID: userID,
+      Toggle: true
+    });
+    if (!success) {
+      const data = {
+        isGood: false,
+        msg:
+          "Oops! Your URL may be expired or invalid. Please request a new verification email and try again."
+      };
+      const errCode = Utility.generateErrorStatusCode(data.msg);
+      return res.status(errCode).send(data);
     }
 
-    // Find out if more middleware or if this is last stop.
+    // 4) Find out if more middleware or if this is last stop.
     const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
       name: "confirmEmail",
       stack: req.route.stack
     });
-
-    // If we are end of stack, go to client
     if (isLastMiddlewareInStack) {
-      // send to client
-      res.status(200).send({
+      // 5) Send to client
+      return res.status(200).send({
         isGood: true,
         msg: "Your email has been verified! Thank you!"
       });
-
-      // attach to locals
-      res.locals.Email = Email;
-
-      // Keep going
-      next();
     } else {
+      // 5) Keep going
       req.body.user.Email = Email;
 
       // Go to next middleware
       return next();
     }
   } catch (err) {
+    // TODO: Log to DB here
+
     const data = {
       isGood: false,
       msg:
-        "Could not confirm email address. Your account may be locked, inactive, or token may be expired. "
+        "Oops! Your URL may be expired or invalid. Please request a new verification email and try again."
     };
-    return res.status(401).send(data);
+    const errCode = Utility.generateErrorStatusCode(data.msg);
+    return res.status(errCode).send(data);
   }
 };
 
