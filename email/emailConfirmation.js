@@ -2,7 +2,7 @@ require("dotenv").config({ path: "variables.env" });
 const env =
   process.env.NODE_ENV === "prod"
     ? "https://sauceforyourthoughts.com"
-    : "http://localhost:8080";
+    : "http://localhost:3000";
 
 exports.registrationConfirmationHTML = function(email) {
   return `<!DOCTYPE html>
