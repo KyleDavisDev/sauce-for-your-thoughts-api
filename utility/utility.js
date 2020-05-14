@@ -1,4 +1,6 @@
 const jwt = require("jsonwebtoken");
+
+const EmailClient = require("../email/email");
 const Users = require("../models/Users");
 
 const BAD_REQUEST = 400; // request could not be understood for some reason; bad syntax?
@@ -6,8 +8,9 @@ const UNAUTHORIZED = 401; // authorization is possible but has failed for any re
 const FORBIDDEN = 403; // authorized passed but user does not have permissions
 const NOT_FOUND = 404; // resource not found but may be available in the future
 const LOGIN_EXPIRED = 410; // login token expired. User should login again to get new token
-const JWT_AUTH_EXPIRES_IN = 120; // how long, in seconds, should auth token last for?
+const JWT_AUTH_EXPIRES_IN = 60 * 2; // how long, in seconds, should auth token last for?
 const JWT_REFRESH_EXPIRES_IN = 60 * 60 * 24 * 7; // how long, in seconds, should refresh token last for?
+const JWT_EMAIL_EXPIRES_IN = 60 * 60 * 24 * 7; // how long, in seconds, should refresh token last for?
 
 class utility {
   constructor() {}
@@ -47,6 +50,10 @@ class utility {
       return BAD_REQUEST;
     if (err === "Your login has expired. Please relogin and try again.")
       return LOGIN_EXPIRED;
+    if (
+      "Oops! Your URL may be expired or invalid. Please request a new verification email and try again."
+    )
+      return BAD_REQUEST;
 
     // default to bad request
     return BAD_REQUEST;
@@ -103,10 +110,60 @@ class utility {
     );
   }
 
+  /** @description Create an Email JWT
+   *  @param {String} email - an identifiable user email
+   *  @returns {Promise}
+   *  @resolves {String} JWT
+   */
+  async createEmailToken(email) {
+    return jwt.sign(
+      {
+        user: email
+      },
+      process.env.SECRET_EMAIL,
+      {
+        expiresIn: JWT_EMAIL_EXPIRES_IN
+      }
+    );
+  }
+
   /** @description Check to see if the refresh token is legit or not
    *  @param {String} token - the refresh token being verified
-   *  @returns {Boolean} whether token is legit or not
-   *  @returns {Number} the user's ID
+   *  @returns {[Boolean, Number]} whether token is legit or not, the user's ID
+   */
+  async validateEmailToken(token) {
+    try {
+      // 1) Grab email from jwt
+      const { user } = await jwt.decode(token);
+      if (!user) {
+        return [false, 0];
+      }
+      const email = user;
+
+      // 2) Verify person exists
+      const userID = await Users.FindUserIDByUnique({ Email: email });
+      if (!userID) {
+        return [false, 0];
+      }
+
+      // 3) Check if token is legit
+      const isTrusted = await !!jwt.verify(token, process.env.SECRET_EMAIL);
+      if (!isTrusted) {
+        return [false, 0];
+      }
+
+      return [isTrusted, userID];
+    } catch (err) {
+      // TODO: Log error
+
+      // token is not legit or something else happened
+      return [false, 0];
+    }
+  }
+
+  /** @description Check to see if the refresh token is legit or not
+   *  @param {String} token - the refresh token being verified
+   *  @returns {[Boolean, Number]} whether token is legit or not, the user's ID
    */
   async validateRefreshToken(token) {
     try {
@@ -136,8 +193,36 @@ class utility {
       // TODO: Log error
 
       // token is not legit or something else happened
-      return false;
+      return [false, 0];
     }
+  }
+
+  /** @description Send email verification to confirm account creation
+   *  @param {String} Email - Where the email will be sent
+   *  @returns {Promise}
+   *  @resolves {Boolean}
+   */
+  async sendVerificationEmail({ Email }) {
+    // Sanity check
+    if (!Email) {
+      throw new Error(
+        "Must provide required parameters to SendVerificationEmail method"
+      );
+    }
+
+    const emailToken = await this.createEmailToken(Email);
+    // Send email to user asking to confirm email
+    const msg = {
+      to: Email,
+      from: "no-reply@sfyt.com",
+      subject: "Email Confirmation",
+      text: EmailClient.registrationEmail(emailToken),
+      html: EmailClient.registrationEmailHTML(emailToken)
+    };
+
+    await EmailClient.sendEmail(msg);
+
+    return true;
   }
 }
 
