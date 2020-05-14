@@ -1,10 +1,9 @@
 const bcrypt = require("bcrypt");
 const moment = require("moment");
 const Avatars = require("./Avatars.js");
-const authController = require("../controllers/authController");
+const { Utility } = require("../utility/utility");
 
 const DB = require("../db/db.js");
-const EmailClient = require("../email/email");
 
 // Constants
 const MAX_LOGIN_ATTEMPTS = 5;
@@ -76,7 +75,7 @@ exports.Insert = async function({ Email, Password, DisplayName }) {
     throw new Error("Error trying to save user. Please try again.");
   }
 
-  await exports.SendVerificationEmail({ Email });
+  await Utility.sendVerificationEmail({ Email });
 
   return results;
 };
@@ -305,7 +304,7 @@ exports.FindUserEmail = async function({ DisplayName, UserID }) {
 /** @description Find a user's id based off of another unique value
  *  @param {String?} DisplayName - unique user display name
  *  @param {String?} Email - unique user email
- *  @return {String} User's email
+ *  @return {Number} User's id
  */
 exports.FindUserIDByUnique = async function({ DisplayName, Email }) {
   // Sanity check
@@ -336,7 +335,7 @@ exports.FindUserIDByUnique = async function({ DisplayName, Email }) {
   }
 
   // return ID
-  return rows[0].UserID;
+  return rows[0].UserID || 0;
 };
 
 /** @description Checks if a userID is a person who is an admin or not
@@ -516,19 +515,20 @@ exports.IsEmailVerified = async function({ UserID, Email }) {
 };
 
 /** @description Toggle whether a user's email has been confirmed or not
- *  @param {String} Email - Email to toggle
+ *  @param {String} UserID - user to toggle
  *  @param {Boolean} Toggle - whether email has been confirmed or not
  *  @returns {Promise}
  *  @resolves {Boolean}
  */
-exports.toggleConfirmEmail = async function({ Email, Toggle }) {
-  // Sanity check
-  if (!Email || Toggle === undefined || Toggle === null) {
+exports.toggleConfirmEmail = async function({ UserID, Toggle }) {
+  // 1) Sanity check
+  if (!UserID || Toggle === undefined || Toggle === null) {
     throw new Error(
       "Must provide required parameters to toggleConfirmEmail method"
     );
   }
 
+  // 2) Do the things
   const row = await DB.query(
     `
     UPDATE
@@ -536,40 +536,12 @@ exports.toggleConfirmEmail = async function({ Email, Toggle }) {
     SET
       IsEmailVerified = ?
     WHERE
-      Email = ?
+      UserID = ?
       AND IsActive = 1
     `,
-    [Toggle, Email]
+    [Toggle, UserID]
   );
 
-  // If all is good, will return true
+  // 3) If all is good, will return true
   return row && row.affectedRows === 1;
-};
-
-/** @description Send email verification to confirm account creation
- *  @param {String} Email - Email to confirm
- *  @returns {Promise}
- *  @resolves {Boolean}
- */
-exports.SendVerificationEmail = async function({ Email }) {
-  // Sanity check
-  if (!Email) {
-    throw new Error(
-      "Must provide required parameters to SendVerificationEmail method"
-    );
-  }
-
-  const emailToken = authController.createToken(Email);
-  // Send email to user asking to confirm email
-  const msg = {
-    to: Email,
-    from: "no-reply@sfyt.com",
-    subject: "Email Confirmation",
-    text: EmailClient.registrationEmail(emailToken),
-    html: EmailClient.registrationEmailHTML(emailToken)
-  };
-
-  await EmailClient.sendEmail(msg);
-
-  return true;
 };
