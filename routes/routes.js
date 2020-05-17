@@ -119,8 +119,11 @@ router.post(
   authController.login
 );
 
-// 1. Generate JWT
+// 1. Generate JWT to assign to Cookies
 router.post("/api/user/login", authController.login);
+
+// 1. Generate nulify cookies
+router.post("/api/user/logout", authController.logout);
 
 // 1. Validate user
 // 2. Return modifiable user info
