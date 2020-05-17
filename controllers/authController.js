@@ -122,6 +122,42 @@ exports.login = login = async (req, res, next) => {
   }
 };
 
+/** @description Log user out by generating cookies with 0 maxage
+ *  @return {Object} data - container object
+ *    @return {Boolean} data.isGood - If request is good
+ *    @return {String} data.msg - text related to isGood boolean
+ */
+exports.logout = (req, res, next) => {
+  try {
+    // create httpOnly cookies from tokens
+    res.cookie("sfyt-api-token", "N/A", {
+      maxAge: 0, // time, in milliseconds, for token expiration
+      httpOnly: true,
+      path: "/"
+    });
+    res.cookie("sfyt-api-refresh-token", "N/A", {
+      maxAge: 0, // time, in milliseconds, for token expiration
+      httpOnly: true,
+      path: "/"
+    });
+
+    const data = {
+      isGood: true,
+      msg: "Successfully logged out."
+    };
+    // Send back to client
+    res.status(200).send(data);
+  } catch (err) {
+    // TODO: Log error in a DB
+
+    const data = {
+      isGood: false,
+      msg: err.message || "Connection error. Please try again"
+    };
+    return res.status(401).send(data);
+  }
+};
+
 /** @description Verify if a user is legit by checking JWT
  *  @param {String} req.body.user.token - unique user string
  *  @extends req.body.user.UserID attaches the user's id to the request obj
