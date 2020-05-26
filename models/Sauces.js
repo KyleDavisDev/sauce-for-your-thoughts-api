@@ -523,8 +523,6 @@ exports.ToggleSauceApproval = async function({ SauceID, Toggle }) {
     );
   }
 
-  console.log(rows);
-
   return rows && rows.affectedRows === 1;
 };
 
