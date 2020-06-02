@@ -3,11 +3,15 @@ const jwt = require("jsonwebtoken");
 const EmailClient = require("../email/email");
 const Users = require("../models/Users");
 
+// Request status codes
 const BAD_REQUEST = 400; // request could not be understood for some reason; bad syntax?
 const UNAUTHORIZED = 401; // authorization is possible but has failed for any reason
 const FORBIDDEN = 403; // authorized passed but user does not have permissions
 const NOT_FOUND = 404; // resource not found but may be available in the future
 const LOGIN_EXPIRED = 410; // login token expired. User should login again to get new token
+// Error Codes
+const SAUCE_UPDATE_FAILED = 7300; // There was an error updating the sauce
+// Constants
 const JWT_AUTH_EXPIRES_IN = 60 * 2; // how long, in seconds, should auth token last for?
 const JWT_REFRESH_EXPIRES_IN = 60 * 60 * 24 * 7; // how long, in seconds, should refresh token last for?
 const JWT_EMAIL_EXPIRES_IN = 60 * 60 * 24 * 7; // how long, in seconds, should refresh token last for?
@@ -37,7 +41,7 @@ class utility {
    *  @param {String} err - error string
    *  @return {Number} The status code error
    */
-  generateErrorStatusCode(err) {
+  generateRequestStatusCode(err) {
     if (err === "TokenExpiredError") return UNAUTHORIZED;
     if (err === "Connection error. Please try again") return BAD_REQUEST;
     if (err === "Could not find any types") return NOT_FOUND;
