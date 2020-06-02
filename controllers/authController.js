@@ -175,7 +175,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
           isGood: false,
           msg: "Could not verify your account or your account is disabled."
         };
-        const errCode = Utility.generateErrorStatusCode(data.msg);
+        const errCode = Utility.generateRequestStatusCode(data.msg);
         return res.status(errCode).send(data);
       }
 
@@ -186,7 +186,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
           isGood: false,
           msg: "Could not find your account or your account is disabled."
         };
-        const errCode = Utility.generateErrorStatusCode(data.msg);
+        const errCode = Utility.generateRequestStatusCode(data.msg);
         return res.status(errCode).send(data);
       }
 
@@ -216,7 +216,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
         isGood: false,
         msg: "Your login has expired. Please relogin and try again."
       };
-      const errCode = Utility.generateErrorStatusCode(data.msg);
+      const errCode = Utility.generateRequestStatusCode(data.msg);
       return res.status(errCode).send(data);
     }
   } else {
@@ -225,7 +225,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
       isGood: false,
       msg: "Your login has expired. Please relogin and try again."
     };
-    const errCode = Utility.generateErrorStatusCode(data.msg);
+    const errCode = Utility.generateRequestStatusCode(data.msg);
     return res.status(errCode).send(data);
   }
 };
@@ -239,7 +239,7 @@ exports.refreshAuthToken = async (req, res, next) => {
         isGood: false,
         msg: "Could not verify your account or your account is disabled."
       };
-      const errCode = Utility.generateErrorStatusCode(data.msg);
+      const errCode = Utility.generateRequestStatusCode(data.msg);
       return res.status(errCode).send(data);
     }
 
@@ -252,7 +252,7 @@ exports.refreshAuthToken = async (req, res, next) => {
         isGood: false,
         msg: "Could not verify your account or your account is disabled."
       };
-      const errCode = Utility.generateErrorStatusCode(data.msg);
+      const errCode = Utility.generateRequestStatusCode(data.msg);
       return res.status(errCode).send(data);
     }
 
@@ -276,7 +276,7 @@ exports.refreshAuthToken = async (req, res, next) => {
       isGood: false,
       msg: "Could not verify your account or your account is disabled."
     };
-    const errCode = Utility.generateErrorStatusCode(data.msg);
+    const errCode = Utility.generateRequestStatusCode(data.msg);
     return res.status(errCode).send(data);
   }
 };
@@ -554,7 +554,7 @@ exports.confirmEmail = confirmEmail = async (req, res, next) => {
         msg:
           "Oops! Your URL may be expired or invalid. Please request a new verification email and try again."
       };
-      const errCode = Utility.generateErrorStatusCode(data.msg);
+      const errCode = Utility.generateRequestStatusCode(data.msg);
       return res.status(errCode).send(data);
     }
 
@@ -569,7 +569,7 @@ exports.confirmEmail = confirmEmail = async (req, res, next) => {
         msg:
           "Oops! Your URL may be expired or invalid. Please request a new verification email and try again."
       };
-      const errCode = Utility.generateErrorStatusCode(data.msg);
+      const errCode = Utility.generateRequestStatusCode(data.msg);
       return res.status(errCode).send(data);
     }
 
@@ -599,7 +599,7 @@ exports.confirmEmail = confirmEmail = async (req, res, next) => {
       msg:
         "Oops! Your URL may be expired or invalid. Please request a new verification email and try again."
     };
-    const errCode = Utility.generateErrorStatusCode(data.msg);
+    const errCode = Utility.generateRequestStatusCode(data.msg);
     return res.status(errCode).send(data);
   }
 };
