@@ -27,6 +27,7 @@ exports.stringToProperType = (req, res, next) => {
   next();
 };
 
+// Make sure required information is available before moving on
 exports.validateInsert = (req, res, next) => {
   try {
     const { sauce } = req.body;
@@ -738,7 +739,7 @@ exports.canUserEdit = canUserEdit = async (req, res, next) => {
     if (!Slug || !UserID) {
       const data = {
         isGood: false,
-        msg: "Could not required parameters for canUserEdit"
+        msg: "Could not find required parameters for canUserEdit"
       };
       // Send back bad data response
       return res.status(400).send(data);
