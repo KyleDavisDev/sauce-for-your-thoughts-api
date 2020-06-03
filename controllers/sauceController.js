@@ -806,8 +806,12 @@ exports.updateSauce = updateSauce = async (req, res, next) => {
     if (!UserID || !sauce) {
       const data = {
         isGood: false,
-        msg: "Could not required parameters for updateSauce"
+        msg: "Oops! Something wasn't found in your request. Please try again."
       };
+      // generate specific error code
+      data.errorCode = Utility.generateErrorCode(
+        "Could not required parameters for updateSauce"
+      );
       // Send back bad data response
       return res.status(400).send(data);
     }
