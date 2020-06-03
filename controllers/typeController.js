@@ -16,7 +16,7 @@ exports.getTypes = async (req, res, next) => {
         isGood: false,
         msg: "Could not find any types."
       };
-      const errCode = Utility.generateRequestStatusCode(data.msg);
+      const errCode = Utility.generateResponseStatusCode(data.msg);
       res.status(errCode).send(data);
     }
 
@@ -36,7 +36,7 @@ exports.getTypes = async (req, res, next) => {
       msg:
         "Something broke and we were unable to find any types. Please try again."
     };
-    const errCode = Utility.generateRequestStatusCode(data.msg);
+    const errCode = Utility.generateResponseStatusCode(data.msg);
 
     return res.status(errCode).send(data);
   }
