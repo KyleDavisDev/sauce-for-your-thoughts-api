@@ -56,7 +56,7 @@ exports.login = login = async (req, res, next) => {
       process.env.SECRET2 + user.Password
     );
 
-    // create httpOnly cookies from tokens
+    // create cookies from tokens
     res.cookie("sfyt-api-token", token, {
       maxAge: 1000 * JWT_AUTH_EXPIRES_IN, // time, in milliseconds, for token expiration
       httpOnly: true,
@@ -65,6 +65,11 @@ exports.login = login = async (req, res, next) => {
     res.cookie("sfyt-api-refresh-token", refreshToken, {
       maxAge: 1000 * JWT_REFRESH_EXPIRES_IN, // time, in milliseconds, for token expiration
       httpOnly: true,
+      path: "/"
+    });
+    res.cookie("has-refresh-token", 1, {
+      maxAge: 1000 * JWT_REFRESH_EXPIRES_IN, // time, in milliseconds, for token expiration
+      httpOnly: false,
       path: "/"
     });
 
@@ -140,6 +145,11 @@ exports.logout = (req, res, next) => {
       httpOnly: true,
       path: "/"
     });
+    res.cookie("has-refresh-token", 0, {
+      maxAge: 0, // time, in milliseconds, for token expiration
+      httpOnly: false,
+      path: "/"
+    });
 
     const data = {
       isGood: true,
@@ -175,7 +185,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
           isGood: false,
           msg: "Could not verify your account or your account is disabled."
         };
-        const errCode = Utility.generateRequestStatusCode(data.msg);
+        const errCode = Utility.generateResponseStatusCode(data.msg);
         return res.status(errCode).send(data);
       }
 
@@ -186,7 +196,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
           isGood: false,
           msg: "Could not find your account or your account is disabled."
         };
-        const errCode = Utility.generateRequestStatusCode(data.msg);
+        const errCode = Utility.generateResponseStatusCode(data.msg);
         return res.status(errCode).send(data);
       }
 
@@ -216,7 +226,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
         isGood: false,
         msg: "Your login has expired. Please relogin and try again."
       };
-      const errCode = Utility.generateRequestStatusCode(data.msg);
+      const errCode = Utility.generateResponseStatusCode(data.msg);
       return res.status(errCode).send(data);
     }
   } else {
@@ -225,11 +235,14 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
       isGood: false,
       msg: "Your login has expired. Please relogin and try again."
     };
-    const errCode = Utility.generateRequestStatusCode(data.msg);
+    const errCode = Utility.generateResponseStatusCode(data.msg);
     return res.status(errCode).send(data);
   }
 };
 
+/** @description Refresh the authentication token based on cookie refresh token
+ *  @return Attaches UserID onto req.body.user OR return with isGood status and message
+ */
 exports.refreshAuthToken = async (req, res, next) => {
   try {
     // 1) Grab refresh token
@@ -237,10 +250,13 @@ exports.refreshAuthToken = async (req, res, next) => {
     if (!refreshToken) {
       const data = {
         isGood: false,
-        msg: "Could not verify your account or your account is disabled."
+        msg: "Could not find expected cookies. Please try to relogin."
       };
-      const errCode = Utility.generateRequestStatusCode(data.msg);
-      return res.status(errCode).send(data);
+      // generate specific status code
+      const responseCode = Utility.generateResponseStatusCode(data.msg);
+      // generate specific error code
+      data.errorCode = Utility.generateErrorCode(data.msg);
+      return res.status(responseCode).send(data);
     }
 
     // 2) Check if refresh token is valid or not
@@ -252,7 +268,8 @@ exports.refreshAuthToken = async (req, res, next) => {
         isGood: false,
         msg: "Could not verify your account or your account is disabled."
       };
-      const errCode = Utility.generateRequestStatusCode(data.msg);
+      const errCode = Utility.generateResponseStatusCode(data.msg);
+
       return res.status(errCode).send(data);
     }
 
@@ -270,13 +287,14 @@ exports.refreshAuthToken = async (req, res, next) => {
     // set cookies to 'delete'
     res.clearCookie("sfyt-api-refresh-token", { path: "/", maxAge: 0 });
     res.clearCookie("sfyt-api-token", { path: "/", maxAge: 0 });
+    res.clearCookie("has-refresh-token", { path: "/", maxAge: 0 });
 
     // construct our return data object
     const data = {
       isGood: false,
       msg: "Could not verify your account or your account is disabled."
     };
-    const errCode = Utility.generateRequestStatusCode(data.msg);
+    const errCode = Utility.generateResponseStatusCode(data.msg);
     return res.status(errCode).send(data);
   }
 };
@@ -554,7 +572,7 @@ exports.confirmEmail = confirmEmail = async (req, res, next) => {
         msg:
           "Oops! Your URL may be expired or invalid. Please request a new verification email and try again."
       };
-      const errCode = Utility.generateRequestStatusCode(data.msg);
+      const errCode = Utility.generateResponseStatusCode(data.msg);
       return res.status(errCode).send(data);
     }
 
@@ -569,7 +587,7 @@ exports.confirmEmail = confirmEmail = async (req, res, next) => {
         msg:
           "Oops! Your URL may be expired or invalid. Please request a new verification email and try again."
       };
-      const errCode = Utility.generateRequestStatusCode(data.msg);
+      const errCode = Utility.generateResponseStatusCode(data.msg);
       return res.status(errCode).send(data);
     }
 
@@ -599,7 +617,7 @@ exports.confirmEmail = confirmEmail = async (req, res, next) => {
       msg:
         "Oops! Your URL may be expired or invalid. Please request a new verification email and try again."
     };
-    const errCode = Utility.generateRequestStatusCode(data.msg);
+    const errCode = Utility.generateResponseStatusCode(data.msg);
     return res.status(errCode).send(data);
   }
 };
