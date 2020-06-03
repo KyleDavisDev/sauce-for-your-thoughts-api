@@ -10,7 +10,9 @@ const FORBIDDEN = 403; // authorized passed but user does not have permissions
 const NOT_FOUND = 404; // resource not found but may be available in the future
 const LOGIN_EXPIRED = 410; // login token expired. User should login again to get new token
 // Error Codes
+const AUTH_REFRESH_TOKEN_NOT_FOUND = 3300; // Couldn't find expected refresh token
 const SAUCE_UPDATE_FAILED = 7300; // There was an error updating the sauce
+const UNKNOWN = 9999; // Catch-all value
 // Constants
 const JWT_AUTH_EXPIRES_IN = 60 * 2; // how long, in seconds, should auth token last for?
 const JWT_REFRESH_EXPIRES_IN = 60 * 60 * 24 * 7; // how long, in seconds, should refresh token last for?
@@ -41,7 +43,7 @@ class utility {
    *  @param {String} err - error string
    *  @return {Number} The status code error
    */
-  generateRequestStatusCode(err) {
+  generateResponseStatusCode(err) {
     if (err === "TokenExpiredError") return UNAUTHORIZED;
     if (err === "Connection error. Please try again") return BAD_REQUEST;
     if (err === "Could not find any types") return NOT_FOUND;
@@ -61,6 +63,19 @@ class utility {
 
     // default to bad request
     return BAD_REQUEST;
+  }
+
+  /** @description Standardize error status by passing to a single function here
+   *  @param {String} err - error string
+   *  @return {Number} The status code error
+   */
+  generateErrorCode(err) {
+    if ("Could not required parameters for updateSauce")
+      return SAUCE_UPDATE_FAILED;
+    else if ("Could not find expected cookies. Please try to relogin.")
+      return AUTH_REFRESH_TOKEN_NOT_FOUND;
+    // default to uknown
+    return UNKNOWN;
   }
 
   /** @description Create authentication token and reset token
