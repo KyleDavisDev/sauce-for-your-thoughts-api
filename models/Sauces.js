@@ -592,14 +592,15 @@ exports.UpdateSauce = async function({
   Photo,
   Types
 }) {
-  // Sanity check
-  if (!Slug || !Name || !Maker || !Description || !Ingredients) {
+  // 1) Sanity check
+  if (!Slug || !Name || !Maker || !Description) {
     throw new Error("Must provide required parameters to UpdateSauce method");
   }
 
-  // IF user is an admin, they will also be able to update the sauce
+  // 2) If user is an admin, they will also be able to update the sauce
   const isAdmin = await Users.IsAdmin({ UserID });
 
+  // 3) Update sauce
   const row = await DB.query(
     `
       UPDATE
@@ -619,7 +620,7 @@ exports.UpdateSauce = async function({
         Sauces.State = ?,
         Sauces.Country = ?,
         Sauces.City = ?,
-        Sauces.Photo = ?
+        Sauces.Photo = CASE WHEN ${!!Photo}=true THEN '${Photo}' ELSE Sauces.Photo END
       WHERE
         (Sauces.UserID = ?
            OR 1=${isAdmin ? 1 : 0})
@@ -637,7 +638,6 @@ exports.UpdateSauce = async function({
       State,
       Country,
       City,
-      Photo,
       UserID,
       Slug
     ]
