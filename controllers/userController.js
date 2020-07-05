@@ -84,7 +84,7 @@ exports.validateEmailUpdate = async (req, res, next) => {
   try {
     const { password, UserID } = req.body.user;
     // Make sure passed password is good
-    const user = await User.AuthenticateUser({ UserID, password });
+    await User.AuthenticateUser({ UserID, password });
 
     // Keep going
     return next();
@@ -92,11 +92,17 @@ exports.validateEmailUpdate = async (req, res, next) => {
     if (err.code === "ECONNREFUSED") {
       err.message = "Connection error. Please try again";
     }
+
+    // make return obj
     const data = {
       isGood: false,
       msg: err.message || "Connection error. Please try again"
     };
-    return res.status(err.status).send(data);
+    // find appropriate status code number
+    const statusCode = Utility.generateResponseStatusCode(data.msg);
+
+    // return to client
+    return res.status(statusCode).send(data);
   }
 };
 
@@ -433,6 +439,30 @@ exports.updatePassword = updatePassword = async (req, res, next) => {
       };
       return res.status(401).send(data);
     }
+
+    // create auth token and refresh token
+    const [token, refreshToken] = await Utility.createTokens(
+      UserID,
+      process.env.SECRET,
+      process.env.SECRET2 + newPassword
+    );
+
+    // create cookies from tokens
+    res.cookie("sfyt-api-token", token, {
+      maxAge: 1000 * JWT_AUTH_EXPIRES_IN, // time, in milliseconds, for token expiration
+      httpOnly: true,
+      path: "/"
+    });
+    res.cookie("sfyt-api-refresh-token", refreshToken, {
+      maxAge: 1000 * JWT_REFRESH_EXPIRES_IN, // time, in milliseconds, for token expiration
+      httpOnly: true,
+      path: "/"
+    });
+    res.cookie("has-refresh-token", 1, {
+      maxAge: 1000 * JWT_REFRESH_EXPIRES_IN, // time, in milliseconds, for token expiration
+      httpOnly: false,
+      path: "/"
+    });
 
     // Find out if more middleware or if this is last stop.
     const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
