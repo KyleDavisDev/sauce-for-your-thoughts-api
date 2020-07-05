@@ -510,7 +510,7 @@ exports.isEmailVerified = isEmailVerified = async (req, res, next) => {
       return res.status(401).send({
         isGood: false, //user cannot update
         msg:
-          "You are ineligible to submit at this time. Please verify email first."
+          "You have not verified your email yet! Please verify your email if you want to submit a sauce or add a review."
       });
     }
 
@@ -641,7 +641,9 @@ exports.resendEmail = resendEmail = async (req, res, next) => {
       return res.status(401).send(data);
     }
 
-    const couldSendVerification = await Users.SendVerificationEmail({ Email });
+    const couldSendVerification = await Utility.sendVerificationEmail({
+      Email
+    });
 
     // Make sure good
     if (!couldSendVerification) {
