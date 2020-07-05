@@ -6,7 +6,7 @@ const Users = require("../models/Users");
 // Request status codes
 const BAD_REQUEST = 400; // request could not be understood for some reason; bad syntax?
 const UNAUTHORIZED = 401; // authorization is possible but has failed for any reason
-const FORBIDDEN = 403; // authorized passed but user does not have permissions
+const FORBIDDEN = 403; // authorized passed but user does not have permissions (maybe account is locked)
 const NOT_FOUND = 404; // resource not found but may be available in the future
 const LOGIN_EXPIRED = 410; // login token expired. User should login again to get new token
 // Error Codes
@@ -44,22 +44,36 @@ class utility {
    *  @return {Number} The status code error
    */
   generateResponseStatusCode(err) {
-    if (err === "TokenExpiredError") return UNAUTHORIZED;
-    if (err === "Connection error. Please try again") return BAD_REQUEST;
-    if (err === "Could not find any types") return NOT_FOUND;
+    if (err === "TokenExpiredError") {
+      return UNAUTHORIZED;
+    }
+    if (err === "Connection error. Please try again") {
+      return BAD_REQUEST;
+    }
+    if (err === "Could not find any types") {
+      return NOT_FOUND;
+    }
     if (
       err ===
       "Something broke and we were unable to find any types. Please try again."
-    )
+    ) {
       return NOT_FOUND;
-    if (err === "Could not verify your account or your account is disabled.")
+    }
+    if (err === "Could not verify your account or your account is disabled.") {
       return BAD_REQUEST;
-    if (err === "Your login has expired. Please relogin and try again.")
+    }
+    if (err === "Your login has expired. Please relogin and try again.") {
       return LOGIN_EXPIRED;
+    }
     if (
+      err ===
       "Oops! Your URL may be expired or invalid. Please request a new verification email and try again."
-    )
+    ) {
       return BAD_REQUEST;
+    }
+    if (err === "Invalid username or password.") {
+      return FORBIDDEN;
+    }
 
     // default to bad request
     return BAD_REQUEST;
