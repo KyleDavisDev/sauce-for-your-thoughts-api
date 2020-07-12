@@ -4,6 +4,7 @@ const EmailClient = require("../email/email");
 const Users = require("../models/Users");
 
 // Request status codes
+const OK = 200; // The request has succeeded
 const BAD_REQUEST = 400; // request could not be understood for some reason; bad syntax?
 const UNAUTHORIZED = 401; // authorization is possible but has failed for any reason
 const FORBIDDEN = 403; // authorized passed but user does not have permissions (maybe account is locked)
@@ -44,39 +45,32 @@ class utility {
    *  @return {Number} The status code error
    */
   generateResponseStatusCode(err) {
-    if (err === "TokenExpiredError") {
-      return UNAUTHORIZED;
-    }
-    if (err === "Connection error. Please try again") {
-      return BAD_REQUEST;
-    }
-    if (err === "Could not find any types") {
-      return NOT_FOUND;
-    }
-    if (
-      err ===
-      "Something broke and we were unable to find any types. Please try again."
-    ) {
-      return NOT_FOUND;
-    }
-    if (err === "Could not verify your account or your account is disabled.") {
-      return BAD_REQUEST;
-    }
-    if (err === "Your login has expired. Please relogin and try again.") {
-      return LOGIN_EXPIRED;
-    }
-    if (
-      err ===
-      "Oops! Your URL may be expired or invalid. Please request a new verification email and try again."
-    ) {
-      return BAD_REQUEST;
-    }
-    if (err === "Invalid username or password.") {
-      return FORBIDDEN;
-    }
+    switch (err) {
+      case "TokenExpiredError":
+        return UNAUTHORIZED;
 
-    // default to bad request
-    return BAD_REQUEST;
+      case "Oops! Your URL may be expired or invalid. Please request a new verification email and try again.":
+      case "Connection error. Please try again":
+      case "Could not verify your account or your account is disabled.":
+        return BAD_REQUEST;
+
+      case "Could not find any types":
+      case "Something broke and we were unable to find any types. Please try again.":
+        return NOT_FOUND;
+
+      case "Your login has expired. Please relogin and try again.":
+        return LOGIN_EXPIRED;
+
+      case "Invalid username or password.":
+      case "We tried to email your account but something went wrong. Please try again.":
+        return FORBIDDEN;
+
+      case "Password reset email has been sent! Thank you!":
+        return OK;
+
+      default:
+        return BAD_REQUEST;
+    }
   }
 
   /** @description Standardize error status by passing to a single function here
@@ -84,9 +78,9 @@ class utility {
    *  @return {Number} The status code error
    */
   generateErrorCode(err) {
-    if ("Could not required parameters for updateSauce")
+    if (err === "Could not required parameters for updateSauce")
       return SAUCE_UPDATE_FAILED;
-    else if ("Could not find expected cookies. Please try to relogin.")
+    else if (err === "Could not find expected cookies. Please try to relogin.")
       return AUTH_REFRESH_TOKEN_NOT_FOUND;
     // default to uknown
     return UNKNOWN;
