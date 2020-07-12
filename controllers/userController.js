@@ -1,6 +1,10 @@
 const User = require("../models/Users");
 const validator = require("validator");
-const { Utility } = require("../utility/utility");
+const {
+  Utility,
+  JWT_AUTH_EXPIRES_IN,
+  JWT_REFRESH_EXPIRES_IN
+} = require("../utility/utility");
 const MIN_PASSWORD_LENGTH = User.MIN_PASSWORD_LENGTH;
 const MIN_DISPLAYNAME_LENGTH = User.MIN_DISPLAYNAME_LENGTH;
 
@@ -412,6 +416,7 @@ exports.updatePassword = updatePassword = async (req, res, next) => {
   try {
     // Get user's ID and make sure we have something
     const { UserID } = req.body.user;
+    console.log(UserID);
     if (!UserID) {
       const data = {
         isGood: false,
@@ -429,8 +434,8 @@ exports.updatePassword = updatePassword = async (req, res, next) => {
       return res.status(400).send(data);
     }
 
+    // Update the password, make sure it worked.
     const isGood = await User.UpdatePassword({ UserID, Password: newPassword });
-
     if (!isGood) {
       const data = {
         isGood: false,
@@ -478,7 +483,9 @@ exports.updatePassword = updatePassword = async (req, res, next) => {
       // Go to next middleware
       return next();
     }
-  } catch (err) {}
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 /** @description Update a specific user's display name
