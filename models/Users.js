@@ -404,6 +404,7 @@ exports.UpdatePassword = async function({ UserID, Password }) {
   // Create hash
   const hash = await bcrypt.hash(Password, salt);
 
+  // Update the record
   const row = await DB.query(
     `UPDATE Users
     SET
