@@ -688,3 +688,83 @@ exports.resendEmail = resendEmail = async (req, res, next) => {
     return res.status(401).send(data);
   }
 };
+
+/** @description Sends a password reset email
+ *  @param {String} req.body.user.email - Email to send the password reset to
+ *  @return Continues on next middleware OR returns isGood object
+ */
+exports.sendPasswordReset = sendPasswordReset = async (req, res, next) => {
+  try {
+    // 1. Grab email from user
+    let { email } = req.body;
+    if (!email) {
+      email = req.body.Email;
+      if (!email) {
+        // Cannot find email on the body. End here. Send false positive.
+        const data = {
+          isGood: true,
+          msg: "Password reset email has been sent! Thank you!"
+        };
+        const resStatus = Utility.generateResponseStatusCode(data.msg);
+        return res.status(resStatus).send(data);
+      }
+    }
+    email = email.toLowerCase();
+
+    // 2. Check if the person exists or not. We don't actually care what their ID is
+    const doesPersonExist = !!(await Users.FindUserIDByUnique({
+      Email: email
+    }));
+    if (!doesPersonExist) {
+      // Person doesn't exist. End here. Send false positive.
+      const data = {
+        isGood: true,
+        msg: "Password reset email has been sent! Thank you!"
+      };
+      const resStatus = Utility.generateResponseStatusCode(data.msg);
+      return res.status(resStatus).send(data);
+    }
+
+    // 3. Send email to person
+    const couldSendVerification = await Utility.sendVerificationEmail({
+      Email
+    });
+    if (!couldSendVerification) {
+      // Couldn't send the email. Send actual error message asking user to try again.
+      const data = {
+        isGood: false,
+        msg:
+          "We tried to email your account but something went wrong. Please try again."
+      };
+      const resStatus = Utility.generateResponseStatusCode(data.msg);
+      return res.status(resStatus).send(data);
+    }
+
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "resendEmail",
+      stack: req.route.stack
+    });
+
+    // If we are end of stack, go to client
+    if (isLastMiddlewareInStack) {
+      // Send object to user
+      const data = {
+        isGood: true,
+        msg: "Password reset email has been sent! Thank you!"
+      };
+      const resStatus = Utility.generateResponseStatusCode(data.msg);
+      return res.status(resStatus).send(data);
+    } else {
+      // Go to next middleware
+      return next();
+    }
+  } catch (err) {
+    const data = {
+      isGood: false,
+      msg:
+        "Could not confirm email address. Your account may be locked, inactive, or token may be expired. "
+    };
+    return res.status(401).send(data);
+  }
+};
