@@ -177,7 +177,8 @@ router.post(
 // 1. Confirm email
 router.post("/api/user/email/confirm", authController.confirmEmail);
 
-// 1. Resend email
+// 1. Check if user is logged in
+// 2. Resend email
 router.post(
   "/api/user/email/resend",
   authController.isLoggedIn,
@@ -191,6 +192,9 @@ router.post(
   authController.isLoggedIn,
   authController.isEmailVerified
 );
+
+// 1. Send password reset email
+router.post("/api/user/password/reset", authController.sendPasswordReset);
 
 // 1. Check is user.token is legit, place user's _id onto user
 router.post("/api/user/isloggedin", authController.isLoggedIn);
@@ -260,16 +264,6 @@ router.post(
 
 // // 1. Determines if reset token is legit or not
 // router.post("/account/validateResetToken", authController.validateResetToken);
-
-// // 1. Check passwords for equality
-// // 2. Hash and update password
-// // 3. Log user in via JWT
-// router.post(
-//   "/account/reset",
-//   authController.confirmPasswords,
-//   authController.updatePassword,
-//   authController.login
-// );
 
 // Types -------------------------------------------------------
 router.get("/api/types/getTypes", typeController.getTypes);
