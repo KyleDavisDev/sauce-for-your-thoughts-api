@@ -4,7 +4,7 @@ const env =
     ? "https://sauceforyourthoughts.com"
     : "http://localhost:3000";
 
-exports.registrationConfirmationHTML = function(email) {
+exports.HTML = function(token) {
   return `<!DOCTYPE html>
   <html lang="en">
       <head>
@@ -31,13 +31,13 @@ exports.registrationConfirmationHTML = function(email) {
                                     <table class="btn btn-primary">
                                       <tr>
                                         <td>
-                                          <a href="${env}/account/confirm/email/${email}">Confirm Email</a>
+                                          <a href="${env}/account/confirm/email/${token}">Confirm Email</a>
                                         </td>
                                         <td>
                                         </td>
                                       </tr>
                                     </table>
-                              <p>If you didn't expect this email, please <a href="${env}/account/email/remove/${email}">unsubscribe</a>.</p>
+                              <p>If you didn't expect this email, please <a href="${env}/account/email/remove/${token}">unsubscribe</a>.</p>
                                     <p>Thanks, SFYT Team</p>
                                   </td>
                                 </tr>
@@ -52,7 +52,7 @@ exports.registrationConfirmationHTML = function(email) {
                           "@type": "EmailMessage",
                           "action": {
                             "@type": "ViewAction",
-                            "url": "${env}/account/confirm/email/${email}",
+                            "url": "${env}/account/confirm/email/${token}",
                             "name": "Confirm email for SFYT."
                           }
                         }
@@ -66,20 +66,20 @@ exports.registrationConfirmationHTML = function(email) {
   </html>`;
 };
 
-exports.registrationConfirmationText = function(email) {
+exports.Text = function(token) {
   return `Hi there,
 
   This email has just been used to register for an account on SauceForYourThoughts.com but must be verified first to lift all restrictions.
   
   Please click the link below to verify this email address as valid.
   
-  |  [Confirm Email](${env}/account/confirm/email/${email}) | 
+  |  [Confirm Email](${env}/account/confirm/email/${token}) | 
 
     
 
   If you did not expect this email, click the following link and we will immediately remove this email from our records.
 
-  | [Remove Email](${env}/account/email/remove/${email}) |
+  | [Remove Email](${env}/account/email/remove/${token}) |
   
   Thanks, SFYT Team
   `;
