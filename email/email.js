@@ -1,7 +1,8 @@
 const sgMail = require("@sendgrid/mail");
 require("dotenv").config({ path: "variables.env" });
 
-emailConfirmation = require("./emailConfirmation");
+accountConfirmation = require("./accountConfirmation");
+resetPasswordEmail = require("./passwordReset");
 
 class email {
   constructor() {
@@ -36,12 +37,36 @@ class email {
     return this.email.send(msg);
   }
 
-  registrationEmailHTML(msg) {
-    return emailConfirmation.registrationConfirmationHTML(msg);
+  /**
+   * @description Construct an HTML email to send a person so they can confirm their email
+   * @param {String} token - User-specific JWT used for verification
+   */
+  registrationEmailHTML(token) {
+    return accountConfirmation.HTML(token);
   }
 
-  registrationEmail(msg) {
-    return emailConfirmation.registrationConfirmationText(msg);
+  /**
+   * @description Construct an Text email to send a person so they can confirm their email
+   * @param {String} token - User-specific JWT used for verification
+   */
+  registrationEmail(token) {
+    return accountConfirmation.Text(token);
+  }
+
+  /**
+   * @description Construct an HTML email to send a person so they can reset their password
+   * @param {String} token - User-specific JWT used for verification
+   */
+  resetPasswordEmailHTML(token) {
+    return resetPasswordEmail.HTML(token);
+  }
+
+  /**
+   * @description Construct an Text email to send a person so they can reset their password
+   * @param {String} token - User-specific JWT used for verification
+   */
+  resetPasswordEmail(token) {
+    return resetPasswordEmail.Text(token);
   }
 }
 
