@@ -726,8 +726,8 @@ exports.sendPasswordReset = sendPasswordReset = async (req, res, next) => {
     }
 
     // 3. Send email to person
-    const couldSendVerification = await Utility.sendVerificationEmail({
-      Email
+    const couldSendVerification = await Utility.sendResetPasswordEmail({
+      Email: email
     });
     if (!couldSendVerification) {
       // Couldn't send the email. Send actual error message asking user to try again.
@@ -740,14 +740,13 @@ exports.sendPasswordReset = sendPasswordReset = async (req, res, next) => {
       return res.status(resStatus).send(data);
     }
 
-    // Find out if more middleware or if this is last stop.
+    // 4. Find out if more middleware or if this is last stop.
     const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
       name: "resendEmail",
       stack: req.route.stack
     });
-
-    // If we are end of stack, go to client
     if (isLastMiddlewareInStack) {
+      // If we are end of stack, go to client
       // Send object to user
       const data = {
         isGood: true,
@@ -760,11 +759,12 @@ exports.sendPasswordReset = sendPasswordReset = async (req, res, next) => {
       return next();
     }
   } catch (err) {
+    // send false positive
     const data = {
-      isGood: false,
-      msg:
-        "Could not confirm email address. Your account may be locked, inactive, or token may be expired. "
+      isGood: true,
+      msg: "Password reset email has been sent! Thank you!"
     };
-    return res.status(401).send(data);
+    const resStatus = Utility.generateResponseStatusCode(data.msg);
+    return res.status(resStatus).send(data);
   }
 };
