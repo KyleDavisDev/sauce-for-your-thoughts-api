@@ -15,9 +15,10 @@ const AUTH_REFRESH_TOKEN_NOT_FOUND = 3300; // Couldn't find expected refresh tok
 const SAUCE_UPDATE_FAILED = 7300; // There was an error updating the sauce
 const UNKNOWN = 9999; // Catch-all value
 // Constants
-const JWT_AUTH_EXPIRES_IN = 60 * 2; // how long, in seconds, should auth token last for?
-const JWT_REFRESH_EXPIRES_IN = 60 * 60 * 24 * 7; // how long, in seconds, should refresh token last for?
-const JWT_EMAIL_EXPIRES_IN = 60 * 60 * 24 * 7; // how long, in seconds, should refresh token last for?
+const JWT_AUTH_EXPIRES_IN = 60 * 2; // 2 minutes
+const JWT_REFRESH_EXPIRES_IN = 60 * 60 * 24 * 7; // 7 days
+const JWT_CONFIRMATION_EMAIL_EXPIRES_IN = 60 * 60 * 24 * 7; // 7 days
+const JWT_RESET_PASSWORD_EXPIRES_IN = 60 * 60 * 1; // 1 hour
 
 class utility {
   constructor() {}
@@ -149,7 +150,24 @@ class utility {
       },
       process.env.SECRET_EMAIL,
       {
-        expiresIn: JWT_EMAIL_EXPIRES_IN
+        expiresIn: JWT_CONFIRMATION_EMAIL_EXPIRES_IN
+      }
+    );
+  }
+
+  /** @description Create an Reset Password JWT
+   *  @param {String} email - an identifiable user email
+   *  @returns {Promise}
+   *  @resolves {String} JWT
+   */
+  async createResetPasswordToken(email) {
+    return jwt.sign(
+      {
+        user: email
+      },
+      process.env.SECRET_PASSWORD_RESET,
+      {
+        expiresIn: JWT_RESET_PASSWORD_EXPIRES_IN
       }
     );
   }
@@ -250,6 +268,39 @@ class utility {
     await EmailClient.sendEmail(msg);
 
     return true;
+  }
+
+  /** @description Send email with reset password link
+   *  @param {String} Email - Where the email will be sent
+   *  @returns {Promise}
+   *  @resolves {Boolean}
+   */
+  async sendResetPasswordEmail({ Email }) {
+    try {
+      // Sanity check
+      if (!Email) {
+        throw new Error(
+          "Must provide required parameters to SendVerificationEmail method"
+        );
+      }
+
+      const resetToken = await this.createResetPasswordToken(Email);
+      // Send email to user asking to confirm email
+      const msg = {
+        to: Email,
+        from: "no-reply@sfyt.com",
+        subject: "SFYT Account Password Reset",
+        text: EmailClient.resetPasswordEmail(resetToken),
+        html: EmailClient.resetPasswordEmailHTML(resetToken)
+      };
+
+      await EmailClient.sendEmail(msg);
+
+      return true;
+    } catch (err) {
+      // TODO: Proper error handling here
+      return false;
+    }
   }
 }
 
