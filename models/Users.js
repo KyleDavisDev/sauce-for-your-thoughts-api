@@ -82,22 +82,30 @@ exports.Insert = async function({ Email, Password, DisplayName }) {
 
 /** @description Check if user exists and is active in the DB
  *  @param {Number} UserID - user's id
+ *  @param {String} Email - user's email
  *  @return {Promise} promise
  *  @resolves {Boolean} Wether or not user exists and it active in DB
  */
-exports.DoesUserExist = async function({ UserID }) {
+exports.DoesUserExist = async function({ UserID, Email }) {
+  // 1) Sanity check
+  if (!UserID && !Email) {
+    throw new Error("Must provide required parameters to DoesUserExist method");
+  }
+
+  // 2) Query DB
   const rows = await DB.query(
     `SELECT 
       COUNT(*) AS UserExists
     FROM
       Users
     WHERE
-      UserID = ?
+      (UserID = ? 
+      OR Email = ?)
       AND IsActive = 1`,
-    [UserID]
+    [UserID, Email]
   );
 
-  // Return boolean if user exists
+  // 3) Return boolean if user exists
   return rows && rows[0] && rows[0].UserExists === 1;
 };
 
