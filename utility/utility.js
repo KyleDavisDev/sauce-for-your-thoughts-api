@@ -48,6 +48,9 @@ class utility {
   generateResponseStatusCode(err) {
     switch (err) {
       case "TokenExpiredError":
+      case "Unable to validate your request. Your token may be expired, please try again.":
+      case "Could not validate token.":
+      case "Error processing your request. Please try again.":
         return UNAUTHORIZED;
 
       case "Oops! Your URL may be expired or invalid. Please request a new verification email and try again.":
@@ -143,7 +146,7 @@ class utility {
    *  @returns {Promise}
    *  @resolves {String} JWT
    */
-  async createEmailToken(email) {
+  async createConfirmEmailToken(email) {
     return jwt.sign(
       {
         user: email
@@ -155,12 +158,12 @@ class utility {
     );
   }
 
-  /** @description Create an Reset Password JWT
+  /** @description Create a Password Reset JWT
    *  @param {String} email - an identifiable user email
    *  @returns {Promise}
    *  @resolves {String} JWT
    */
-  async createResetPasswordToken(email) {
+  async createPasswordResetToken(email) {
     return jwt.sign(
       {
         user: email
@@ -242,20 +245,57 @@ class utility {
     }
   }
 
+  /** @description Check to see if the password reset token is legit
+   *  @param {String} token - the token being verified
+   *  @returns {[Boolean, STring]} whether token is legit or not, the user's email
+   */
+  async validatePasswordResetToken(token) {
+    try {
+      // 1) Grab email from jwt
+      const { user: email } = await jwt.decode(token);
+      if (!email) {
+        return [false, 0];
+      }
+      console.log(email);
+
+      // 2) Verify person exists
+      const doesUserExist = await Users.DoesUserExist({ Email: email });
+      if (!doesUserExist) {
+        return [false, 0];
+      }
+      console.log("does user exist", doesUserExist);
+
+      // 4) Check if token is legit
+      const isTrusted = !!jwt.verify(
+        token,
+        process.env.SECRET_PASSWORD_RESET + email
+      );
+
+      // 5) Return
+      return [isTrusted, email];
+    } catch (err) {
+      // TODO: Log error
+
+      // token is not legit or something else happened
+      return [false, 0];
+    }
+  }
+
   /** @description Send email verification to confirm account creation
    *  @param {String} Email - Where the email will be sent
    *  @returns {Promise}
    *  @resolves {Boolean}
    */
   async sendVerificationEmail({ Email }) {
-    // Sanity check
+    // 1) Sanity check
     if (!Email) {
       throw new Error(
         "Must provide required parameters to SendVerificationEmail method"
       );
     }
 
-    const emailToken = await this.createEmailToken(Email);
+    // 2) Create jwt
+    const emailToken = await this.createConfirmEmailToken(Email);
     // Send email to user asking to confirm email
     const msg = {
       to: Email,
@@ -284,7 +324,7 @@ class utility {
         );
       }
 
-      const resetToken = await this.createResetPasswordToken(Email);
+      const resetToken = await this.createPasswordResetToken(Email);
       // Send email to user asking to confirm email
       const msg = {
         to: Email,
