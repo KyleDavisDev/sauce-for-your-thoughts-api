@@ -194,7 +194,18 @@ router.post(
 );
 
 // 1. Send password reset email
-router.post("/api/user/password/reset", authController.sendPasswordReset);
+router.post(
+  "/api/user/password/requestreset",
+  authController.requestPasswordReset
+);
+
+// 1. Validate info
+// 2. Update password
+router.post(
+  "/api/user/password/reset",
+  userController.validatePasswordReset,
+  userController.updatePassword
+);
 
 // 1. Check is user.token is legit, place user's _id onto user
 router.post("/api/user/isloggedin", authController.isLoggedIn);
