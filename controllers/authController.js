@@ -690,10 +690,14 @@ exports.resendEmail = resendEmail = async (req, res, next) => {
 };
 
 /** @description Sends a password reset email
- *  @param {String} req.body.user.email - Email to send the password reset to
+ *  @param {String} req.body.email - Email to send the password reset to
  *  @return Continues on next middleware OR returns isGood object
  */
-exports.sendPasswordReset = sendPasswordReset = async (req, res, next) => {
+exports.requestPasswordReset = requestPasswordReset = async (
+  req,
+  res,
+  next
+) => {
   try {
     // 1. Grab email from user
     let { email } = req.body;
@@ -711,10 +715,10 @@ exports.sendPasswordReset = sendPasswordReset = async (req, res, next) => {
     }
     email = email.toLowerCase();
 
-    // 2. Check if the person exists or not. We don't actually care what their ID is
-    const doesPersonExist = !!(await Users.FindUserIDByUnique({
+    // 2. Check if the person exists or not.
+    const doesPersonExist = await Users.DoesUserExist({
       Email: email
-    }));
+    });
     if (!doesPersonExist) {
       // Person doesn't exist. End here. Send false positive.
       const data = {
