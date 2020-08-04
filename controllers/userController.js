@@ -159,6 +159,57 @@ exports.validatePasswordUpdate = async (req, res, next) => {
   }
 };
 
+/** @description Validate reset password information
+ *  @param {String} jwt - unique user jwt
+ *  @param {String} password - new password
+ *  @param {String} confirmPassword - confirm password
+ *  @return Continues on next middleware OR returns error
+ */
+exports.validatePasswordReset = async (req, res, next) => {
+  try {
+    // 1) Make sure new password is sufficiently long
+    if (req.body.password.length < MIN_PASSWORD_LENGTH) {
+      throw new Error(
+        `Your new password is too weak! Please make your password over ${MIN_PASSWORD_LENGTH} characters long.`
+      );
+    }
+
+    // 2 )Make sure confirm password is sufficiently long
+    if (req.body.confirmPassword.length < MIN_PASSWORD_LENGTH) {
+      throw new Error(
+        `Your password is too weak! Please make your password over ${MIN_PASSWORD_LENGTH} characters long.`
+      );
+    }
+
+    // 3) Make sure passwords match
+    if (!validator.equals(req.body.password + "!", req.body.confirmPassword)) {
+      throw new Error("New passwords do not match. Please try again.");
+    }
+
+    // 4) confirm JWT
+    const { jwt } = req.body;
+    const [isTrusted, email] = await Utility.validatePasswordResetToken(jwt);
+    if (isTrusted) {
+      throw new Error("Could not validate token.");
+    }
+
+    // 5) Attach expected data to request
+    req.body.user = {};
+    req.body.user.UserID = await User.FindUserIDByUnique({ Email: email });
+    req.body.user.newPassword = req.body.password;
+
+    // 6) Keep going
+    return next();
+  } catch (err) {
+    const data = {
+      isGood: false,
+      msg: err.message || "Error processing your request. Please try again."
+    };
+    const resStatus = Utility.generateResponseStatusCode(data.msg);
+    return res.status(resStatus).send(data);
+  }
+};
+
 /** @description Validate displayName information before moving to next middleware
  *  @param {String} req.body.user.UserID - unique user identifer
  *  @param {String} req.body.user.displayName - new display name
@@ -416,7 +467,7 @@ exports.updatePassword = updatePassword = async (req, res, next) => {
   try {
     // Get user's ID and make sure we have something
     const { UserID } = req.body.user;
-    console.log(UserID);
+
     if (!UserID) {
       const data = {
         isGood: false,
