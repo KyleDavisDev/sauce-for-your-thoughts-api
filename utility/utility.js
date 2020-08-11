@@ -168,7 +168,7 @@ class utility {
       {
         user: email
       },
-      process.env.SECRET_PASSWORD_RESET,
+      process.env.SECRET_PASSWORD_RESET + email,
       {
         expiresIn: JWT_RESET_PASSWORD_EXPIRES_IN
       }
@@ -256,14 +256,12 @@ class utility {
       if (!email) {
         return [false, 0];
       }
-      console.log(email);
 
       // 2) Verify person exists
       const doesUserExist = await Users.DoesUserExist({ Email: email });
       if (!doesUserExist) {
         return [false, 0];
       }
-      console.log("does user exist", doesUserExist);
 
       // 4) Check if token is legit
       const isTrusted = !!jwt.verify(
