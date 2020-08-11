@@ -99,10 +99,10 @@ const Utility = {
      *  @returns {Promise}
      *  @resolves {String[]} array of JWT
      */
-    async tokens(userID, secret, secret2) {
-      const createToken = this.createAuthToken(userID, secret);
+    tokens: async (userID, secret, secret2) => {
+      const createToken = Utility.create.authToken(userID, secret);
 
-      const createRefreshToken = this.createRefreshToken(userID, secret2);
+      const createRefreshToken = Utility.create.refreshToken(userID, secret2);
 
       return Promise.all([createToken, createRefreshToken]);
     },
@@ -290,7 +290,7 @@ const Utility = {
      *  @returns {Promise}
      *  @resolves {Boolean}
      */
-    async verificationEmail({ Email }) {
+    verificationEmail: async ({ Email }) => {
       // 1) Sanity check
       if (!Email) {
         throw new Error(
@@ -299,8 +299,9 @@ const Utility = {
       }
 
       // 2) Create jwt
-      const emailToken = await this.createConfirmEmailToken(Email);
-      // Send email to user asking to confirm email
+      const emailToken = await Utility.create.confirmEmailToken(Email);
+
+      // 3) Create message
       const msg = {
         to: Email,
         from: "no-reply@sfyt.com",
@@ -309,6 +310,7 @@ const Utility = {
         html: EmailClient.registrationEmailHTML(emailToken)
       };
 
+      // 4) Send email
       await EmailClient.sendEmail(msg);
 
       return true;
@@ -319,7 +321,7 @@ const Utility = {
      *  @returns {Promise}
      *  @resolves {Boolean}
      */
-    async resetPasswordEmail({ Email }) {
+    resetPasswordEmail: async ({ Email }) => {
       try {
         // Sanity check
         if (!Email) {
@@ -328,7 +330,7 @@ const Utility = {
           );
         }
 
-        const resetToken = await this.createPasswordResetToken(Email);
+        const resetToken = await Utility.create.passwordResetToken(Email);
         // Send email to user asking to confirm email
         const msg = {
           to: Email,
@@ -342,6 +344,7 @@ const Utility = {
 
         return true;
       } catch (err) {
+        console.log(err);
         // TODO: Proper error handling here
         return false;
       }
