@@ -23,7 +23,7 @@ const JWT_RESET_PASSWORD_EXPIRES_IN = 60 * 60 * 1; // 1 hour
 class utility {
   constructor() {}
 
-  /** @description Get all reviews related to specific sauce slug.
+  /** @description Loop through middleware stack and check if the current middleware is at the end or not
    *  @param {String} name - Name of current middleware
    *  @param {Layer[]} stack - Array of middleware layers
    *  @return {Boolean} whether or not the current middleware is the last or not
@@ -31,8 +31,7 @@ class utility {
   isLastMiddlewareInStack({ name, stack }) {
     let position = 0;
     for (let i = 0, len = stack.length; i < len; i++) {
-      const middleware = stack[i];
-      if (middleware.name === name) {
+      if (stack[i].name === name) {
         position = i;
         break;
       }
