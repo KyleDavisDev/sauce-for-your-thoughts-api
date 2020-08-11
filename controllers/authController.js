@@ -1,10 +1,123 @@
-const jwt = require("jsonwebtoken");
+const validator = require("validator");
 const Users = require("../models/Users");
 const {
   Utility,
   JWT_AUTH_EXPIRES_IN,
   JWT_REFRESH_EXPIRES_IN
 } = require("../utility/utility");
+const MIN_PASSWORD_LENGTH = Users.MIN_PASSWORD_LENGTH;
+
+/** @description Validate reset password information
+ *  @param {String} jwt - unique user jwt
+ *  @param {String} password - new password
+ *  @param {String} confirmPassword - confirm password
+ *  @return Continues on next middleware OR returns error
+ */
+exports.validatePasswordReset = async (req, res, next) => {
+  console.log("1");
+  try {
+    // 1) Make sure new password is sufficiently long
+    if (req.body.password.length < MIN_PASSWORD_LENGTH) {
+      throw new Error(
+        `Your new password is too weak! Please make your password over ${MIN_PASSWORD_LENGTH} characters long.`
+      );
+    }
+
+    // 2 )Make sure confirm password is sufficiently long
+    if (req.body.confirmPassword.length < MIN_PASSWORD_LENGTH) {
+      throw new Error(
+        `Your password is too weak! Please make your password over ${MIN_PASSWORD_LENGTH} characters long.`
+      );
+    }
+
+    // 3) Make sure passwords match
+    if (!validator.equals(req.body.password, req.body.confirmPassword)) {
+      throw new Error("New passwords do not match. Please try again.");
+    }
+
+    // 4) confirm JWT
+    const { jwt } = req.body;
+    const [isTrusted, email] = await Utility.validatePasswordResetToken(jwt);
+    if (!isTrusted) {
+      throw new Error(
+        "Could not validate your token. It may be expired or your password has already been updated."
+      );
+    }
+
+    // 5) Attach expected data to request
+    req.body.user = {};
+    req.body.user.UserID = await Users.FindUserIDByUnique({ Email: email });
+    req.body.user.password = req.body.password;
+
+    // 6) Keep going
+    return next();
+  } catch (err) {
+    // TODO: Log error into DB
+    const data = {
+      isGood: false,
+      msg: err.message || "Error processing your request. Please try again."
+    };
+    const resStatus = Utility.generateResponseStatusCode(data.msg);
+    return res.status(resStatus).send(data);
+  }
+};
+
+/** @description Validate password update info
+ *  @param {String} req.body.user.password - current password
+ *  @param {String} req.body.user.newPassword - updated password
+ *  @param {String} req.body.user.confirmNewPassword - confirm updated password
+ *  @param {String} req.body.user.UserID - person's unique id
+ *  @return Continues on next middleware OR returns error
+ */
+exports.validatePasswordUpdate = async (req, res, next) => {
+  // Make sure new password is sufficiently long
+  if (req.body.user.newPassword.length < MIN_PASSWORD_LENGTH) {
+    throw new Error(
+      `Your new password is too weak! Please make your password over ${MIN_PASSWORD_LENGTH} characters long.`
+    );
+  }
+
+  // Make sure password is sufficiently long
+  if (req.body.user.password.length < MIN_PASSWORD_LENGTH) {
+    throw new Error(
+      `Your password is too weak! Please make your password over ${MIN_PASSWORD_LENGTH} characters long.`
+    );
+  }
+
+  // Make sure new passwords match
+  if (
+    !validator.equals(
+      req.body.user.newPassword,
+      req.body.user.confirmNewPassword
+    )
+  ) {
+    throw new Error("New passwords do not match. Please try again.");
+  }
+
+  try {
+    const { password, UserID } = req.body.user;
+    // Make sure passed password is good
+    const user = await Users.AuthenticateUser({ UserID, password });
+
+    // Make sure user was found
+    if (!user) {
+      throw new Error("Could not authenticate user. Please try agian");
+    }
+
+    // Keep going
+    return next();
+  } catch (err) {
+    if (err.code === "ECONNREFUSED") {
+      err.message = "Connection error. Please try again";
+    }
+    const data = {
+      isGood: false,
+      msg: err.message || "Connection error. Please try again"
+    };
+    const resStatus = Utility.generateResponseStatusCode(data.msg);
+    return res.status(resStatus).send(data);
+  }
+};
 
 /** @description Log user in by generating token
  *  @param {Object} req.body.user - expects to find user obj. Will check if stringified if not immediately accessible
@@ -364,121 +477,88 @@ exports.isAdmin = isAdmin = async (req, res, next) => {
   }
 };
 
-exports.forgot = async (req, res) => {
+/** @description Update a specific user's password
+ *  userController.validatePasswordUpdate should be called before this.
+ *  @param {String} req.body.user.UserID - unique user identifer
+ *  @param {String} req.body.user.newPassword - new password
+ *  @return Continues on next middleware OR returns isGood object
+ */
+exports.updatePassword = updatePassword = async (req, res, next) => {
   try {
-    const user = await User.findOne({ email: req.body.user.email });
-    // if user not found we will send false positive object but actually send no email
-    // doing this check early will also prevent server from having to use resouces to create new token
-    if (!user) {
-      const data = { isGood: true, msg: "An email has been sent to you." };
-      return res.send(data);
-    }
+    // Get user's ID and make sure we have something
+    const { UserID } = req.body.user;
 
-    // create a token string
-    const payload = {
-      sub: user.email
-    };
-    const token = jwt.sign(payload, process.env.SECRET);
-
-    // assign token and current date in DB to check against later
-    user.resetPasswordToken = token;
-    user.resetPasswordExpires = Date.now() + 3600000;
-    await user.save();
-
-    // create URL and email to user email
-    const resetURL = `http://localhost:8080/account/reset/${
-      user.resetPasswordToken
-    }`;
-    await mail.send({
-      user,
-      subject: "Password reset",
-      resetURL,
-      filename: "password-reset"
-    });
-
-    // send legitmate data
-    const data = { isGood: true, msg: "An email has been sent to you." };
-    return res.send(data);
-  } catch (err) {
-    res.send(err);
-  }
-};
-
-// called to verify if token is legit or not when user first lands on reset page
-exports.validateResetToken = async (req, res) => {
-  try {
-    // find if user exists w/ matching token and within time limit of 1hr
-    const user = await User.findOne({
-      resetPasswordToken: req.body.token,
-      resetPasswordExpires: { $gt: Date.now() }
-    });
-
-    if (!user) {
+    if (!UserID) {
       const data = {
         isGood: false,
-        msg: "Password reset token has expired or is incorrect."
+        msg: "Could not verify user as legit. Please log out and try again."
       };
-      res.send(data);
-      return;
+      return res.status(400).send(data);
+    }
+    // Grab email and make sure we have soemthing
+    const { newPassword } = req.body.user;
+    if (!newPassword) {
+      const data = {
+        isGood: false,
+        msg: "Could not find a new password to update to."
+      };
+      return res.status(400).send(data);
     }
 
-    const data = { isGood: true, msg: "Please enter a new password." };
-    res.send(data);
-  } catch (err) {
-    res.send(err);
-  }
-};
+    // Update the password, make sure it worked.
+    const isGood = await Users.UpdatePassword({
+      UserID,
+      Password: newPassword
+    });
+    if (!isGood) {
+      const data = {
+        isGood: false,
+        msg:
+          "Could not update password. User's account may be locked or inactive."
+      };
+      return res.status(401).send(data);
+    }
 
-// checks if two submitted passwords are equal
-exports.confirmPasswords = (req, res, next) => {
-  if (req.body.password === req.body.confirmPassword) {
-    next(); // keep going
-    return;
-  }
+    // create auth token and refresh token
+    const [token, refreshToken] = await Utility.createTokens(
+      UserID,
+      process.env.SECRET,
+      process.env.SECRET2 + newPassword
+    );
 
-  // passwords didn't match
-  const data = {
-    isGood: false,
-    msg: "Passwords did not match. Please try again."
-  };
-  return res.status(401).send(data);
-};
-
-// reset password
-exports.updatePassword = async (req, res, next) => {
-  try {
-    const user = await User.findOne({
-      resetPasswordToken: req.body.token,
-      resetPasswordExpires: { $gt: Date.now() }
+    // create cookies from tokens
+    res.cookie("sfyt-api-token", token, {
+      maxAge: 1000 * JWT_AUTH_EXPIRES_IN, // time, in milliseconds, for token expiration
+      httpOnly: true,
+      path: "/"
+    });
+    res.cookie("sfyt-api-refresh-token", refreshToken, {
+      maxAge: 1000 * JWT_REFRESH_EXPIRES_IN, // time, in milliseconds, for token expiration
+      httpOnly: true,
+      path: "/"
+    });
+    res.cookie("has-refresh-token", 1, {
+      maxAge: 1000 * JWT_REFRESH_EXPIRES_IN, // time, in milliseconds, for token expiration
+      httpOnly: false,
+      path: "/"
     });
 
-    if (!user) {
-      res.send({
-        isGood: false,
-        msg: "User was not found or token has expired."
-      });
-      return;
+    // Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "updatePassword",
+      stack: req.route.stack
+    });
+
+    // If we are end of stack, go to client
+    if (isLastMiddlewareInStack) {
+      //return to client
+      return res.status(200).send(Object.assign({}, { isGood: true }));
+    } else {
+      // Go to next middleware
+      return next();
     }
-
-    // save pw
-    const setPassword = promisify(user.setPassword, user);
-    await setPassword(req.body.password);
-
-    // remove token and token expiration from db
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
-    await user.save();
-
-    // log user in -- need to bind email to req.body first
-    // can clean up req.body too since local passport only needs email and password
-    req.body.email = user.email;
-    req.body.confirmPassword = undefined;
-    req.body.token = undefined;
-
-    next();
-    return;
   } catch (err) {
-    res.send(err);
+    console.log(err);
   }
 };
 
@@ -670,7 +750,7 @@ exports.resendEmail = resendEmail = async (req, res, next) => {
       });
     } else {
       // Get user's email and attach to body
-      const email = await User.FindUserEmail({
+      const email = await Users.FindUserEmail({
         DisplayName: displayName
       });
 
@@ -767,6 +847,99 @@ exports.requestPasswordReset = requestPasswordReset = async (
     const data = {
       isGood: true,
       msg: "Password reset email has been sent! Thank you!"
+    };
+    const resStatus = Utility.generateResponseStatusCode(data.msg);
+    return res.status(resStatus).send(data);
+  }
+};
+
+/** @description Reset a specific user's password
+ *  authController.validatePasswordReset should be called before this.
+ *  @param {String} req.body.user.UserID - unique user identifer
+ *  @param {String} req.body.user.password - new password
+ *  @return Continues on next middleware OR returns isGood object
+ */
+exports.resetPassword = resetPassword = async (req, res, next) => {
+  console.log("2");
+  try {
+    // 1) Grab user's ID and make sure we have something
+    const { UserID } = req.body.user;
+    if (!UserID) {
+      const data = {
+        isGood: false,
+        msg: "Could not verify user as legit. Please log out and try again."
+      };
+      return res.status(400).send(data);
+    }
+
+    // 2) Grab email and make sure we have soemthing
+    const { password } = req.body.user;
+    if (!password) {
+      const data = {
+        isGood: false,
+        msg: "Could not find a new password to update to."
+      };
+      return res.status(400).send(data);
+    }
+
+    // 3) Update the password, make sure it worked.
+    const isGood = await Users.UpdatePassword({ UserID, Password: password });
+    if (!isGood) {
+      const data = {
+        isGood: false,
+        msg:
+          "Could not update password. User's account may be locked or inactive."
+      };
+      return res.status(401).send(data);
+    }
+
+    // 4) Create auth token and refresh token, assign tokens
+    const [token, refreshToken] = await Utility.createTokens(
+      UserID,
+      process.env.SECRET,
+      process.env.SECRET2 + password
+    );
+    res.cookie("sfyt-api-token", token, {
+      maxAge: 1000 * JWT_AUTH_EXPIRES_IN, // time, in milliseconds, for token expiration
+      httpOnly: true,
+      path: "/"
+    });
+    res.cookie("sfyt-api-refresh-token", refreshToken, {
+      maxAge: 1000 * JWT_REFRESH_EXPIRES_IN, // time, in milliseconds, for token expiration
+      httpOnly: true,
+      path: "/"
+    });
+    res.cookie("has-refresh-token", 1, {
+      maxAge: 1000 * JWT_REFRESH_EXPIRES_IN, // time, in milliseconds, for token expiration
+      httpOnly: false,
+      path: "/"
+    });
+
+    // 5) Find out if more middleware or if this is last stop.
+    const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
+      name: "resetPassword",
+      stack: req.route.stack
+    });
+    if (isLastMiddlewareInStack) {
+      //return to client
+      const data = {
+        isGood: true,
+        msg: "Your password has been updated! Thank you."
+      };
+      return res.status(200).send(data);
+    } else {
+      // Go to next middleware
+      return next();
+    }
+  } catch (err) {
+    // TODO: Log error in a DB
+
+    if (err.code === "ECONNREFUSED") {
+      err.message = "Connection error. Please try again";
+    }
+    const data = {
+      isGood: false,
+      msg: err.message || "Connection error. Please try again"
     };
     const resStatus = Utility.generateResponseStatusCode(data.msg);
     return res.status(resStatus).send(data);
