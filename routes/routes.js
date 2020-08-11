@@ -150,8 +150,8 @@ router.post(
 router.post(
   "/api/user/update/password",
   authController.isLoggedIn,
-  userController.validatePasswordUpdate,
-  userController.updatePassword
+  authController.validatePasswordUpdate,
+  authController.updatePassword
 );
 
 // 1. Validate user
@@ -195,16 +195,16 @@ router.post(
 
 // 1. Send password reset email
 router.post(
-  "/api/user/password/requestreset",
+  "/api/user/requestreset/password",
   authController.requestPasswordReset
 );
 
 // 1. Validate info
-// 2. Update password
+// 2. Reset password
 router.post(
-  "/api/user/password/reset",
-  userController.validatePasswordReset,
-  userController.updatePassword
+  "/api/user/reset/password",
+  authController.validatePasswordReset,
+  authController.resetPassword
 );
 
 // 1. Check is user.token is legit, place user's _id onto user
