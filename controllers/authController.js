@@ -14,7 +14,6 @@ const MIN_PASSWORD_LENGTH = Users.MIN_PASSWORD_LENGTH;
  *  @return Continues on next middleware OR returns error
  */
 exports.validatePasswordReset = async (req, res, next) => {
-  console.log("1");
   try {
     // 1) Make sure new password is sufficiently long
     if (req.body.password.length < MIN_PASSWORD_LENGTH) {
@@ -557,9 +556,7 @@ exports.updatePassword = updatePassword = async (req, res, next) => {
       // Go to next middleware
       return next();
     }
-  } catch (err) {
-    console.log(err);
-  }
+  } catch (err) {}
 };
 
 /** @description Check if user is eligible to add a sauce or not
@@ -860,7 +857,6 @@ exports.requestPasswordReset = requestPasswordReset = async (
  *  @return Continues on next middleware OR returns isGood object
  */
 exports.resetPassword = resetPassword = async (req, res, next) => {
-  console.log("2");
   try {
     // 1) Grab user's ID and make sure we have something
     const { UserID } = req.body.user;
@@ -893,29 +889,7 @@ exports.resetPassword = resetPassword = async (req, res, next) => {
       return res.status(401).send(data);
     }
 
-    // 4) Create auth token and refresh token, assign tokens
-    const [token, refreshToken] = await Utility.createTokens(
-      UserID,
-      process.env.SECRET,
-      process.env.SECRET2 + password
-    );
-    res.cookie("sfyt-api-token", token, {
-      maxAge: 1000 * JWT_AUTH_EXPIRES_IN, // time, in milliseconds, for token expiration
-      httpOnly: true,
-      path: "/"
-    });
-    res.cookie("sfyt-api-refresh-token", refreshToken, {
-      maxAge: 1000 * JWT_REFRESH_EXPIRES_IN, // time, in milliseconds, for token expiration
-      httpOnly: true,
-      path: "/"
-    });
-    res.cookie("has-refresh-token", 1, {
-      maxAge: 1000 * JWT_REFRESH_EXPIRES_IN, // time, in milliseconds, for token expiration
-      httpOnly: false,
-      path: "/"
-    });
-
-    // 5) Find out if more middleware or if this is last stop.
+    // 4) Find out if more middleware or if this is last stop.
     const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
       name: "resetPassword",
       stack: req.route.stack
