@@ -36,7 +36,7 @@ exports.validatePasswordReset = async (req, res, next) => {
 
     // 4) confirm JWT
     const { jwt } = req.body;
-    const [isTrusted, email] = await Utility.validatePasswordResetToken(jwt);
+    const [isTrusted, email] = await Utility.validate.passwordResetToken(jwt);
     if (!isTrusted) {
       throw new Error(
         "Could not validate your token. It may be expired or your password has already been updated."
@@ -56,7 +56,7 @@ exports.validatePasswordReset = async (req, res, next) => {
       isGood: false,
       msg: err.message || "Error processing your request. Please try again."
     };
-    const resStatus = Utility.generateResponseStatusCode(data.msg);
+    const resStatus = Utility.generate.responseStatusCode(data.msg);
     return res.status(resStatus).send(data);
   }
 };
@@ -113,7 +113,7 @@ exports.validatePasswordUpdate = async (req, res, next) => {
       isGood: false,
       msg: err.message || "Connection error. Please try again"
     };
-    const resStatus = Utility.generateResponseStatusCode(data.msg);
+    const resStatus = Utility.generate.responseStatusCode(data.msg);
     return res.status(resStatus).send(data);
   }
 };
@@ -162,7 +162,7 @@ exports.login = login = async (req, res, next) => {
     const isAdmin = await Users.IsAdmin({ UserID: user.UserID });
 
     // create auth token and refresh token
-    const [token, refreshToken] = await Utility.createTokens(
+    const [token, refreshToken] = await Utility.create.tokens(
       user.UserID,
       process.env.SECRET,
       process.env.SECRET2 + user.Password
@@ -297,7 +297,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
           isGood: false,
           msg: "Could not verify your account or your account is disabled."
         };
-        const errCode = Utility.generateResponseStatusCode(data.msg);
+        const errCode = Utility.generate.responseStatusCode(data.msg);
         return res.status(errCode).send(data);
       }
 
@@ -308,7 +308,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
           isGood: false,
           msg: "Could not find your account or your account is disabled."
         };
-        const errCode = Utility.generateResponseStatusCode(data.msg);
+        const errCode = Utility.generate.responseStatusCode(data.msg);
         return res.status(errCode).send(data);
       }
 
@@ -338,7 +338,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
         isGood: false,
         msg: "Your login has expired. Please relogin and try again."
       };
-      const errCode = Utility.generateResponseStatusCode(data.msg);
+      const errCode = Utility.generate.responseStatusCode(data.msg);
       return res.status(errCode).send(data);
     }
   } else {
@@ -347,7 +347,7 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
       isGood: false,
       msg: "Your login has expired. Please relogin and try again."
     };
-    const errCode = Utility.generateResponseStatusCode(data.msg);
+    const errCode = Utility.generate.responseStatusCode(data.msg);
     return res.status(errCode).send(data);
   }
 };
@@ -365,14 +365,14 @@ exports.refreshAuthToken = async (req, res, next) => {
         msg: "Could not find expected cookies. Please try to relogin."
       };
       // generate specific status code
-      const responseCode = Utility.generateResponseStatusCode(data.msg);
+      const responseCode = Utility.generate.responseStatusCode(data.msg);
       // generate specific error code
-      data.errorCode = Utility.generateErrorCode(data.msg);
+      data.errorCode = Utility.generate.errorCode(data.msg);
       return res.status(responseCode).send(data);
     }
 
     // 2) Check if refresh token is valid or not
-    const [isRefreshTokenValid, userID] = await Utility.validateRefreshToken(
+    const [isRefreshTokenValid, userID] = await Utility.validate.refreshToken(
       refreshToken
     );
     if (!isRefreshTokenValid) {
@@ -380,13 +380,16 @@ exports.refreshAuthToken = async (req, res, next) => {
         isGood: false,
         msg: "Could not verify your account or your account is disabled."
       };
-      const errCode = Utility.generateResponseStatusCode(data.msg);
+      const errCode = Utility.generate.responseStatusCode(data.msg);
 
       return res.status(errCode).send(data);
     }
 
     // 3) Create new auth token
-    const authToken = await Utility.createAuthToken(userID, process.env.SECRET);
+    const authToken = await Utility.create.authToken(
+      userID,
+      process.env.SECRET
+    );
     res.cookie("sfyt-api-token", authToken, {
       maxAge: 1000 * JWT_AUTH_EXPIRES_IN, // time, in milliseconds, for token expiration
       httpOnly: true,
@@ -406,7 +409,7 @@ exports.refreshAuthToken = async (req, res, next) => {
       isGood: false,
       msg: "Could not verify your account or your account is disabled."
     };
-    const errCode = Utility.generateResponseStatusCode(data.msg);
+    const errCode = Utility.generate.responseStatusCode(data.msg);
     return res.status(errCode).send(data);
   }
 };
@@ -519,7 +522,7 @@ exports.updatePassword = updatePassword = async (req, res, next) => {
     }
 
     // create auth token and refresh token
-    const [token, refreshToken] = await Utility.createTokens(
+    const [token, refreshToken] = await Utility.create.tokens(
       UserID,
       process.env.SECRET,
       process.env.SECRET2 + newPassword
@@ -642,14 +645,14 @@ exports.confirmEmail = confirmEmail = async (req, res, next) => {
     }
 
     // 2) Turn JWT into something usable
-    const [isTrusted, userID] = await Utility.validateEmailToken(JWTEmail);
+    const [isTrusted, userID] = await Utility.validate.emailToken(JWTEmail);
     if (!isTrusted) {
       const data = {
         isGood: false,
         msg:
           "Oops! Your URL may be expired or invalid. Please request a new verification email and try again."
       };
-      const errCode = Utility.generateResponseStatusCode(data.msg);
+      const errCode = Utility.generate.responseStatusCode(data.msg);
       return res.status(errCode).send(data);
     }
 
@@ -664,7 +667,7 @@ exports.confirmEmail = confirmEmail = async (req, res, next) => {
         msg:
           "Oops! Your URL may be expired or invalid. Please request a new verification email and try again."
       };
-      const errCode = Utility.generateResponseStatusCode(data.msg);
+      const errCode = Utility.generate.responseStatusCode(data.msg);
       return res.status(errCode).send(data);
     }
 
@@ -694,7 +697,7 @@ exports.confirmEmail = confirmEmail = async (req, res, next) => {
       msg:
         "Oops! Your URL may be expired or invalid. Please request a new verification email and try again."
     };
-    const errCode = Utility.generateResponseStatusCode(data.msg);
+    const errCode = Utility.generate.responseStatusCode(data.msg);
     return res.status(errCode).send(data);
   }
 };
@@ -718,7 +721,7 @@ exports.resendEmail = resendEmail = async (req, res, next) => {
       return res.status(401).send(data);
     }
 
-    const couldSendVerification = await Utility.sendVerificationEmail({
+    const couldSendVerification = await Utility.send.verificationEmail({
       Email
     });
 
@@ -786,7 +789,7 @@ exports.requestPasswordReset = requestPasswordReset = async (
           isGood: true,
           msg: "Password reset email has been sent! Thank you!"
         };
-        const resStatus = Utility.generateResponseStatusCode(data.msg);
+        const resStatus = Utility.generate.responseStatusCode(data.msg);
         return res.status(resStatus).send(data);
       }
     }
@@ -802,12 +805,12 @@ exports.requestPasswordReset = requestPasswordReset = async (
         isGood: true,
         msg: "Password reset email has been sent! Thank you!"
       };
-      const resStatus = Utility.generateResponseStatusCode(data.msg);
+      const resStatus = Utility.generate.responseStatusCode(data.msg);
       return res.status(resStatus).send(data);
     }
 
     // 3. Send email to person
-    const couldSendVerification = await Utility.sendResetPasswordEmail({
+    const couldSendVerification = await Utility.send.resetPasswordEmail({
       Email: email
     });
     if (!couldSendVerification) {
@@ -817,7 +820,7 @@ exports.requestPasswordReset = requestPasswordReset = async (
         msg:
           "We tried to email your account but something went wrong. Please try again."
       };
-      const resStatus = Utility.generateResponseStatusCode(data.msg);
+      const resStatus = Utility.generate.responseStatusCode(data.msg);
       return res.status(resStatus).send(data);
     }
 
@@ -833,7 +836,7 @@ exports.requestPasswordReset = requestPasswordReset = async (
         isGood: true,
         msg: "Password reset email has been sent! Thank you!"
       };
-      const resStatus = Utility.generateResponseStatusCode(data.msg);
+      const resStatus = Utility.generate.responseStatusCode(data.msg);
       return res.status(resStatus).send(data);
     } else {
       // Go to next middleware
@@ -845,7 +848,7 @@ exports.requestPasswordReset = requestPasswordReset = async (
       isGood: true,
       msg: "Password reset email has been sent! Thank you!"
     };
-    const resStatus = Utility.generateResponseStatusCode(data.msg);
+    const resStatus = Utility.generate.responseStatusCode(data.msg);
     return res.status(resStatus).send(data);
   }
 };
@@ -915,7 +918,7 @@ exports.resetPassword = resetPassword = async (req, res, next) => {
       isGood: false,
       msg: err.message || "Connection error. Please try again"
     };
-    const resStatus = Utility.generateResponseStatusCode(data.msg);
+    const resStatus = Utility.generate.responseStatusCode(data.msg);
     return res.status(resStatus).send(data);
   }
 };

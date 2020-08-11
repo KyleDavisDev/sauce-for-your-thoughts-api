@@ -99,7 +99,7 @@ exports.validateEmailUpdate = async (req, res, next) => {
       msg: err.message || "Connection error. Please try again"
     };
     // find appropriate status code number
-    const statusCode = Utility.generateResponseStatusCode(data.msg);
+    const statusCode = Utility.generate.responseStatusCode(data.msg);
 
     // return to client
     return res.status(statusCode).send(data);

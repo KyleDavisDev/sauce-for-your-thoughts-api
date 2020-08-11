@@ -809,7 +809,7 @@ exports.updateSauce = updateSauce = async (req, res, next) => {
         msg: "Oops! Something wasn't found in your request. Please try again."
       };
       // generate specific error code
-      data.errorCode = Utility.generateErrorCode(
+      data.errorCode = Utility.generate.errorCode(
         "Could not required parameters for updateSauce"
       );
       // Send back bad data response
