@@ -162,14 +162,13 @@ exports.login = login = async (req, res, next) => {
     const isAdmin = await Users.IsAdmin({ UserID: user.UserID });
 
     // create auth token and refresh token
-    const [token, refreshToken] = await Utility.create.tokens(
-      user.UserID,
-      process.env.SECRET,
-      process.env.SECRET2 + user.Password
-    );
+    const [apiToken, refreshToken] = await Utility.create.tokens({
+      userID: user.UserID,
+      password: user.Password
+    });
 
     // create cookies from tokens
-    res.cookie("sfyt-api-token", token, {
+    res.cookie("sfyt-api-token", apiToken, {
       maxAge: 1000 * JWT_AUTH_EXPIRES_IN, // time, in milliseconds, for token expiration
       httpOnly: true,
       path: "/"
@@ -199,7 +198,7 @@ exports.login = login = async (req, res, next) => {
       const data = {
         isGood: true,
         msg: "Successfully logged in.",
-        user: { token, displayName, email, avatarURL, isAdmin }
+        user: { token: apiToken, displayName, email, avatarURL, isAdmin }
       };
       // Send back to client
       res.status(200).send(data);
@@ -291,8 +290,9 @@ exports.isLoggedIn = isLoggedIn = async (req, res, next) => {
   if (token) {
     try {
       // 1) Grab userID from token
-      const { user: userID } = jwt.verify(token, process.env.SECRET);
-      if (!userID) {
+      const [isTrusted, userID] = await Utility.validate.APIToken(token);
+
+      if (!isTrusted) {
         const data = {
           isGood: false,
           msg: "Could not verify your account or your account is disabled."
@@ -375,6 +375,7 @@ exports.refreshAuthToken = async (req, res, next) => {
     const [isRefreshTokenValid, userID] = await Utility.validate.refreshToken(
       refreshToken
     );
+
     if (!isRefreshTokenValid) {
       const data = {
         isGood: false,
@@ -386,18 +387,15 @@ exports.refreshAuthToken = async (req, res, next) => {
     }
 
     // 3) Create new auth token
-    const authToken = await Utility.create.authToken(
-      userID,
-      process.env.SECRET
-    );
-    res.cookie("sfyt-api-token", authToken, {
+    const apiToken = await Utility.create.APIToken(userID);
+    res.cookie("sfyt-api-token", apiToken, {
       maxAge: 1000 * JWT_AUTH_EXPIRES_IN, // time, in milliseconds, for token expiration
       httpOnly: true,
       path: "/"
     });
 
     // 4) Return to user
-    return res.status(200).send({ isGood: true, token: authToken });
+    return res.status(200).send({ isGood: true, token: apiToken });
   } catch (err) {
     // set cookies to 'delete'
     res.clearCookie("sfyt-api-refresh-token", { path: "/", maxAge: 0 });
@@ -522,11 +520,10 @@ exports.updatePassword = updatePassword = async (req, res, next) => {
     }
 
     // create auth token and refresh token
-    const [token, refreshToken] = await Utility.create.tokens(
-      UserID,
-      process.env.SECRET,
-      process.env.SECRET2 + newPassword
-    );
+    const [token, refreshToken] = await Utility.create.tokens({
+      userID: UserID,
+      password: process.env.SECRET_REFRESH + newPassword
+    });
 
     // create cookies from tokens
     res.cookie("sfyt-api-token", token, {
