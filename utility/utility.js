@@ -188,14 +188,12 @@ const Utility = {
         if (!user) {
           return [false, 0];
         }
-        console.log(user);
 
         // 2) Verify person exists
         const doesUserExist = await Users.DoesUserExist({ UserID: user });
         if (!doesUserExist) {
           return [false, 0];
         }
-        console.log(doesUserExist);
 
         // 3) Check if token is legit
         const isTrusted = await !!jwt.verify(token, process.env.SECRET_API);
@@ -376,7 +374,6 @@ const Utility = {
 
         return true;
       } catch (err) {
-        console.log(err);
         // TODO: Proper error handling here
         return false;
       }
