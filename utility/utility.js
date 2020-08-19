@@ -94,31 +94,29 @@ const Utility = {
   create: {
     /** @description Create authentication token and reset token
      *  @param {String} userID - an identifiable user string
-     *  @param {String} secret - random, secret string. Used for auth token.
-     *  @param {String} secret2 - random, secret string. Used for refresh token.
+     *  @param {String} password - user's password
      *  @returns {Promise}
-     *  @resolves {String[]} array of JWT
+     *  @resolves {String[APIToken, refreshToken]} array of JWT
      */
-    tokens: async (userID, secret, secret2) => {
-      const createToken = Utility.create.authToken(userID, secret);
+    tokens: async ({ userID, password }) => {
+      const createToken = Utility.create.APIToken(userID);
 
-      const createRefreshToken = Utility.create.refreshToken(userID, secret2);
+      const createRefreshToken = Utility.create.refreshToken(userID, password);
 
       return Promise.all([createToken, createRefreshToken]);
     },
 
     /** @description Create authentication token
      *  @param {String} userID - an identifiable user string
-     *  @param {String} secret - random, secret string. Used for auth token.
      *  @returns {Promise}
      *  @resolves {String} JWT
      */
-    async authToken(userID, secret) {
+    async APIToken(userID) {
       return jwt.sign(
         {
           user: userID
         },
-        secret,
+        process.env.SECRET_API,
         {
           expiresIn: JWT_AUTH_EXPIRES_IN
         }
@@ -127,16 +125,16 @@ const Utility = {
 
     /** @description Create Refresh token
      *  @param {String} userID - an identifiable user string
-     *  @param {String} secret2 - random, secret string. Used for auth token.
+     *  @param {String} password - a user's password.
      *  @returns {Promise}
      *  @resolves {String} JWT
      */
-    async refreshToken(userID, secret2) {
+    async refreshToken(userID, password) {
       return jwt.sign(
         {
           user: userID
         },
-        secret2,
+        process.env.SECRET_REFRESH + password,
         {
           expiresIn: JWT_REFRESH_EXPIRES_IN
         }
@@ -179,6 +177,40 @@ const Utility = {
   },
 
   validate: {
+    /** @description Check to see if the API token is legit or not
+     *  @param {String} token - the API token being verified
+     *  @returns {[Boolean, Number]} whether token is legit or not, the user's ID
+     */
+    async APIToken(token) {
+      try {
+        // 1) Grab email from jwt
+        const { user } = await jwt.decode(token);
+        if (!user) {
+          return [false, 0];
+        }
+        console.log(user);
+
+        // 2) Verify person exists
+        const doesUserExist = await Users.DoesUserExist({ UserID: user });
+        if (!doesUserExist) {
+          return [false, 0];
+        }
+        console.log(doesUserExist);
+
+        // 3) Check if token is legit
+        const isTrusted = await !!jwt.verify(token, process.env.SECRET_API);
+        if (!isTrusted) {
+          return [false, 0];
+        }
+
+        return [isTrusted, user];
+      } catch (err) {
+        // TODO: Log error
+
+        // token is not legit or something else happened
+        return [false, 0];
+      }
+    },
     /** @description Check to see if the refresh token is legit or not
      *  @param {String} token - the refresh token being verified
      *  @returns {[Boolean, Number]} whether token is legit or not, the user's ID
@@ -222,13 +254,13 @@ const Utility = {
         // 1) Grab userID from jwt
         const { user: userID } = await jwt.decode(token);
         if (!userID) {
-          return false;
+          return [false, 0];
         }
 
         // 2) Verify person exists
         const doesUserExist = await Users.DoesUserExist({ UserID: userID });
         if (!doesUserExist) {
-          return false;
+          return [false, 0];
         }
 
         // 3) Grab user from DB
@@ -237,7 +269,7 @@ const Utility = {
         // 4) Check if token is legit
         const isTrusted = !!jwt.verify(
           token,
-          process.env.SECRET2 + user.Password
+          process.env.SECRET_REFRESH + user.Password
         );
 
         return [isTrusted, userID];
