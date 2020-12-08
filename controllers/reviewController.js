@@ -347,18 +347,8 @@ exports.getReviewsBySauceSlug = getReviewsBySauceSlug = async (
     // Find all reviews w/ SauceID
     // If we are getting a single review, pass UserID too.
     const reviews = await Reviews.FindReviewsBySauceID({
-      SauceID,
-      UserID: req.route.path.includes("/review/get")
-        ? res.locals.UserID
-        : undefined
+      SauceID
     });
-
-    // Attach reviews to sauce obj
-    sauce.reviews = [];
-    sauce.reviews = reviews;
-
-    // Attach sauce to res.locals
-    res.locals.sauce = sauce;
 
     // Find out if more middleware or if this is last stop.
     const isLastMiddlewareInStack = Utility.isLastMiddlewareInStack({
@@ -369,11 +359,18 @@ exports.getReviewsBySauceSlug = getReviewsBySauceSlug = async (
     // If we are end of stack, go to client
     if (isLastMiddlewareInStack) {
       // send to client
-      res.status(200).send({ isGood: true, sauce });
+      res.status(200).send({ isGood: true, reviews });
 
       // finish request off
       next();
     } else {
+      // Attach reviews to sauce obj
+      sauce.reviews = [];
+      sauce.reviews = reviews;
+
+      // Attach sauce to res.locals
+      res.locals.sauce = sauce;
+
       // Go to next middleware
       return next();
     }
