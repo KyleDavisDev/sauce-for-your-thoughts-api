@@ -161,11 +161,18 @@ exports.Update = async function({
 };
 
 // Returns array of reviews w/ Users DisplayName
-exports.FindReviewsBySauceID = async function({ SauceID, UserID }) {
-  var matchUserID = UserID ? `User.UserID = ${UserID}` : "1=1";
+exports.FindReviewsBySauceID = async function({ SauceID }) {
+  // var matchUserID = UserID ? `User.UserID = ${UserID}` : "1=1";
+  try {
+    // Sanity check. Must have either (SauceID AND UserID) OR ReviewID
+    if (!SauceID) {
+      throw new Error(
+        "Must provide required parameters to FindReviewsBySauceID method"
+      );
+    }
 
-  const rows = await DB.query(
-    `SELECT Reviews.HashID AS "Reviews.ReviewID",
+    const rows = await DB.query(
+      `SELECT Reviews.HashID AS "Reviews.ReviewID",
       Reviews.LabelRating AS "Reviews.LabelRating",
       Reviews.LabelDescription AS "Reviews.LabelDescription",
       Reviews.AromaRating AS "Reviews.AromaRating",
@@ -193,52 +200,55 @@ exports.FindReviewsBySauceID = async function({ SauceID, UserID }) {
     WHERE
       Reviews.IsActive = 1
       AND Avatars.IsActive = 1
-      AND Reviews.SauceID = ?
-      AND ?`,
-    [SauceID, matchUserID]
-  );
-
-  if (!rows) {
-    throw new Error(
-      "Could not find any reviews for this sauce. Be the first to submit one!"
+      AND Reviews.SauceID = ?`,
+      [SauceID]
     );
+
+    if (!rows) {
+      throw new Error(
+        "Could not find any reviews for this sauce. Be the first to submit one!"
+      );
+    }
+
+    // Turn the flat rows into a rows w/ nesting
+    const JSFriendlyArr = rows.map(row => {
+      return {
+        reviewID: row["Reviews.ReviewID"],
+        created: row["Reviews.Created"],
+        author: {
+          displayName: row["Users.DisplayName"],
+          created: row["Users.Created"],
+          avatarURL: row["Users.AvatarURL"]
+        },
+        label: {
+          rating: row["Reviews.LabelRating"],
+          txt: row["Reviews.LabelDescription"]
+        },
+        aroma: {
+          rating: row["Reviews.AromaRating"],
+          txt: row["Reviews.AromaDescription"]
+        },
+        taste: {
+          rating: row["Reviews.TasteRating"],
+          txt: row["Reviews.TasteDescription"]
+        },
+        heat: {
+          rating: row["Reviews.HeatRating"],
+          txt: row["Reviews.HeatDescription"]
+        },
+        overall: {
+          rating: row["Reviews.OverallRating"],
+          txt: row["Reviews.OverallDescription"]
+        },
+        note: { txt: row["Reviews.Note"] }
+      };
+    });
+
+    return JSFriendlyArr;
+  } catch (err) {
+    // relay error message to previous catch
+    throw new Error(err.message);
   }
-
-  // Turn the flat rows into a rows w/ nesting
-  const JSFriendlyArr = rows.map(row => {
-    return {
-      reviewID: row["Reviews.ReviewID"],
-      created: row["Reviews.Created"],
-      author: {
-        displayName: row["Users.DisplayName"],
-        created: row["Users.Created"],
-        avatarURL: row["Users.AvatarURL"]
-      },
-      label: {
-        rating: row["Reviews.LabelRating"],
-        txt: row["Reviews.LabelDescription"]
-      },
-      aroma: {
-        rating: row["Reviews.AromaRating"],
-        txt: row["Reviews.AromaDescription"]
-      },
-      taste: {
-        rating: row["Reviews.TasteRating"],
-        txt: row["Reviews.TasteDescription"]
-      },
-      heat: {
-        rating: row["Reviews.HeatRating"],
-        txt: row["Reviews.HeatDescription"]
-      },
-      overall: {
-        rating: row["Reviews.OverallRating"],
-        txt: row["Reviews.OverallDescription"]
-      },
-      note: { txt: row["Reviews.Note"] }
-    };
-  });
-
-  return JSFriendlyArr;
 };
 
 /** @description Find a single review from DB
