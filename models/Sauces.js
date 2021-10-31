@@ -282,7 +282,7 @@ exports.FindSaucesByQuery = async function({ params, includeTotal = false }) {
   }
 
   if (params.srch) {
-    query.where += ` && Sauces.Name LIKE '%${params.srch}%'`;
+    query.where += ` && Sauces.Name LIKE '%${params.srch}%' OR Sauces.Maker LIKE '%${params.srch}'`;
   }
 
   switch (params.order) {
